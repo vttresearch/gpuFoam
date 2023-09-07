@@ -154,7 +154,7 @@ class gpuChemistryModel
         auto device_Y0() const
         {
             const PtrList<volScalarField>& Yvf
-                = this->thermo().composition().Y();
+                = this->thermo().Y();
 
             const volScalarField& p = this->thermo().p().oldTime();
             const volScalarField& T = this->thermo().T().oldTime();
@@ -180,7 +180,7 @@ class gpuChemistryModel
         auto device_RR() const
         {
             const PtrList<volScalarField>& Yvf
-                = this->thermo().composition().Y();
+                = this->thermo().Y();
 
             label nCells = Yvf[0].size();
             label nFields = Yvf.size();
@@ -261,10 +261,10 @@ public:
         //- Construct from thermo
         gpuChemistryModel(const fluidMulticomponentThermo& thermo) :
         basicChemistryModel(thermo),
-        mixture_(refCast<const multicomponentMixture<ThermoType>>(this->thermo())),
+        mixture_(dynamicCast<const multicomponentMixture<ThermoType>>(this->thermo())),
         specieThermos_(mixture_.specieThermos()),
-        reactions_(mixture_.species(), specieThermos_, this->mesh(), *this),
-        RR_(this->thermo().composition().Y().size()),
+        reactions_(mixture_.specieNames(), specieThermos_, this->mesh(), *this),
+        RR_(this->thermo().Y().size()),
         temp_gpuThermos_
         (
             FoamGpu::make_gpu_thermos
@@ -277,7 +277,7 @@ public:
         (
             FoamGpu::make_gpu_reactions
             (
-                mixture_.species(),
+                mixture_.specieNames(),
                 *this,
                 temp_gpuThermos_,
                 reactions_
@@ -296,7 +296,7 @@ public:
 
 
             const PtrList<volScalarField>& Yvf
-                = this->thermo().composition().Y();
+                = this->thermo().Y();
 
             // Create the fields for the chemistry sources
             forAll(RR_, fieldi)
@@ -336,7 +336,7 @@ public:
         //- The number of species
         label nSpecie() const override
         {
-            return this->thermo().composition().Y().size();
+            return this->thermo().Y().size();
         }
 
         inline label nEqns() const

@@ -198,7 +198,7 @@ static inline Foam::PtrList<cpuThermo> make_cpu_thermos()
     {
         ret.append
         (
-            new cpuThermo(thermoDict.subDict(specie))
+            new cpuThermo(specie, thermoDict.subDict(specie))
         );
     }
     return ret;

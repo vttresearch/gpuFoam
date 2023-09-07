@@ -59,6 +59,7 @@ TEST_CASE("Test gpuThermo"){
     const Foam::species::thermo<Foam::janafThermo<Foam::perfectGas<Foam::specie> >,Foam::sensibleEnthalpy>
     cpu
     (
+        "Something",
         dict
     );
 

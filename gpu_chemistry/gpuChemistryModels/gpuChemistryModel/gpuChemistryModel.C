@@ -53,7 +53,7 @@ void Foam::gpuChemistryModel<ThermoType>::calculate()
     scalarField dNdtByV(this->nSpecie() + 2);
 
     const PtrList<volScalarField>& Yvf
-        = this->thermo().composition().Y();
+        = this->thermo().Y();
 
     scalarField c(this->nSpecie());
 
@@ -105,7 +105,7 @@ Foam::gpuChemistryModel<ThermoType>::reactionRR
 ) const
 {
     const PtrList<volScalarField>& Yvf
-        = this->thermo().composition().Y();
+        = this->thermo().Y();
 
     PtrList<volScalarField::Internal> RR(this->nSpecie());
     for (label i=0; i<this->nSpecie(); i++)
@@ -283,7 +283,7 @@ Foam::scalar Foam::gpuChemistryModel<ThermoType>::doSolve
     auto d_RR = device_RR();
 
     device_vector<scalar> d_deltaTMin(nCells(), 0);
-    
+
 
     device_vector<scalar> Js(nCells()*nEqns()*nEqns());
 
@@ -313,9 +313,9 @@ Foam::scalar Foam::gpuChemistryModel<ThermoType>::doSolve
         auto Y0 = make_mdspan(Y0_arr, extents<1>{nSpecie + 2});
 
         scalar* ptr = &Js(celli, 0, 0);
-        auto J 
+        auto J
         = mdspan<scalar, 2>(ptr, extents<2>{nSpecie+2, nSpecie+2});
-        
+
         const scalar rho0 = rho0vf[celli];
         scalar p = p0vf[celli];
         scalar T = T0vf[celli];
@@ -628,7 +628,7 @@ Foam::gpuChemistryModel<ThermoType>::tc() const
     scalarField dNdtByV(this->nSpecie() + 2);
 
     const PtrList<volScalarField>& Yvf
-        = this->thermo().composition().Y();
+        = this->thermo().Y();
 
     scalarField c(this->nSpecie());
 
@@ -715,7 +715,7 @@ Foam::gpuChemistryModel<ThermoType>::Qdot() const
     }
 
     const PtrList<volScalarField>& Yvf
-        = this->thermo().composition().Y();
+        = this->thermo().Y();
 
     scalarField& Qdot = tQdot.ref();
 
