@@ -3,7 +3,6 @@
 #include "cuda_host_dev.H"
 #include "gpuODESystem.H"
 #include "double_intrinsics.H"
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace FoamGpu
 {

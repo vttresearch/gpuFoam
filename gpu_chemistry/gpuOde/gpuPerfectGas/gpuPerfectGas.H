@@ -1,7 +1,5 @@
+#pragma once
 
-
-#ifndef gpuPerfectGas_H
-#define gpuPerfectGas_H
 
 #include "cuda_host_dev.H"
 #include "gpuConstants.H"
@@ -11,9 +9,6 @@ namespace FoamGpu
 {
 
 
-/*---------------------------------------------------------------------------*\
-                         Class gpuPerfectGas Declaration
-\*---------------------------------------------------------------------------*/
 
 class gpuPerfectGas
 {
@@ -224,12 +219,3 @@ inline gpuPerfectGas operator==(const gpuPerfectGas& st1, const gpuPerfectGas& s
 
 
 } // End namespace Foam
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-#endif
-
-// ************************************************************************* //

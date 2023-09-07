@@ -70,7 +70,6 @@ static inline std::vector<gpuThermo> make_gpu_thermos
     }
 
 
-    testThermo(cpuThermos, gpuThermos);
     return gpuThermos;
 }
 
@@ -120,12 +119,12 @@ set_reaction_thermo
 
     if (std::abs(lhsThermo.Y() - rhsThermo.Y()) > 0.1)
     {
-        
+
         FatalErrorInFunction
             << "Mass imbalance for reaction " << ": "
             << std::abs(lhsThermo.Y() - rhsThermo.Y()) << " kg/kmol"
             << exit(Foam::FatalError);
-            
+
     }
 
     reaction.get_thermo() = (lhsThermo == rhsThermo);

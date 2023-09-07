@@ -1,52 +1,13 @@
-/*---------------------------------------------------------------------------*\
-  =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2011-2021 OpenFOAM Foundation
-     \\/     M anipulation  |
--------------------------------------------------------------------------------
-License
-    This file is part of OpenFOAM.
+#pragma once
 
-    OpenFOAM is free software: you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-    for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
-
-Class
-    Foam::gpuFallOffReactionRate
-
-Description
-    General class for handling unimolecular/recombination fall-off reactions.
-
-SourceFiles
-    gpuFallOffReactionRateI.H
-
-\*---------------------------------------------------------------------------*/
-
-#ifndef gpuFallOffReactionRate_H
-#define gpuFallOffReactionRate_H
 
 #include "gpuThirdBodyEfficiencies.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace FoamGpu
 {
 
 
-
-/*---------------------------------------------------------------------------*\
-                     Class gpuFallOffReactionRate Declaration
-\*---------------------------------------------------------------------------*/
 
 template<class ReactionRate, class FallOffFunction>
 class gpuFallOffReactionRate
@@ -182,23 +143,6 @@ public:
             const gScalar Pr = k0/kInf*M;
             const gScalar F = F_(T, Pr);
 
-            #if FALL_OFF_FUNCTION_JACOBIAN
-
-            gScalarField dk0dc(c.size(), 0);
-            k0_.ddc(p, T, c, li, dk0dc);
-            gScalarField dkInfdc(c.size(), 0);
-            kInf_.ddc(p, T, c, li, dkInfdc);
-            tmp<gScalarField> tdMdc = thirdBodyEfficiencies_.dMdc(c);
-            const gScalarField& dMdc = tdMdc();
-            gScalarField dPrdc((M*dk0dc - Pr*dkInfdc + k0*dMdc)/kInf);
-            const gScalar dFdPr = F_.ddPr(T, Pr, F);
-
-            ddc =
-                dkInfdc*(Pr/(1 + Pr))*F
-            + kInf*dPrdc/sqr(1 + Pr)*F
-            + kInf*(Pr/(1 + Pr))*dFdPr*dPrdc;
-
-            #else
 
             kInf_.ddc(p, T, c, li, ddc);
 
@@ -206,21 +150,11 @@ public:
             {
                 ddc[i] *= (Pr/(1.0 + Pr))*F;
             }
-
-            //ddc *= (Pr/(1 + Pr))*F;
-
-            #endif
         }
 
 };
 
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
 
-
-
-#endif
-
-// ************************************************************************* //

@@ -1,56 +1,14 @@
-/*---------------------------------------------------------------------------*\
-  =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2011-2022 OpenFOAM Foundation
-     \\/     M anipulation  |
--------------------------------------------------------------------------------
-License
-    This file is part of OpenFOAM.
-
-    OpenFOAM is free software: you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-    for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
-
-Class
-    Foam::gpuReaction
-
-Description
-    Simple extension of MulticomponentThermo to handle gpuReaction kinetics in
-    addition to the equilibrium thermodynamics already handled.
-
-SourceFiles
-    gpuReactionI.H
-    gpuReaction.C
-
-\*---------------------------------------------------------------------------*/
-
-#ifndef gpuReaction_H
-#define gpuReaction_H
+#pragma once
 
 #include <array>
 
 #include "gpuConstants.H"
 #include "cuda_math.H"
-//#include "utilities.H"
 #include "cuda_host_dev.H"
 #include "gpuReactionRate.H"
 #include "gpuThermo.H"
 #include "mdspan.H"
-//#include "double_intrinsics.H"
 
-//#include "specieExponent.H"
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace FoamGpu
 {
@@ -1020,13 +978,7 @@ public:
 
 
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-
-#endif
-
-// ************************************************************************* //

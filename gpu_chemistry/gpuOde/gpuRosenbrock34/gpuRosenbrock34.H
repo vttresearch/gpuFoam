@@ -1,71 +1,14 @@
-/*---------------------------------------------------------------------------*\
-  =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2013-2020 OpenFOAM Foundation
-     \\/     M anipulation  |
--------------------------------------------------------------------------------
-License
-    This file is part of OpenFOAM.
-
-    OpenFOAM is free software: you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-    for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
-
-Class
-    Foam::gpuRosenbrock34
-
-Description
-    L-stable embedded gpuRosenbrock ODE solver of order (3)4.
-
-    \verbatim
-        Hairer, E., Nørsett, S. P., & Wanner, G. (1996).
-        Solving Ordinary Differential Equations II:
-        Stiff and Differential-Algebraic Problems, second edition",
-        Springer-Verlag, Berlin.
-    \endverbatim
-
-    The default constants are from:
-    \verbatim
-        Shampine, L. F. (1982).
-        Implementation of gpuRosenbrock Methods.
-        ACM Transactions on Mathematical Software, vol. 8, pp. 93–113.
-    \endverbatim
-    with which the scheme is more accurate than with the L-Stable coefficients
-    for small step-size but less stable for large step-size.
-
-    The L-Stable scheme constants are provided commented-out in gpuRosenbrock34.C
-
-SourceFiles
-    gpuRosenbrock34.C
-
-\*---------------------------------------------------------------------------*/
-
-#ifndef gpuRosenbrock34_H
-#define gpuRosenbrock34_H
+#pragma once
 
 #include "gpuODESolver.H"
 #include "gpuConstants.H"
 #include "ludecompose.H"
 #include "gpuBuffer.H"
 #include "check_ptr.H"
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace FoamGpu
 {
 
-/*---------------------------------------------------------------------------*\
-                        Class gpuRosenbrock34 Declaration
-\*---------------------------------------------------------------------------*/
 namespace RosenbrockCoeffs
 {
 
@@ -416,12 +359,6 @@ public:
 };
 
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-#endif
-
-// ************************************************************************* //

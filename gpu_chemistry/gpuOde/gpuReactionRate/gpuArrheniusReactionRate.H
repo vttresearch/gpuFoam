@@ -1,53 +1,12 @@
-/*---------------------------------------------------------------------------*\
-  =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2011-2021 OpenFOAM Foundation
-     \\/     M anipulation  |
--------------------------------------------------------------------------------
-License
-    This file is part of OpenFOAM.
+#pragma once
 
-    OpenFOAM is free software: you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-    for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
-
-Class
-    Foam::gpuArrheniusReactionRate
-
-Description
-    Arrhenius reaction rate given by:
-
-        k = A * T^beta * exp(-Ta/T)
-
-SourceFiles
-    gpuArrheniusReactionRateI.H
-
-\*---------------------------------------------------------------------------*/
-
-#ifndef gpuArrheniusReactionRate_H
-#define gpuArrheniusReactionRate_H
 
 #include "gpuConstants.H"
 #include "mdspan.H"
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace FoamGpu
 {
 
-
-/*---------------------------------------------------------------------------*\
-                    Class gpuArrheniusReactionRate Declaration
-\*---------------------------------------------------------------------------*/
 
 class gpuArrheniusReactionRate
 {
@@ -59,7 +18,7 @@ class gpuArrheniusReactionRate
 
 
 
-    inline CUDA_HOSTDEV gScalar 
+    inline CUDA_HOSTDEV gScalar
     computeAk(const gScalar p, const gScalar T) const
     {
         gScalar ak = A_;
@@ -165,13 +124,6 @@ public:
 };
 
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-#endif
-
-// ************************************************************************* //
