@@ -1,0 +1,17 @@
+#!/bin/sh
+cd ${0%/*} || exit 1    # Run from this directory
+
+if [ "$WM_BUILD" = "user" ]; then
+APPBIN=$FOAM_USER_APPBIN
+else
+APPBIN=$FOAM_APPBIN
+fi
+
+wclean all catchMain
+wclean all gpuKernelEvaluator
+wclean all gpuChemistryModels
+wclean all gpuOde
+wclean all unittest
+wclean all benchmark
+
+# ----------------------------------------------------------------- end-of-file

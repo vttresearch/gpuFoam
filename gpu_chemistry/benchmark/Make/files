@@ -1,0 +1,9 @@
+Benchmark-main.C
+Benchmark-chemistry.C
+
+ifeq "$(WM_BUILD)" "user"
+EXE = $(FOAM_USER_APPBIN)/benchmarkGpuChem
+else
+EXE = $(FOAM_APPBIN)/benchmarkGpuChem
+endif
+

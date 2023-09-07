@@ -1,0 +1,14 @@
+Test-eos.C
+Test-thermo.C
+Test-reaction.C
+Test-odeSystem.C
+Test-ode.C
+#Test-scalarSquareMatrix.C
+#Test-mdspan.C
+
+ifeq "$(WM_BUILD)" "user"
+EXE = $(FOAM_USER_APPBIN)/testGpuUtils
+else
+EXE = $(FOAM_APPBIN)/testGpuUtils
+endif
+

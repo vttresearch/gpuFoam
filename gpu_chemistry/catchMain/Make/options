@@ -1,0 +1,5 @@
+EXE_INC = \
+    -std=c++17 
+
+
+LIB_LIBS =

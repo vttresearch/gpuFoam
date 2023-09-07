@@ -1,0 +1,10 @@
+#!/bin/sh
+cd ${0%/*} || exit 1    # run from this directory
+
+
+
+
+#wmake -all common
+wclean all common
+
+# ----------------------------------------------------------------- end-of-file

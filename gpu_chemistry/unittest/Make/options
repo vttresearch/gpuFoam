@@ -1,0 +1,31 @@
+EXE_INC = \
+    -I../catchMain/lnInclude \
+    -I../gpuOde/lnInclude \
+    -I../../gpu_utils/common/lnInclude \
+    -I$(LIB_SRC)/physicalProperties/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/multicomponentThermo/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/basic/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/specie/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/functions/Polynomial \
+    -I$(LIB_SRC)/thermophysicalModels/chemistryModel/lnInclude \
+    -I$(LIB_SRC)/ODE/lnInclude \
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(LIB_SRC)/meshTools/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/chemistryModel/lnInclude \
+    -std=c++17
+
+EXE_LIBS = \
+    -lCatchMain \
+    -lmeshTools \
+    -lthermophysicalProperties \
+    -lODE \
+    -lOpenFOAM \
+    -lspecie \
+    -lfluidThermoThermophysicalTransportModels \
+    -lfluidThermophysicalModels \
+    -lmulticomponentThermophysicalModels \
+    -lfiniteVolume \
+    -lchemistryModel \
+    -lblockMesh
+
+#include ../nvcpp
