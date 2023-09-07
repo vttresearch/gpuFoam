@@ -112,6 +112,7 @@ GpuKernelEvaluator::computeYNew
     const std::vector<gScalar>& Y
 )
 {
+    const gLabel nCells = deltaTChem.size();
     const auto d_thermos = toDevice(h_thermos_);
     const auto d_reactions = toDevice(h_reactions_);
 
@@ -136,27 +137,27 @@ GpuKernelEvaluator::computeYNew
     auto d_deltaTChem = toDevice(deltaTChem);
     auto d_Yvf = toDevice(Y);
 
-    device_vector<gScalar> Js(nCells_*nEqns_*nEqns_, 0.0);
+    device_vector<gScalar> Js(nCells*nEqns_*nEqns_, 0.0);
 
-    auto Jss = make_mdspan(Js, extents<3>{nCells_, nEqns_, nEqns_});
+    auto Jss = make_mdspan(Js, extents<3>{nCells, nEqns_, nEqns_});
 
     device_vector<gpuBuffer> buffer_arr
-        = host_vector<gpuBuffer>(nCells_, gpuBuffer(nSpecie_));
+        = host_vector<gpuBuffer>(nCells, gpuBuffer(nSpecie_));
 
-    auto buffer = make_mdspan(buffer_arr, extents<1>{nCells_});
+    auto buffer = make_mdspan(buffer_arr, extents<1>{nCells});
 
-    auto deltaTChem_span = make_mdspan(d_deltaTChem, extents<1>{nCells_});
-    auto Yvf = make_mdspan(d_Yvf, extents<2>{nCells_, nEqns_});
+    auto deltaTChem_span = make_mdspan(d_deltaTChem, extents<1>{nCells});
+    auto Yvf = make_mdspan(d_Yvf, extents<2>{nCells, nEqns_});
 
     gLabel NTHREADS = 32;
-    gLabel NBLOCKS = (nCells_ + NTHREADS - 1)/ NTHREADS;
+    gLabel NBLOCKS = (nCells + NTHREADS - 1)/ NTHREADS;
     //kernel<<<(nCells()+255)/256, 256>>>(nCells(), op);
     //kernel<<<NBLOCKS, NTHREADS>>>(nCells_, op);
 
     cuda_kernel<<<NBLOCKS, NTHREADS>>>
     (
         deltaT,
-        nCells_,
+        nCells,
         nSpecie_,
         deltaTChem_span,
         Yvf,
@@ -192,18 +193,20 @@ GpuKernelEvaluator::computeRR
 )
 {
 
+    const gLabel nCells = rho.size();
+
 
     auto [YNew_arr, deltaTChemNew]
         = computeYNew(deltaT, deltaTChemMax, deltaTChem, Y);
 
-    auto YNew = make_mdspan(YNew_arr, extents<2>{nCells_, nEqns_});
+    auto YNew = make_mdspan(YNew_arr, extents<2>{nCells, nEqns_});
 
-    auto Y0 = make_mdspan(Y, extents<2>{nCells_, nEqns_});
+    auto Y0 = make_mdspan(Y, extents<2>{nCells, nEqns_});
 
-    std::vector<gScalar> RR_arr(nCells_ * nSpecie_);
-    auto RR = make_mdspan(RR_arr, extents<2>{nCells_, nSpecie_});
+    std::vector<gScalar> RR_arr(nCells * nSpecie_);
+    auto RR = make_mdspan(RR_arr, extents<2>{nCells, nSpecie_});
 
-    for (gLabel j = 0; j < nCells_; ++j){
+    for (gLabel j = 0; j < nCells; ++j){
     for (gLabel i = 0; i < nSpecie_; ++i){
 
         RR(j, i) = rho[j]*(YNew(j, i) - Y0(j, i))/deltaT;

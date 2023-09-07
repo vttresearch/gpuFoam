@@ -20,6 +20,6 @@ wmake -all gpuKernelEvaluator
 wmake -all gpuChemistryModels
 wmake -all catchMain
 wmake -all unittest
-wmake -all benchmark
+#wmake -all benchmark
 
 # ----------------------------------------------------------------- end-of-file

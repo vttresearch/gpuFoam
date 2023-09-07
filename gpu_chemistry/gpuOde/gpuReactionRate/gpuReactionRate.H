@@ -1,7 +1,7 @@
 #pragma once
 
 // #include <variant>
-#include "variant.h"
+#include "variant.hpp"
 
 #include "gpuArrheniusReactionRate.H"
 #include "gpuFallOffReactionRate.H"

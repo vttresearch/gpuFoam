@@ -24,7 +24,6 @@ struct GpuKernelEvaluator
 
     GpuKernelEvaluator
     (
-        gLabel nCells,
         gLabel nEqns,
         gLabel nSpecie,
         const std::vector<gpuThermo>& thermos,
@@ -32,7 +31,6 @@ struct GpuKernelEvaluator
         gpuRosenbrock34Inputs odeInputs
     )
     :
-    nCells_(nCells),
     nEqns_(nEqns),
     nSpecie_(nSpecie),
     h_thermos_(thermos),
@@ -40,7 +38,6 @@ struct GpuKernelEvaluator
     odeInputs_(odeInputs)
     {
 
-        std::cout << "Ncells " << nCells_ << std::endl;
         std::cout << "Neqns " << nEqns_ << std::endl;
         std::cout << "Nspecie " << nSpecie_ << std::endl;
     }
@@ -75,7 +72,7 @@ struct GpuKernelEvaluator
 
 private:
 
-    gLabel nCells_, nEqns_, nSpecie_;
+    gLabel nEqns_, nSpecie_;
 
     std::vector<gpuThermo> h_thermos_;
     std::vector<gpuReaction> h_reactions_;
