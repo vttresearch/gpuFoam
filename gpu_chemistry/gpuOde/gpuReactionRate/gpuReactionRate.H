@@ -1,50 +1,42 @@
 #pragma once
 
-//#include <variant>
+// #include <variant>
 #include "variant.h"
 
 #include "gpuArrheniusReactionRate.H"
-#include "gpuThirdBodyArrheniusReactionRate.H"
 #include "gpuFallOffReactionRate.H"
 #include "gpuLindemannFallOffFunction.H"
+#include "gpuThirdBodyArrheniusReactionRate.H"
 #include "gpuTroeFallOffFunction.H"
 
+namespace FoamGpu {
 
+namespace gpu {
 
-namespace FoamGpu
-{
+using Arrhenius          = gpuArrheniusReactionRate;
+using ThirdBodyArrhenius = gpuThirdBodyArrheniusReactionRate;
+using ArrheniusLindemannFallOff =
+    gpuFallOffReactionRate<gpuArrheniusReactionRate,
+                           gpuLindemannFallOffFunction>;
+using ArrheniusTroeFallOff =
+    gpuFallOffReactionRate<gpuArrheniusReactionRate, gpuTroeFallOffFunction>;
 
-namespace gpu
-{
+using ReactionRate = variant::variant<Arrhenius,
+                                      ThirdBodyArrhenius,
+                                      ArrheniusLindemannFallOff,
+                                      ArrheniusTroeFallOff>;
 
-    using Arrhenius = gpuArrheniusReactionRate;
-    using ThirdBodyArrhenius = gpuThirdBodyArrheniusReactionRate;
-    using ArrheniusLindemannFallOff = gpuFallOffReactionRate<gpuArrheniusReactionRate, gpuLindemannFallOffFunction>;
-    using ArrheniusTroeFallOff = gpuFallOffReactionRate<gpuArrheniusReactionRate, gpuTroeFallOffFunction>;
-
-
-    using ReactionRate =
-    variant::variant
-    <
-        Arrhenius,
-        ThirdBodyArrhenius,
-        ArrheniusLindemannFallOff,
-        ArrheniusTroeFallOff
-    >;
-
-
-    /*
-    using ReactionRate =
-    std::variant
-    <
-        Arrhenius,
-        ThirdBodyArrhenius,
-        ArrheniusLindemannFallOff,
-        ArrheniusTroeFallOff
-    >;
-    */
-}
-
+/*
+using ReactionRate =
+std::variant
+<
+    Arrhenius,
+    ThirdBodyArrhenius,
+    ArrheniusLindemannFallOff,
+    ArrheniusTroeFallOff
+>;
+*/
+} // namespace gpu
 
 template <class Span> struct my_visitor1 {
 
@@ -112,82 +104,60 @@ template <class Span> struct my_visitor4 {
     }
 };
 
-struct gpuReactionRate{
+struct gpuReactionRate {
 
     gpu::ReactionRate rate_;
-    bool irreversible_;
+    bool              irreversible_;
 
     gpuReactionRate() = default;
 
-    gpuReactionRate(const gpu::ReactionRate& rate, bool irreversible) :
-    rate_(rate),
-    irreversible_(irreversible)
-    {}
+    gpuReactionRate(const gpu::ReactionRate& rate, bool irreversible)
+        : rate_(rate)
+        , irreversible_(irreversible) {}
 
+    inline CUDA_HOSTDEV bool isIrreversible() const { return irreversible_; }
 
-    inline CUDA_HOSTDEV bool isIrreversible() const {return irreversible_;}
-
-    template<class Span>
-    inline CUDA_HOSTDEV gScalar operator()
-    (
-        const gScalar p,
-        const gScalar T,
-        const Span& c,
-        const gLabel li
-    ) const
-    {
+    template <class Span>
+    inline CUDA_HOSTDEV gScalar operator()(const gScalar p,
+                                           const gScalar T,
+                                           const Span&   c,
+                                           const gLabel  li) const {
         using namespace gpu;
 
-
         my_visitor1<Span> v(p, T, c, li);
-        //return std::visit(v, rate_);
+        // return std::visit(v, rate_);
         return variant::apply_visitor(v, rate_);
-
-
-
     }
 
-    inline CUDA_HOSTDEV bool hasDdc() const
-    {
+    inline CUDA_HOSTDEV bool hasDdc() const {
         return variant::apply_visitor(my_visitor2(), rate_);
-        //return
-        //std::visit(my_visitor2(), rate_);
+        // return
+        // std::visit(my_visitor2(), rate_);
     }
 
-    template<class Span1, class Span2>
-    inline CUDA_HOSTDEV void ddc
-    (
-        const gScalar p,
-        const gScalar T,
-        const Span1& c,
-        const gLabel li,
-        Span2& dkfdc
-    ) const
-    {
+    template <class Span1, class Span2>
+    inline CUDA_HOSTDEV void ddc(const gScalar p,
+                                 const gScalar T,
+                                 const Span1&  c,
+                                 const gLabel  li,
+                                 Span2&        dkfdc) const {
         my_visitor3<Span1, Span2> v(p, T, c, li, dkfdc);
         variant::apply_visitor(v, rate_);
-        //std::visit(v, rate_);
+        // std::visit(v, rate_);
     }
 
-    template<class Span>
-    inline CUDA_HOSTDEV gScalar ddT
-    (
-        const gScalar p,
-        const gScalar T,
-        const Span& c,
-        const gLabel li
-    ) const
-    {
+    template <class Span>
+    inline CUDA_HOSTDEV gScalar ddT(const gScalar p,
+                                    const gScalar T,
+                                    const Span&   c,
+                                    const gLabel  li) const {
 
         my_visitor4<Span> v(p, T, c, li);
         return variant::apply_visitor(v, rate_);
-        //return std::visit(v, rate_);
-        //return
-        //std::visit([&](auto&& arg){return arg.ddT(p, T, c, li);}, rate_);
+        // return std::visit(v, rate_);
+        // return
+        // std::visit([&](auto&& arg){return arg.ddT(p, T, c, li);}, rate_);
     }
-
-
 };
 
-
-}
+} // namespace FoamGpu
