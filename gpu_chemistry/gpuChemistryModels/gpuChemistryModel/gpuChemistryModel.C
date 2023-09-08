@@ -249,8 +249,6 @@ gpuChemistryModel<ThermoType>::computeRRAndChemDeltaT(const scalar& deltaT) {
     auto [RR, deltaTChem, minDeltaT] = evaluator_.computeRR(deltaT,
                                                             deltaTChemMax_,
                                                             getRho0(),
-                                                            getP0(),
-                                                            getT0(),
                                                             getDeltaTChem(),
                                                             getY0());
 
