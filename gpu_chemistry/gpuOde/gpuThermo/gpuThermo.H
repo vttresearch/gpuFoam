@@ -21,15 +21,18 @@ public:
     coeffArray highCpCoeffs_;
     coeffArray lowCpCoeffs_;
 
+    /// @brief Provides access to the coefficient array based on the input
+    /// temperature.
+    /// @param T The input temperature used to determine whether to get the high
+    /// or low coeffs.
+    /// @return Either high or low coefficient array based on the input
+    /// temperature.
     inline CUDA_HOSTDEV const gScalar* coeffs(gScalar T) const {
         if (T < Tcommon_) { return lowCpCoeffs_.data(); }
         return highCpCoeffs_.data();
     }
 
 public:
-    // Constructors
-
-    //- Construct null
     gpuThermo() = default;
 
     gpuThermo(const EquationOfState& eos,
@@ -59,37 +62,46 @@ public:
         , highCpCoeffs_(highCoeffs)
         , lowCpCoeffs_(lowCoeffs) {}
 
+    /// @brief Get access to highCpCoefficients.
+    /// @return The highCpCoefficients.
     inline CUDA_HOSTDEV const coeffArray& highCpCoeffs() const {
         return highCpCoeffs_;
     }
+
+    /// @brief Get access to lowCpCoeficients.
+    /// @return The lowCpCoefficients.
     inline CUDA_HOSTDEV const coeffArray& lowCpCoeffs() const {
         return lowCpCoeffs_;
     }
 
-    //- Equilibrium constant [] i.t.o fugacities
-    //  = PIi(fi/Pstd)^nui
+    /// @brief Computes the equilibrium constant i.t.o fugacities
+    /// @param p Pressure.
+    /// @param T Temperature.
+    /// @return The equilibrium constant i.t.o. fugacitities.
     inline CUDA_HOSTDEV gScalar K(const gScalar p, const gScalar T) const {
-
         (void)p;
-
         gScalar arg = -this->Y() * this->Gstd(T) / (gpuRR * T);
-
         if (arg < 600) { return std::exp(arg); }
         return std::sqrt(gpuVGreat);
         // return gpuRootVGreat;
     }
 
-    //- Equilibrium constant [] i.t.o. partial pressures
-    //  = PIi(pi/Pstd)^nui
-    //  For low pressures (where the gas mixture is near perfect) Kp = K
+    /// @brief Computes the equilibrium constant i.t.o partial pressures =
+    /// PIi(pi/Pstd)^nui. For low pressures (where the gas mixture is near
+    /// perfect) Kp = K.
+    /// @param p Pressure.
+    /// @param T Temperature.
+    /// @return The equilibrium constant i.t.o partial pressures.
     inline CUDA_HOSTDEV gScalar Kp(const gScalar p, const gScalar T) const {
         return K(p, T);
     }
 
-    //- Equilibrium constant i.t.o. molar concentration
-    //  = PIi(ci/cstd)^nui
-    //  For low pressures (where the gas mixture is near perfect)
-    //  Kc = Kp(pstd/(RR*T))^nu
+    /// @brief Computes the equilibrium constant i.t.o. molar concentration =
+    /// PIi(ci/cstd)^nui. For low pressures (where the gas mixture is near
+    /// perfect) Kc = Kp(pstd/(RR*T))^nu.
+    /// @param p Pressure.
+    /// @param T Temperature.
+    /// @return The equilibrium constant i.t.o. molar concentration.
     inline CUDA_HOSTDEV gScalar Kc(const gScalar p, const gScalar T) const {
 
         const gScalar nm = this->Y() / this->W();
@@ -98,8 +110,11 @@ public:
         return Kp(p, T) * std::pow(gpuPstd / (gpuRR * T), nm);
     }
 
-    //- Derivative of B (according to Niemeyer et al.)
-    //  w.r.t. temperature
+    /// @brief Computes the derivative of B (according to Niemeyer et al.) w.r.t
+    /// temperature.
+    /// @param p Pressure.
+    /// @param T Temperature.
+    /// @return Derivative of B.
     inline CUDA_HOSTDEV gScalar dKcdTbyKc(const gScalar p,
                                           const gScalar T) const {
 
@@ -112,7 +127,10 @@ public:
         return dKcdTbyKc - nm / T;
     }
 
-    //- Heat capacity at constant pressure [J/kg/K]
+    /// @brief Computes the heat capacity [J/kg/K] at constant pressure.
+    /// @param p Pressure.
+    /// @param T Temperature.
+    /// @return Heat capacity at constant pressure.
     inline CUDA_HOSTDEV gScalar Cp(const gScalar p, const gScalar T) const {
 
         const auto& a = coeffs(T);
@@ -120,7 +138,18 @@ public:
                EquationOfState::Cp(p, T);
     }
 
-    //- Absolute enthalpy [J/kg]
+    /// @brief Computes the heat capacity [J/kg/K] at constant volume.
+    /// @param p Pressure.
+    /// @param T Temperature.
+    /// @return The heat capacity in constant volume.
+    inline CUDA_HOSTDEV gScalar Cv(const gScalar p, const gScalar T) const {
+        return Cp(p, T) - EquationOfState::CpMCv(p, T);
+    }
+
+    /// @brief Computes the absolute enthalpy [J/kg].
+    /// @param p Pressure.
+    /// @param T Temperature.
+    /// @return The absolute enthalpy.
     inline CUDA_HOSTDEV gScalar Ha(const gScalar p, const gScalar T) const {
         const auto& a = coeffs(T);
         return (((((a[4] / 5.0 * T + a[3] / 4.0) * T + a[2] / 3.0) * T +
@@ -132,12 +161,16 @@ public:
                EquationOfState::H(p, T);
     }
 
-    //- Sensible enthalpy [J/kg]
+    /// @brief Computes the sensible enthalpy [J/kg].
+    /// @param p Pressure.
+    /// @param T Temperature.
+    /// @return The sensible enthalpy.
     inline CUDA_HOSTDEV gScalar Hs(const gScalar p, const gScalar T) const {
         return Ha(p, T) - Hf();
     }
 
-    //- Enthalpy of formation [J/kg]
+    /// @brief Computes the enthalpy of formation [J/kg].
+    /// @return The enthalpy of formation.
     inline CUDA_HOSTDEV gScalar Hf() const {
 
         const auto& a = lowCpCoeffs_;
@@ -150,7 +183,10 @@ public:
                 a[5]);
     }
 
-    //- Entropy [J/kg/K]
+    /// @brief Computes the entropy [J/kg/K].
+    /// @param p Pressure.
+    /// @param T Temperature.
+    /// @return The entropy.
     inline CUDA_HOSTDEV gScalar S(const gScalar p, const gScalar T) const {
         const auto& a = coeffs(T);
         return ((((a[4] / 4.0 * T + a[3] / 3.0) * T + a[2] / 2.0) * T + a[1]) *
@@ -159,7 +195,10 @@ public:
                EquationOfState::Sp(p, T);
     }
 
-    //- Gibbs free energy of the mixture in the standard state [J/kg]
+    /// @brief Computes the Gibbs free energy [J/kg] of the mixture in the
+    /// standard state.
+    /// @param T Temperature.
+    /// @return The Gibbs free energy.
     inline CUDA_HOSTDEV gScalar Gstd(const gScalar T) const {
         const auto& a = coeffs(T);
 
@@ -172,24 +211,34 @@ public:
                 a[5]);
     }
 
-    inline CUDA_HOSTDEV gScalar Cv(const gScalar p, const gScalar T) const {
-        return Cp(p, T) - EquationOfState::CpMCv(p, T);
-    }
-
+    /// @brief Computes the sensible internal energy [J/kg].
+    /// @param p Pressure.
+    /// @param T Temperature.
+    /// @return Sensible internal energy.
     inline CUDA_HOSTDEV gScalar Es(const gScalar p, const gScalar T) const {
         return Hs(p, T) - p / EquationOfState::rho(p, T);
     }
 
+    /// @brief Computes the absolute internal energy [J/kg].
+    /// @param p Pressure.
+    /// @param T Temperature.
+    /// @return Absolute internal energy.
     inline CUDA_HOSTDEV gScalar Ea(const gScalar p, const gScalar T) const {
         return Ha(p, T) - p / EquationOfState::rho(p, T);
     }
 
-    //- Temperature derivative of heat capacity at constant pressure
+    /// @brief Computes the temperature derivative of heat capacity at constant
+    /// pressure.
+    /// @param p Pressure.
+    /// @param T Temperature.
+    /// @return Derivative of heat capacity at constant pressure.
     inline CUDA_HOSTDEV gScalar dCpdT(const gScalar p, const gScalar T) const {
         const auto& a = coeffs(T);
         return (((4 * a[4] * T + 3 * a[3]) * T + 2 * a[2]) * T + a[1]);
     }
 
+    /// @brief Unary operator +=.
+    /// @param jt The RHS thermo used in increment.
     inline void operator+=(const gpuThermo& jt) {
 
         gScalar Y1 = this->Y();
@@ -214,6 +263,10 @@ public:
     }
 };
 
+/// @brief Binary operator +.
+/// @param jt1 LHS gpuThermo object.
+/// @param jt2 RHS gpuThermo object.
+/// @return New gpuThermo object with combined properties.
 inline gpuThermo operator+(const gpuThermo& jt1, const gpuThermo& jt2) {
 
     gpuThermo::EquationOfState eofs = jt1;
@@ -250,6 +303,11 @@ inline gpuThermo operator+(const gpuThermo& jt1, const gpuThermo& jt2) {
                      lowCpCoeffs);
 }
 
+/// @brief Binary * operator with scalar.
+/// @param s The LHS scalar factor used in scaling of the mass fraction and
+/// molecular weight.
+/// @param jt The RHS gpuThermo object to be scaled.
+/// @return Scaled gpuThermo object.
 inline gpuThermo operator*(gScalar s, const gpuThermo& jt) {
     return gpuThermo(s * static_cast<const gpuThermo::EquationOfState&>(jt),
                      jt.Tlow_,
@@ -259,6 +317,10 @@ inline gpuThermo operator*(gScalar s, const gpuThermo& jt) {
                      jt.lowCpCoeffs_);
 }
 
+/// @brief Binary == operator used in combining two gpuThermos.
+/// @param jt1 LHS gpuThermo object.
+/// @param jt2 RHS gpuThermo object.
+/// @return gpuThermo with combined properties.
 inline gpuThermo operator==(const gpuThermo& jt1, const gpuThermo& jt2) {
 
     gpuThermo::EquationOfState eofs(
