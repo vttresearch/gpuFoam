@@ -31,19 +31,7 @@ public:
         , F_(F)
         , thirdBodyEfficiencies_(tbes) {}
 
-    // Member Functions
 
-    //- Pre-evaluation hook
-    inline CUDA_HOSTDEV void preEvaluate() const {
-        k0_.preEvaluate();
-        kInf_.preEvaluate();
-    }
-
-    //- Post-evaluation hook
-    inline CUDA_HOSTDEV void postEvaluate() const {
-        k0_.postEvaluate();
-        kInf_.postEvaluate();
-    }
 
     //- Return the rate
     template <class Span>

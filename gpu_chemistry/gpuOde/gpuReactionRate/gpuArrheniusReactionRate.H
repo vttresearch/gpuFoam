@@ -35,10 +35,6 @@ public:
         , Ta_(Ta) {}
 
 
-    inline CUDA_HOSTDEV void preEvaluate() const {}
-
-    inline CUDA_HOSTDEV void postEvaluate() const {}
-
     template <class Span>
     inline CUDA_HOSTDEV gScalar operator()(const gScalar p,
                                            const gScalar T,

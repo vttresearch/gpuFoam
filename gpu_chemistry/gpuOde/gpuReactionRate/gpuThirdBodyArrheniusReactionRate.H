@@ -31,14 +31,6 @@ public:
         , thirdBodyEfficiencies_(tbes) {}
 
 
-    inline CUDA_HOSTDEV void preEvaluate() const {
-        gpuArrheniusReactionRate::preEvaluate();
-    }
-
-    inline CUDA_HOSTDEV void postEvaluate() const {
-        gpuArrheniusReactionRate::postEvaluate();
-    }
-
     template <class Span>
     inline CUDA_HOSTDEV gScalar operator()(const gScalar p,
                                            const gScalar T,
