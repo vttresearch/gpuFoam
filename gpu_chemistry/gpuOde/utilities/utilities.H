@@ -174,9 +174,24 @@ make_gpu_reactions(const Foam::speciesTable&             species,
     return ret;
 }
 
+static inline gpuAdaptiveSolverInputs
+read_adaptiveSolver_inputs(const Foam::dictionary& dict)
+{
+    gpuAdaptiveSolverInputs i;
+    i.safeScale = dict.lookupOrDefault<Foam::scalar>("safeScale", 0.9);
+    i.alphaInc  = dict.lookupOrDefault<Foam::scalar>("alphaIncrease", 0.2);
+    i.alphaDec  = dict.lookupOrDefault<Foam::scalar>("alphaDecrease", 0.25);
+    i.minScale  = dict.lookupOrDefault<Foam::scalar>("minScale", 0.2);
+    i.maxScale  = dict.lookupOrDefault<Foam::scalar>("maxScale", 10);
+    return i;
+}
+
 static inline gpuRosenbrock34Inputs
 read_Rosenbrock34_inputs(const Foam::dictionary& dict) {
+
+
     gpuRosenbrock34Inputs i;
+    i.adaptiveInputs = read_adaptiveSolver_inputs(dict);
 
     // gScalar small = std::numeric_limits<gScalar>::epsilon();
 
@@ -184,11 +199,6 @@ read_Rosenbrock34_inputs(const Foam::dictionary& dict) {
     // i.absTol = dict.lookupOrDefault<gScalar>("absTol", small);
     i.relTol    = dict.lookupOrDefault<Foam::scalar>("relTol", 1e-4);
     i.maxSteps  = dict.lookupOrDefault<Foam::label>("maxSteps", 10000);
-    i.safeScale = dict.lookupOrDefault<Foam::scalar>("safeScale", 0.9);
-    i.alphaInc  = dict.lookupOrDefault<Foam::scalar>("alphaIncrease", 0.2);
-    i.alphaDec  = dict.lookupOrDefault<Foam::scalar>("alphaDecrease", 0.25);
-    i.minScale  = dict.lookupOrDefault<Foam::scalar>("minScale", 0.2);
-    i.maxScale  = dict.lookupOrDefault<Foam::scalar>("maxScale", 10);
 
     return i;
 }

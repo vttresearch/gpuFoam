@@ -62,20 +62,10 @@ public:
 
         const gScalar dkInfdT = kInf_.ddT(p, T, c, li);
 
-#if FALL_OFF_FUNCTION_JACOBIAN
 
-        const gScalar dk0dT = k0_.ddT(p, T, c, li);
-        const gScalar dPrdT = (M * dk0dT - Pr * dkInfdT) / kInf;
-        const gScalar dFdT  = F_.ddT(T, Pr, F) + F_.ddPr(T, Pr, F) * dPrdT;
-
-        return dkInfdT * (Pr / (1 + Pr)) * F + kInf * dPrdT / sqr(1 + Pr) * F +
-               kInf * (Pr / (1 + Pr)) * dFdT;
-
-#else
 
         return dkInfdT * (Pr / (1.0 + Pr)) * F;
 
-#endif
     }
 
     //- Is the rate a function of concentration?

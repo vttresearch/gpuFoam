@@ -31,12 +31,23 @@ constexpr double N2_val = 0.3;
 constexpr double T_inf = 1000.0;
 constexpr double p_inf = 1.36789e+06;
 
-
+//Note, here the "error" is a comparison against a cpu result.
+//When compiled with an nvidia compiler, the arithmetic operations are computed
+//differently since nvcc and nvc++ use fused multiply add (fma) in many places.
+//Therefore a slightly more tolerance is allowed when comparing gpu result agains
+//cpu result. For better match use the -nofma switch. However, we want to allow
+//for the compiler to do optimizations.
+#ifdef __NVIDIA_COMPILER__
+constexpr double errorTol = 1E-7;
+#else
 constexpr double errorTol = 1E-10;
+#endif
+
 
 
 
 #ifdef __NVIDIA_COMPILER__
+
 
 #include "thrust/device_vector.h"
 #include "thrust/host_vector.h"

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "check_ptr.H"
+#include "gpuAdaptiveSolver.H"
 #include "gpuBuffer.H"
 #include "gpuConstants.H"
 #include "gpuODESolver.H"
@@ -46,17 +47,15 @@ constexpr gScalar d4 = 29.0 / 250.0;
 } // namespace RosenbrockCoeffs
 
 struct gpuRosenbrock34Inputs {
-    gScalar absTol;
-    gScalar relTol;
-    gLabel  maxSteps;
-    gScalar safeScale;
-    gScalar alphaInc;
-    gScalar alphaDec;
-    gScalar minScale;
-    gScalar maxScale;
+
+    gpuAdaptiveSolverInputs adaptiveInputs;
+    gScalar                 absTol;
+    gScalar                 relTol;
+    gLabel                  maxSteps;
 };
 
-template <class System> class gpuRosenbrock34 : public gpuODESolver {
+template <class System>
+class gpuRosenbrock34 : public gpuODESolver, public gpuAdaptiveSolver {
     // Private Data
 
 public:
@@ -64,20 +63,14 @@ public:
 
     gLabel n_;
 
-    //- Step-size adjustment controls
-    gScalar safeScale_, alphaInc_, alphaDec_, minScale_, maxScale_;
-
     // Constructors
 
-    gpuRosenbrock34(const System& ode, gpuRosenbrock34Inputs i)
+    gpuRosenbrock34(const System& ode, const gpuRosenbrock34Inputs& i)
         : gpuODESolver(i.absTol, i.relTol, i.maxSteps)
+        , gpuAdaptiveSolver(i.adaptiveInputs)
         , odes_(ode)
         , n_(ode.nEqns())
-        , safeScale_(i.safeScale)
-        , alphaInc_(i.alphaInc)
-        , alphaDec_(i.alphaDec)
-        , minScale_(i.minScale)
-        , maxScale_(i.maxScale) {}
+        {}
 
     // Member Functions
 
@@ -151,8 +144,6 @@ public:
                             gScalar&     dxTry,
                             TwoDSpan&    a,
                             gpuBuffer&   buffer) const {
-
-        using namespace RosenbrockCoeffs;
 
         auto dydx0 = buffer.dydx0();
         auto yTemp = buffer.yTemp();
