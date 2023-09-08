@@ -20,16 +20,15 @@ protected:
     //- The maximum number of sub-steps allowed for the integration step
     gLabel maxSteps_;
 
-
     CUDA_HOSTDEV
-    double normaliseError(double y0, double y, double err) const {
+    gScalar normaliseError(gScalar y0, gScalar y, gScalar err) const {
 
         double tol = absTol_ + relTol_ * std::max(std::abs(y0), std::abs(y));
         double ret = std::abs(err) / tol;
         return ret;
     }
 
-    //- Return the normalised gScalar error
+
     template <class Span1, class Span2, class Span3>
     CUDA_HOSTDEV gScalar normaliseError(const Span1& y0,
                                         const Span2& y,
