@@ -229,42 +229,7 @@ TEST_CASE("Test gpuReaction with gri")
     }
 
 
-    SECTION("C")
-    {
-        gLabel nSpecie = make_cpu_thermos().size();
-        gScalar p = 1E5;
-        gScalar T = 431.4321;
-        gLabel li = 0;
 
-        for (gLabel i = 0; i < cpu_reactions.size(); ++i)
-        {
-            const auto& cpu = cpu_reactions[i];
-            const auto  gpu =&(gpu_reactions[i]);
-
-            const Foam::scalarField c_cpu(nSpecie, 0.123);
-            const device_vector<gScalar> c_gpu = host_vector<gScalar>(c_cpu.begin(), c_cpu.end());
-            const auto c = make_mdspan(c_gpu, extents<1>{nSpecie});
-
-
-            auto f_gpu = [=](){
-                gScalar Cf = 0.1;
-                gScalar Cr = 0.2;
-                gpu->C(p, T, c, li, Cf, Cr);
-                return Cf + Cr;
-            };
-
-            auto f_cpu = [&](){
-                gScalar Cf = 0.3;
-                gScalar Cr = 0.4;
-                cpu.C(p, T, c_cpu, li, Cf, Cr);
-                return Cf + Cr;
-            };
-
-
-            CHECK(eval(f_gpu) == Approx(f_cpu()).epsilon(errorTol));
-
-        }
-    }
 
 
 

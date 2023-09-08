@@ -14,8 +14,6 @@ public:
     static constexpr size_t nCoeffs_ = 7;
 
     using coeffArray = std::array<gScalar, nCoeffs_>;
-    // using coeffArray = gScalar[nCoeffs_];
-    // using coeffArray = FixedList<gScalar, nCoeffs_>;
 
     // Temperature limits of applicability of functions
     gScalar Tlow_, Thigh_, Tcommon_;
