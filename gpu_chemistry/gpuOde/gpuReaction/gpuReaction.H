@@ -40,7 +40,6 @@ public:
         std::numeric_limits<double>::max() / 10;
 
 private:
-
     //- LHS specie coefficients
     specieCoeffArray lhs_;
 
@@ -66,7 +65,6 @@ private:
     gScalar Tlow_, Thigh_;
 
 public:
-
     gpuReaction() = default;
 
     CUDA_HOSTDEV
@@ -124,7 +122,7 @@ public:
 
     /// @brief Convert this reaction to the inherited gpuThermo object.
     /// @return Inherited gpuThermo object.
-    gpuThermo& get_thermo() { return *this; }
+    inline gpuThermo& get_thermo() { return *this; }
 
     /// @brief Returns the lower temperature limit for this reaction.
     /// @return The lower temperature limit.
@@ -133,7 +131,6 @@ public:
     /// @brief Returns the upper temperature limit for this reaction.
     /// @return The upper temperature limit.
     inline CUDA_HOSTDEV gScalar Thigh() const { return Thigh_; }
-
 
     /// @brief Checks if this reaction has concentration dependent rate
     /// constants.
