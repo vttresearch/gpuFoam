@@ -9,44 +9,35 @@
 
 namespace FoamGpu {
 
-namespace Rosenbrock34Coeffs {
+namespace Rosenbrock23Coeffs {
 
-// Constants by Shampine
-// More accurate than the L-Stable coefficients for small step-size
-// but less stable for large step-size
-constexpr gScalar a21 = 2.0;
-constexpr gScalar a31 = 48.0 / 25.0;
-constexpr gScalar a32 = 6.0 / 25.0;
+    constexpr gScalar a21 = 1;
+    constexpr gScalar a31 = 1;
+    constexpr gScalar a32 = 0;
 
-constexpr gScalar c21 = -8.0;
-constexpr gScalar c31 = 372.0 / 25.0;
-constexpr gScalar c32 = 12.0 / 5.0;
+    constexpr gScalar c21 = -1.0156171083877702091975600115545;
+    constexpr gScalar c31 = 4.0759956452537699824805835358067;
+    constexpr gScalar c32 = 9.2076794298330791242156818474003;
 
-constexpr gScalar c41 = -112.0 / 125.0;
-constexpr gScalar c42 = -54.0 / 125.0;
-constexpr gScalar c43 = -2.0 / 5.0;
+    constexpr gScalar b1 = 1;
+    constexpr gScalar b2 = 6.1697947043828245592553615689730;
+    constexpr gScalar b3 = -0.4277225654321857332623837380651;
 
-constexpr gScalar b1 = 19.0 / 9.0;
-constexpr gScalar b2 = 1.0 / 2.0;
-constexpr gScalar b3 = 25.0 / 108.0;
-constexpr gScalar b4 = 125.0 / 108.0;
+    constexpr gScalar e1 = 0.5;
+    constexpr gScalar e2 = -2.9079558716805469821718236208017;
+    constexpr gScalar e3 = 0.2235406989781156962736090927619;
 
-constexpr gScalar e1 = 34.0 / 108.0;
-constexpr gScalar e2 = 7.0 / 36.0;
-constexpr gScalar e3 = 0.0;
-constexpr gScalar e4 = 125.0 / 108.0;
+    constexpr gScalar gamma = 0.43586652150845899941601945119356;
+    constexpr gScalar c2 = 0.43586652150845899941601945119356;
 
-constexpr gScalar gamma = 1.0 / 2.0;
-constexpr gScalar c2    = 1.0;
-constexpr gScalar c3    = 3.0 / 5.0;
+    constexpr gScalar d1 = 0.43586652150845899941601945119356;
+    constexpr gScalar d2 = 0.24291996454816804366592249683314;
+    constexpr gScalar d3 = 2.1851380027664058511513169485832;
 
-constexpr gScalar d1 = 1.0 / 2.0;
-constexpr gScalar d2 = -3.0 / 2.0;
-constexpr gScalar d3 = 605.0 / 250.0;
-constexpr gScalar d4 = 29.0 / 250.0;
+
 } // namespace RosenbrockCoeffs
 
-struct gpuRosenbrock34Inputs {
+struct gpuRosenbrock23Inputs {
 
     gpuAdaptiveSolverInputs adaptiveInputs;
     gScalar                 absTol;
@@ -55,8 +46,8 @@ struct gpuRosenbrock34Inputs {
 };
 
 template <class System>
-class gpuRosenbrock34 : public gpuODESolver<gpuRosenbrock34<System>>, 
-public gpuAdaptiveSolver<gpuRosenbrock34<System>> {
+class gpuRosenbrock23 : public gpuODESolver<gpuRosenbrock23<System>>, 
+public gpuAdaptiveSolver<gpuRosenbrock23<System>> {
     // Private Data
 
     CUDA_HOSTDEV gLabel nEqns() const 
@@ -67,16 +58,16 @@ public gpuAdaptiveSolver<gpuRosenbrock34<System>> {
 
 public:
 
-    using myType = gpuRosenbrock34<System>;
+    using myType = gpuRosenbrock23<System>;
     using typename gpuODESolver<myType>::stepState;
 
     System odes_;
 
 
 
-    gpuRosenbrock34(const System& ode, const gpuRosenbrock34Inputs& i)
-        : gpuODESolver<gpuRosenbrock34<System>>(i.absTol, i.relTol, i.maxSteps)
-        , gpuAdaptiveSolver<gpuRosenbrock34<System>>(i.adaptiveInputs)
+    gpuRosenbrock23(const System& ode, const gpuRosenbrock23Inputs& i)
+        : gpuODESolver<gpuRosenbrock23<System>>(i.absTol, i.relTol, i.maxSteps)
+        , gpuAdaptiveSolver<gpuRosenbrock23<System>>(i.adaptiveInputs)
         , odes_(ode)
         {}
 
@@ -110,15 +101,15 @@ public:
                                TwoDSpan&     a,
                                gpuBuffer&    buffer) const {
 
-        using namespace Rosenbrock34Coeffs;
+        using namespace Rosenbrock23Coeffs;
 
+       
         auto dydx         = buffer.dydx();
         auto dfdx         = buffer.dfdx();
         auto pivotIndices = buffer.pivotIndices();
         auto k1           = buffer.k1();
         auto k2           = buffer.k2();
         auto k3           = buffer.k3();
-        auto k4           = buffer.k4();
         auto err          = buffer.err();
         auto lubuffer     = buffer.lubuffer();
 
@@ -127,7 +118,10 @@ public:
         const gScalar temp = gScalar(1.0) / (gamma * dx);
         // Negate the jacobian and add 1/(gamma*dx) to diagonal
         for (gLabel i = 0; i < nEqns(); i++) {
-            for (gLabel j = 0; j < nEqns(); j++) { a(i, j) = -a(i, j); }
+            for (gLabel j = 0; j < nEqns(); j++) 
+            {
+                a(i, j) = -a(i, j);
+            }
 
             a(i, i) += temp; // gScalar(1.0)/(gamma*dx);
         }
@@ -152,35 +146,25 @@ public:
 
         FoamGpu::LUBacksubstitute(a, pivotIndices, k2);
 
-        // Calculate k3:
-        for (gLabel i = 0; i < nEqns(); ++i) {
-            y[i] = y0[i] + a31 * k1[i] + a32 * k2[i];
-        }
-
-        odes_.derivatives(x0 + c3 * dx, y, li, dydx, buffer);
-
+        //Calculate k3:
         for (gLabel i = 0; i < nEqns(); ++i) {
             k3[i] =
                 dydx[i] + dx * d3 * dfdx[i] + (c31 * k1[i] + c32 * k2[i]) / dx;
         }
-
+        
         FoamGpu::LUBacksubstitute(a, pivotIndices, k3);
 
-        // Calculate k4:
-        for (gLabel i = 0; i < nEqns(); ++i) {
-            k4[i] = dydx[i] + dx * d4 * dfdx[i] +
-                    (c41 * k1[i] + c42 * k2[i] + c43 * k3[i]) / dx;
-        }
-
-        FoamGpu::LUBacksubstitute(a, pivotIndices, k4);
+       
 
         // Calculate error and update state:
         for (gLabel i = 0; i < nEqns(); ++i) {
-            y[i]   = y0[i] + b1 * k1[i] + b2 * k2[i] + b3 * k3[i] + b4 * k4[i];
-            err[i] = e1 * k1[i] + e2 * k2[i] + e4 * k4[i];
+            y[i] = y0[i] + b1*k1[i] + b2*k2[i] + b3*k3[i];
+            err[i] = e1*k1[i] + e2*k2[i] + e3*k3[i];
+            
         }
 
         return gpuODESolver<myType>::normaliseError(y0, y, err);
+        
     }
 };
 
