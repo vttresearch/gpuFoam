@@ -29,6 +29,7 @@ template <class Derived> struct gpuAdaptiveSolver {
         , maxScale_(i.maxScale) {}
 
 
+private:
 
     //- Solve a single step dx and return the error
     template <class Span1, class Span2, class Span3, class TwoDSpan>
@@ -47,12 +48,12 @@ template <class Derived> struct gpuAdaptiveSolver {
         );
 
     }
-
-
+    
+public:
 
     //- Solve the ODE system and the update the state
     template <class System, class Span, class TwoDSpan>
-    CUDA_HOSTDEV void adaptive_solve(const System& odes,
+    CUDA_HOSTDEV void adaptiveSolve(const System& odes,
                                      gScalar&      x,
                                      Span&         y,
                                      const gLabel  li,
