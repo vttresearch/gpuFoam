@@ -55,7 +55,8 @@ struct gpuRosenbrock34Inputs {
 };
 
 template <class System>
-class gpuRosenbrock34 : public gpuODESolver, public gpuAdaptiveSolver {
+class gpuRosenbrock34 : public gpuODESolver, 
+public gpuAdaptiveSolver<gpuRosenbrock34<System>> {
     // Private Data
 
 public:
@@ -67,13 +68,14 @@ public:
 
     gpuRosenbrock34(const System& ode, const gpuRosenbrock34Inputs& i)
         : gpuODESolver(i.absTol, i.relTol, i.maxSteps)
-        , gpuAdaptiveSolver(i.adaptiveInputs)
+        , gpuAdaptiveSolver<gpuRosenbrock34<System>>(i.adaptiveInputs)
         , odes_(ode)
         , n_(ode.nEqns())
         {}
 
     // Member Functions
 
+    
     //- Solve the ODE system from the current state xStart, y
     //  and the optional index into the list of systems to solve li
     //  to xEnd and return an estimate for the next step in dxTry
@@ -123,6 +125,7 @@ public:
             if (step.reject) { step.prevReject = true; }
         }
     }
+    
 
     template <class Span, class TwoDSpan>
     CUDA_HOSTDEV void solve(gScalar&     x,
@@ -132,63 +135,10 @@ public:
                             TwoDSpan&    a,
                             gpuBuffer&   buffer) const {
         gScalar x0 = x;
-        solve(x, y, li, step.dxTry, a, buffer);
+        this->adaptive_solve(odes_, x, y, li, step.dxTry, a, buffer);
         step.dxDid = x - x0;
     }
-
-    //- Solve the ODE system and the update the state
-    template <class Span, class TwoDSpan>
-    CUDA_HOSTDEV void solve(gScalar&     x,
-                            Span&        y,
-                            const gLabel li,
-                            gScalar&     dxTry,
-                            TwoDSpan&    a,
-                            gpuBuffer&   buffer) const {
-
-        auto dydx0 = buffer.dydx0();
-        auto yTemp = buffer.yTemp();
-
-        gScalar dx  = dxTry;
-        gScalar err = 0.0;
-
-        odes_.derivatives(x, y, li, dydx0, buffer);
-
-        // Loop over solver and adjust step-size as necessary
-        // to achieve desired error
-        do {
-            // Solve step and provide error estimate
-            err = solve(x, y, li, dydx0, dx, yTemp, a, buffer);
-
-            // If error is large reduce dx
-            if (err > 1) {
-                gScalar scale =
-                    std::max(safeScale_ * std::pow(err, -alphaDec_), minScale_);
-                dx *= scale;
-
-                if (dx < gpuVSmall) {
-                    printf("Small time step in ode. \n");
-                    assert(0);
-                }
-            }
-        } while (err > 1.0);
-
-        // Update the state
-        x += dx;
-
-        // y = yTemp;
-        for (gLabel i = 0; i < n_; ++i) { y[i] = yTemp[i]; }
-
-        // If the error is small increase the step-size
-        if (err > std::pow(maxScale_ / safeScale_, -1.0 / alphaInc_)) {
-            dxTry = std::min(std::max(safeScale_ * std::pow(err, -alphaInc_),
-                                      minScale_),
-                             maxScale_) *
-                    dx;
-        } else {
-            dxTry = safeScale_ * maxScale_ * dx;
-        }
-    }
-
+    
     //- Solve a single step dx and return the error
     template <class Span1, class Span2, class Span3, class TwoDSpan>
     CUDA_HOSTDEV gScalar solve(const gScalar x0,

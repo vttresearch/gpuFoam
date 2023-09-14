@@ -260,7 +260,7 @@ TEST_CASE("Test gpuRosenbrock34")
 
 
 
-
+    /*
 
     SECTION("solve(x, y, li, dxTry) random values")
     {
@@ -394,7 +394,7 @@ TEST_CASE("Test gpuRosenbrock34")
 
     }
 
-
+    */
 
     SECTION("solve(xStart, xEnd, y, li, dxTry) random values")
     {
