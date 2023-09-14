@@ -15,7 +15,6 @@ namespace FoamGpu {
 
 struct gpuODESystem {
 
-private:
     gLabel             nEqns_;
     gLabel             nReactions_;
     const gpuThermo*   thermos_;

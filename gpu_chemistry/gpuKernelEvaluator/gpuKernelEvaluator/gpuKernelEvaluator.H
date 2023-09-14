@@ -8,7 +8,8 @@
 
 #include "gpuReactionRate.H"
 
-#include "gpuODESolver.H"
+#include "gpuODESolverInputs.H"
+#include "gpuODESolverBase.H"
 #include "gpuODESystem.H"
 #include "gpuReaction.H"
 #include "gpuRosenbrock34.H"
@@ -35,8 +36,8 @@ public:
     GpuKernelEvaluator(gLabel                         nEqns,
                        gLabel                         nSpecie,
                        const std::vector<gpuThermo>&  thermos,
-                       const std::vector<gpuReaction> reactions,
-                       gpuRosenbrock34Inputs          odeInputs)
+                       const std::vector<gpuReaction>& reactions,
+                       gpuODESolverInputs          odeInputs)
         : nEqns_(nEqns)
         , nSpecie_(nSpecie)
         , hThermos_(thermos)
@@ -63,7 +64,7 @@ private:
 
     std::vector<gpuThermo>   hThermos_;
     std::vector<gpuReaction> hReactions_;
-    gpuRosenbrock34Inputs    odeInputs_;
+    gpuODESolverInputs    odeInputs_;
 };
 
 } // namespace FoamGpu

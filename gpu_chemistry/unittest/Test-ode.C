@@ -3,8 +3,8 @@
 #include "test_utilities.H"
 #include "mock_of_odesystem.H"
 #include "gpuODESystem.H"
-#include "gpuRosenbrock23.H"
-#include "gpuRosenbrock34.H"
+#include "make_ode_solver.H"
+#include "read_ode_solver_inputs.H"
 #include "Rosenbrock34.H"
 #include "Rosenbrock23.H"
 #include "mdspan.H"
@@ -103,6 +103,9 @@ TEST_CASE("Test gpuRosenbrock23")
 
     Foam::MockOFSystem cpu_system;
 
+    
+
+    
     auto gpu_thermos_temp = make_gpu_thermos();
     auto gpu_reactions_temp = make_gpu_reactions();
 
@@ -118,15 +121,17 @@ TEST_CASE("Test gpuRosenbrock23")
         get_raw_pointer(gpu_thermos),
         get_raw_pointer(gpu_reactions)
     );
+    
 
     gLabel nSpecie = make_species_table().size();
     gLabel nEqns = cpu_system.nEqns();
 
 
-    Foam::dictionary nulldict;
-    Foam::Rosenbrock23 cpu(cpu_system, nulldict);
-    gpuRosenbrock23<gpuODESystem> gpu = make_Rosenbrock23(gpu_system, nulldict);
-
+    Foam::dictionary dict;
+    dict.add("solver", "Rosenbrock23");
+    Foam::Rosenbrock23 cpu(cpu_system, dict);
+    gpuRosenbrock23<gpuODESystem> gpu(gpu_system, read_gpuODESolverInputs(dict));
+    
 
 
     SECTION("solve(x0, y0, li, dydx0, dx, y) random values")
@@ -432,12 +437,11 @@ TEST_CASE("Test gpuRosenbrock34")
     gLabel nSpecie = make_species_table().size();
     gLabel nEqns = cpu_system.nEqns();
 
-
-    Foam::dictionary nulldict;
-    Foam::Rosenbrock34 cpu(cpu_system, nulldict);
-    gpuRosenbrock34<gpuODESystem> gpu = make_Rosenbrock34(gpu_system, nulldict);
-
-
+    Foam::dictionary dict;
+    dict.add("solver", "Rosenbrock34");
+    Foam::Rosenbrock34 cpu(cpu_system, dict);
+    gpuRosenbrock34<gpuODESystem> gpu(gpu_system, read_gpuODESolverInputs(dict));
+    
 
     SECTION("solve(x0, y0, li, dydx0, dx, y) random values")
     {

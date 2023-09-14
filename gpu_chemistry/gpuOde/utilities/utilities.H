@@ -3,11 +3,13 @@
 #include <map>
 #include <vector>
 
+#include "host_device_vectors.H"
 #include "gpuODESystem.H"
 #include "gpuReaction.H"
 #include "gpuRosenbrock34.H"
 #include "gpuRosenbrock23.H"
 #include "gpuThermo.H"
+#include "gpuODESolver.H"
 
 #include "ReactionList.H"
 #include "dictionary.H"
@@ -175,63 +177,11 @@ make_gpu_reactions(const Foam::speciesTable&             species,
     return ret;
 }
 
-static inline gpuAdaptiveSolverInputs
-read_adaptiveSolver_inputs(const Foam::dictionary& dict)
-{
-    gpuAdaptiveSolverInputs i;
-    i.safeScale = dict.lookupOrDefault<Foam::scalar>("safeScale", 0.9);
-    i.alphaInc  = dict.lookupOrDefault<Foam::scalar>("alphaIncrease", 0.2);
-    i.alphaDec  = dict.lookupOrDefault<Foam::scalar>("alphaDecrease", 0.25);
-    i.minScale  = dict.lookupOrDefault<Foam::scalar>("minScale", 0.2);
-    i.maxScale  = dict.lookupOrDefault<Foam::scalar>("maxScale", 10);
-    return i;
-}
-
-static inline gpuRosenbrock34Inputs
-read_Rosenbrock34_inputs(const Foam::dictionary& dict) {
 
 
-    gpuRosenbrock34Inputs i;
-    i.adaptiveInputs = read_adaptiveSolver_inputs(dict);
-
-    // gScalar small = std::numeric_limits<gScalar>::epsilon();
-
-    i.absTol = dict.lookupOrDefault<Foam::scalar>("absTol", gpuSmall);
-    // i.absTol = dict.lookupOrDefault<gScalar>("absTol", small);
-    i.relTol    = dict.lookupOrDefault<Foam::scalar>("relTol", 1e-4);
-    i.maxSteps  = dict.lookupOrDefault<Foam::label>("maxSteps", 10000);
-
-    return i;
-}
-
-static inline gpuRosenbrock23Inputs
-read_Rosenbrock23_inputs(const Foam::dictionary& dict) {
 
 
-    gpuRosenbrock23Inputs i;
-    i.adaptiveInputs = read_adaptiveSolver_inputs(dict);
-
-    // gScalar small = std::numeric_limits<gScalar>::epsilon();
-
-    i.absTol = dict.lookupOrDefault<Foam::scalar>("absTol", gpuSmall);
-    // i.absTol = dict.lookupOrDefault<gScalar>("absTol", small);
-    i.relTol    = dict.lookupOrDefault<Foam::scalar>("relTol", 1e-4);
-    i.maxSteps  = dict.lookupOrDefault<Foam::label>("maxSteps", 10000);
-
-    return i;
-}
 
 
-static inline gpuRosenbrock34<gpuODESystem>
-make_Rosenbrock34(const gpuODESystem& ode, const Foam::dictionary& dict) {
-
-    return gpuRosenbrock34<gpuODESystem>(ode, read_Rosenbrock34_inputs(dict));
-}
-
-static inline gpuRosenbrock23<gpuODESystem>
-make_Rosenbrock23(const gpuODESystem& ode, const Foam::dictionary& dict) {
-
-    return gpuRosenbrock23<gpuODESystem>(ode, read_Rosenbrock23_inputs(dict));
-}
 
 } // namespace FoamGpu

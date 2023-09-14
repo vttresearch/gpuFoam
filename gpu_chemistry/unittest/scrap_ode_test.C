@@ -36,7 +36,7 @@ Description
 #include "ODESystem.H"
 #include "ODESolver.H"
 #include "gpuODESystem.H"
-#include "gpuODESolver.H"
+#include "gpuODESolverBase.H"
 #include "gpuSeulex.H"
 #include "gpuRosenbrock34.H"
 #include "mdspan.H"
@@ -522,7 +522,7 @@ TEST_CASE("Compare seulex cpu/gpu ODE")
 
 
     autoPtr<ODESolver> cpuSolver = ODESolver::New(cpu_ode_system, cpu_dict);
-    //autoPtr<gpuODESolver> gpuSolver = gpuODESolver::New(gpu_ode_system, gpu_dict);
+    //autoPtr<gpuODESolverBase> gpuSolver = gpuODESolverBase::New(gpu_ode_system, gpu_dict);
 
 
     autoPtr<gpuSeulex<testGpuODESystem>> gpuSolver
@@ -583,7 +583,7 @@ TEST_CASE("Compare Rosenbrock34 cpu/gpu ODE")
 
 
     autoPtr<ODESolver> cpuSolver = ODESolver::New(cpu_ode_system, cpu_dict);
-    //autoPtr<gpuODESolver> gpuSolver = gpuODESolver::New(gpu_ode_system, gpu_dict);
+    //autoPtr<gpuODESolverBase> gpuSolver = gpuODESolverBase::New(gpu_ode_system, gpu_dict);
 
 
     autoPtr<gpuRosenbrock34<testGpuODESystem>> gpuSolver
@@ -647,7 +647,7 @@ TEST_CASE("Compare RKF45 cpu/gpu ODE")
 
 
     autoPtr<ODESolver> cpuSolver = ODESolver::New(cpu_ode_system, cpu_dict);
-    autoPtr<gpuODESolver> gpuSolver = gpuODESolver::New(gpu_ode_system, gpu_dict);
+    autoPtr<gpuODESolverBase> gpuSolver = gpuODESolverBase::New(gpu_ode_system, gpu_dict);
 
     //Ensure that the systems are the same
     CHECK(cpuSolver->nEqns() == gpuSolver->nEqns());

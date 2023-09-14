@@ -20,6 +20,7 @@
 #include "ArrheniusReactionRate.H"
 #include "ReversibleReaction.H"
 #include "utilities.H"
+#include "host_device_vectors.H"
 
 constexpr int CH4_idx = 0;
 constexpr int O2_idx = 4;
@@ -43,20 +44,7 @@ constexpr double errorTol = 1E-7;
 constexpr double errorTol = 1E-10;
 #endif
 
-
-
-
 #ifdef __NVIDIA_COMPILER__
-
-
-#include "thrust/device_vector.h"
-#include "thrust/host_vector.h"
-
-template<class T>
-using host_vector = thrust::host_vector<T>;
-
-template<class T>
-using device_vector = thrust::device_vector<T>;
 
 
 template<class T, class R>
@@ -86,12 +74,6 @@ static inline Foam::scalar eval(T t)
 }
 
 #else
-
-template<class T>
-using host_vector = std::vector<T>;
-
-template<class T>
-using device_vector = std::vector<T>;
 
 template<class T>
 static inline Foam::scalar eval(T t)

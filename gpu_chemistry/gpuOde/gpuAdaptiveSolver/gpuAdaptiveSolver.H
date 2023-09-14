@@ -3,16 +3,13 @@
 #include "cuda_host_dev.H"
 #include "gpuConstants.H"
 #include "gpuODESystem.H"
+#include "gpuODESolverInputs.H"
+
+
 
 namespace FoamGpu {
 
-struct gpuAdaptiveSolverInputs {
-    gScalar safeScale;
-    gScalar alphaInc;
-    gScalar alphaDec;
-    gScalar minScale;
-    gScalar maxScale;
-};
+
 
 template <class Derived> struct gpuAdaptiveSolver {
 
@@ -21,7 +18,7 @@ template <class Derived> struct gpuAdaptiveSolver {
 
     gpuAdaptiveSolver() = default;
 
-    gpuAdaptiveSolver(gpuAdaptiveSolverInputs i)
+    gpuAdaptiveSolver(const gpuODESolverInputs& i)
         : safeScale_(i.safeScale)
         , alphaInc_(i.alphaInc)
         , alphaDec_(i.alphaDec)

@@ -4,7 +4,7 @@
 #include "gpuAdaptiveSolver.H"
 #include "gpuBuffer.H"
 #include "gpuConstants.H"
-#include "gpuODESolver.H"
+#include "gpuODESolverBase.H"
 #include "ludecompose.H"
 
 namespace FoamGpu {
@@ -46,16 +46,10 @@ constexpr gScalar d3 = 605.0 / 250.0;
 constexpr gScalar d4 = 29.0 / 250.0;
 } // namespace RosenbrockCoeffs
 
-struct gpuRosenbrock34Inputs {
 
-    gpuAdaptiveSolverInputs adaptiveInputs;
-    gScalar                 absTol;
-    gScalar                 relTol;
-    gLabel                  maxSteps;
-};
 
 template <class System>
-class gpuRosenbrock34 : public gpuODESolver<gpuRosenbrock34<System>>, 
+class gpuRosenbrock34 : public gpuODESolverBase<gpuRosenbrock34<System>>, 
 public gpuAdaptiveSolver<gpuRosenbrock34<System>> {
     // Private Data
 
@@ -68,15 +62,15 @@ public gpuAdaptiveSolver<gpuRosenbrock34<System>> {
 public:
 
     using myType = gpuRosenbrock34<System>;
-    using typename gpuODESolver<myType>::stepState;
+    using typename gpuODESolverBase<myType>::stepState;
 
     System odes_;
 
 
 
-    gpuRosenbrock34(const System& ode, const gpuRosenbrock34Inputs& i)
-        : gpuODESolver<gpuRosenbrock34<System>>(i.absTol, i.relTol, i.maxSteps)
-        , gpuAdaptiveSolver<gpuRosenbrock34<System>>(i.adaptiveInputs)
+    gpuRosenbrock34(const System& ode, const gpuODESolverInputs& i)
+        : gpuODESolverBase<gpuRosenbrock34<System>>(i)
+        , gpuAdaptiveSolver<gpuRosenbrock34<System>>(i)
         , odes_(ode)
         {}
 
@@ -84,7 +78,7 @@ public:
 
     
 
-    using gpuODESolver<myType>::solve;
+    using gpuODESolverBase<myType>::solve;
     
 
     template <class Span, class TwoDSpan>
@@ -180,7 +174,7 @@ public:
             err[i] = e1 * k1[i] + e2 * k2[i] + e4 * k4[i];
         }
 
-        return gpuODESolver<myType>::normaliseError(y0, y, err);
+        return gpuODESolverBase<myType>::normaliseError(y0, y, err);
     }
 };
 

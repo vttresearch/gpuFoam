@@ -70,7 +70,7 @@ FoamGpu::GpuKernelEvaluator gpuChemistryModel<ThermoType>::makeEvaluator(
         nSpecie,
         gpu_thermos,
         gpu_reactions,
-        FoamGpu::read_Rosenbrock34_inputs(
+        FoamGpu::read_gpuODESolverInputs(
             chemistryProperties.subDict("odeCoeffs")));
 }
 

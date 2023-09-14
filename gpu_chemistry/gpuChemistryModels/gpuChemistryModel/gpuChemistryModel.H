@@ -11,6 +11,7 @@
 #include "gpuODESystem.H"
 #include "gpuReaction.H"
 #include "gpuRosenbrock34.H"
+#include "read_ode_solver_inputs.H"
 #include "gpuThermo.H"
 #include "janafThermo.H"
 #include "multicomponentMixture.H"
