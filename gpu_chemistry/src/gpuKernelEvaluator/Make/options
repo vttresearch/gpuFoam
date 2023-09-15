@@ -9,5 +9,5 @@ EXE_INC = \
 #LIB_LIBS = -lcudart_static -lcudart
 LIB_LIBS += -L$(CUDA_LIBS) -lcudart
 
-#include ../nvcc
-include ../../nvcpp
+include ../../nvcc
+#include ../../nvcpp

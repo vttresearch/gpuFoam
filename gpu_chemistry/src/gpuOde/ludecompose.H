@@ -2,6 +2,7 @@
 
 #include "cuda_host_dev.H"
 #include "gpu_constants.H"
+#include "swap.H"
 
 namespace FoamGpu {
 
@@ -58,7 +59,7 @@ LUDecompose(TwoDSpan& matrix, OneDSpan1& pivotIndices, OneDSpan2& vv) {
         if (j != iMax) {
 
             for (gLabel k = 0; k < m; k++) {
-                std::swap(matrix(j, k), matrix(iMax, k));
+                swap(matrix(j, k), matrix(iMax, k));
             }
 
             // sign *= -1;
