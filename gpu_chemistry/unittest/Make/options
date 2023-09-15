@@ -1,6 +1,7 @@
 EXE_INC = \
     -I../catchMain/lnInclude \
     -I../src/lnInclude \
+    -I../src/gpuChemistryModels/lnInclude \
     -I../../gpu_utils/common/lnInclude \
     -I$(LIB_SRC)/physicalProperties/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/multicomponentThermo/lnInclude \
