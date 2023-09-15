@@ -42,13 +42,13 @@ jobs:
 
     #OpenFOAM-dev (Foundation set-up)
     - name: Set up OpenFOAM-dev
-      steps:
-        run: sudo sh -c "wget -O - https://dl.openfoam.org/gpg.key > /etc/apt/trusted.gpg.d/openfoam.asc"
-        run: sudo add-apt-repository http://dl.openfoam.org/ubuntu
-        run: sudo add-apt-repository "http://dl.openfoam.org/ubuntu dev"
-        run: sudo apt-get update
-        run: sudo apt-get -y install openfoam-dev
-        run: . /opt/openfoam-dev/etc/bashrc
+      run: |
+        sudo sh -c "wget -O - https://dl.openfoam.org/gpg.key > /etc/apt/trusted.gpg.d/openfoam.asc"
+        sudo add-apt-repository http://dl.openfoam.org/ubuntu
+        sudo add-apt-repository "http://dl.openfoam.org/ubuntu dev"
+        sudo apt-get update
+        sudo apt-get -y install openfoam-dev
+        . /opt/openfoam-dev/etc/bashrc
 
 
 
