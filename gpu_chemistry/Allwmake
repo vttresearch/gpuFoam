@@ -14,12 +14,11 @@ export CUDA_ROOT=$NVHPC_ROOT/cuda
 export CUDA_HEADERS=$CUDA_ROOT/include
 export CUDA_LIBS=$CUDA_ROOT/lib64
 
-
-wmake -all gpuOde
-wmake -all gpuKernelEvaluator
-wmake -all gpuChemistryModels
-wmake -all catchMain
-wmake -all unittest
-#wmake -all benchmark
+wmakeLnInclude src
+wmake src/gpuKernelEvaluator
+wmake src/gpuChemistryModels
+wmake catchMain
+wmake unittest
+#wmake benchmark
 
 # ----------------------------------------------------------------- end-of-file

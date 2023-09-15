@@ -1,8 +1,4 @@
 EXE_INC = \
-    -I../catchMain/lnInclude \
-    -I../src/lnInclude \
-    -I../../gpu_utils/common/lnInclude \
-    -I../unittest \
     -I$(LIB_SRC)/physicalProperties/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/multicomponentThermo/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/basic/lnInclude \
@@ -13,22 +9,20 @@ EXE_INC = \
     -I$(LIB_SRC)/finiteVolume/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/chemistryModel/lnInclude \
-    -std=c++17
+    -I../lnInclude \
+    -I../../../gpu_utils/common/lnInclude \
+    -I../gpuKernelEvaluator/lnInclude \
+    -std=c++17 \
+    #-ftree-vectorize -fopt-info-vec-missed
 
-EXE_LIBS = \
-    -lCatchMain \
-    -lmeshTools \
-    -lthermophysicalProperties \
-    -lODE \
-    -lOpenFOAM \
-    -lspecie \
-    -lfluidThermoThermophysicalTransportModels \
+
+LIB_LIBS = \
+    -L$(FOAM_USER_LIBBIN) \
     -lfluidThermophysicalModels \
     -lmulticomponentThermophysicalModels \
+    -lspecie \
+    -lODE \
     -lfiniteVolume \
+    -lmeshTools \
     -lchemistryModel \
-    -lblockMesh
-
-
-
-include ../nvcpp
+    -lGpuKernelEvaluator

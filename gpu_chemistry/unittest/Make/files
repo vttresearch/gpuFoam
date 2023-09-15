@@ -6,5 +6,5 @@ Test-ode.C
 #Test-scalarSquareMatrix.C
 #Test-mdspan.C
 
-EXE = $(FOAM_USER_APPBIN)/testGpuUtils
+EXE = $(FOAM_USER_APPBIN)/testGpuChemistry
 

@@ -4,14 +4,19 @@
 #include <array>
 #include "error_handling.H"
 
+#include "host_device_vectors.H"
+#include "gpuThermo.H"
+#include "gpuReaction.H"
+#include "gpuPerfectGas.H"
+#include "makeGpuThermo.H"
+#include "makeGpuReactions.H"
+
 #include "FixedList.H"
 #include "IOmanip.H"
 #include "janafThermo.H"
 #include "specie.H"
 #include "perfectGas.H"
-#include "gpuThermo.H"
-#include "gpuReaction.H"
-#include "gpuPerfectGas.H"
+
 #include "thermo.H"
 #include "sensibleEnthalpy.H"
 #include "speciesTable.H"
@@ -19,8 +24,8 @@
 #include "sutherlandTransport.H"
 #include "ArrheniusReactionRate.H"
 #include "ReversibleReaction.H"
-#include "utilities.H"
-#include "host_device_vectors.H"
+
+
 
 constexpr int CH4_idx = 0;
 constexpr int O2_idx = 4;

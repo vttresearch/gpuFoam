@@ -1,5 +1,0 @@
-EXE_INC = \
-    -I./topaz/include \
-    -I$(LIB_SRC)/finiteVolume/lnInclude
-
-LIB_LIBS =
