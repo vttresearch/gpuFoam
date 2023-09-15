@@ -1,0 +1,72 @@
+name: CMake
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
+    # You can convert this to a matrix build if you need cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: ubuntu-22.04
+    #runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    #GCC Set-up
+    - name: Set up GCC
+      uses: egor-tensin/setup-gcc@v1
+      with:
+        version: 12
+        platform: x64
+
+    #Clang Set-up
+    #- name: Set up Clang
+    #  uses: egor-tensin/setup-clang@v1
+    #  with:
+    #    version: 12
+    #    platform: x64
+
+
+    #Mpi set-up
+    - name: Set up MPI
+      run: sudo apt-get install libopenmpi-dev
+
+    #OpenFOAM-dev (Foundation set-up)
+    - name: Set up OpenFOAM-dev
+      run: sudo sh -c "wget -O - https://dl.openfoam.org/gpg.key > /etc/apt/trusted.gpg.d/openfoam.asc"
+      run: sudo add-apt-repository http://dl.openfoam.org/ubuntu
+      run: sudo add-apt-repository "http://dl.openfoam.org/ubuntu dev"
+      run: sudo apt-get update
+      run: sudo apt-get -y install openfoam-dev
+      run: . /opt/openfoam-dev/etc/bashrc
+
+
+
+    #- name: Configure CMake
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+    #  run: cmake -B ${{github.workspace}}/build -D CMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -D BUILD_TESTS=Yes -D BUILD_BENCHMARKS=No
+
+    #- name: Build
+      # Build your program with the given configuration
+    #  run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+    #- name: Test
+    #  working-directory: ${{github.workspace}}/build
+      # Execute tests defined by the CMake configuration.
+      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+    #  run: ctest -V ${{env.BUILD_TYPE}}
+
+    #- name: Output compile commands
+    #  working-directory: ${{github.workspace}}/build
+    #  run: more compile_commands.json
+
