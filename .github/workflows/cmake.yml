@@ -28,12 +28,6 @@ jobs:
         version: 12
         platform: x64
 
-    #Clang Set-up
-    #- name: Set up Clang
-    #  uses: egor-tensin/setup-clang@v1
-    #  with:
-    #    version: 12
-    #    platform: x64
 
 
     #Mpi set-up
@@ -44,8 +38,9 @@ jobs:
     #Nvhpc-sdk set-up
     - name: Set up nvhpc
       run: |
-        apt-cache search nvhpc
-        sudo apt-get install nvhpc
+        nvc++ --version
+#apt-cache search nvhpc
+#sudo apt-get install nvhpc
 
     #OpenFOAM-dev (Foundation set-up)
     - name: Set up OpenFOAM-dev
