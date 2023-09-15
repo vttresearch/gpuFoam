@@ -206,7 +206,7 @@ TEST_CASE("Test gpuReaction with gri")
     using namespace FoamGpu;
 
     auto cpu_reactions = make_cpu_reactions();
-    auto gpu_reactions_temp = make_gpu_reactions();
+    auto gpu_reactions_temp = makeGpuReactions();
 
 
 

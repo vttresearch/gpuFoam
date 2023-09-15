@@ -37,8 +37,8 @@ TEST_CASE("Test gpuOdeSystem")
 
     Foam::MockOFSystem cpu;
 
-    auto gpu_thermos_temp = make_gpu_thermos();
-    auto gpu_reactions_temp = make_gpu_reactions();
+    auto gpu_thermos_temp = makeGpuThermos();
+    auto gpu_reactions_temp = makeGpuReactions();
 
 
     auto gpu_thermos = device_vector<gpuThermo>(gpu_thermos_temp.begin(), gpu_thermos_temp.end());

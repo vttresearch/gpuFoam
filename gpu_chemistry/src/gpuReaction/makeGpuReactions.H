@@ -75,7 +75,7 @@ static inline auto make_specie_coeffs(const Foam::List<Foam::specieCoeffs>& l) {
 
 template <class ThermoType>
 static std::vector<gpuReaction>
-make_gpu_reactions(const Foam::speciesTable&             species,
+makeGpuReactions(const Foam::speciesTable&             species,
                    const Foam::dictionary&               dict,
                    const std::vector<gpuThermo>&         gpu_thermos,
                    const Foam::ReactionList<ThermoType>& cpu_reactions) {

@@ -213,7 +213,7 @@ static inline Foam::speciesTable make_species_table(){
 
 
 
-static inline std::vector<gpuThermo> make_gpu_thermos()
+static inline std::vector<gpuThermo> makeGpuThermos()
 {
     using namespace Foam;
 
@@ -225,7 +225,7 @@ static inline std::vector<gpuThermo> make_gpu_thermos()
     {
         auto subDict = thermoDict.subDict(cpuThermos[i].name());
 
-        auto gpuThermo = make_gpu_thermo
+        auto gpuThermo = makeGpuThermo
         (
             cpuThermos[i],
             subDict
@@ -248,7 +248,7 @@ static inline const auto make_cpu_reactions()
 
 }
 
-static inline std::vector<gpuReaction> make_gpu_reactions()
+static inline std::vector<gpuReaction> makeGpuReactions()
 {
     using namespace Foam;
 
@@ -258,10 +258,10 @@ static inline std::vector<gpuReaction> make_gpu_reactions()
     speciesTable species(s_list);
     dictionary reactionDict = get_reaction_dict();
 
-    auto gpu_thermos = make_gpu_thermos();
+    auto gpu_thermos = makeGpuThermos();
     auto cpu_reactions = make_cpu_reactions();
     auto ret =
-        make_gpu_reactions
+        makeGpuReactions
         (
             species,
             reactionDict,

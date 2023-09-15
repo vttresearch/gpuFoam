@@ -19,12 +19,12 @@ TEST_CASE("gpuReaction::dNdtByV")
 
     Foam::MockOFSystem cpu;
 
-    auto gpu_reactions_temp = make_gpu_reactions();
+    auto gpu_reactions_temp = makeGpuReactions();
     auto gpu_reactions = device_vector<gpuReaction>(gpu_reactions_temp.begin(), gpu_reactions_temp.end());
 
     auto cpu_reactions = make_cpu_reactions();
 
-    
+
     gLabel nSpecie = make_species_table().size();
 
     Foam::scalarField c_cpu(nSpecie);
@@ -49,7 +49,7 @@ TEST_CASE("gpuReaction::dNdtByV")
 
     };
 
-    auto f_gpu = 
+    auto f_gpu =
     [   =,
         reactions = make_mdspan(gpu_reactions, extents<1>{gpu_reactions.size()}),
         c = make_mdspan(c_gpu, extents<1>{nSpecie}),
@@ -85,14 +85,14 @@ TEST_CASE("gpuReaction::ddNdtByVdcTp")
 
     Foam::MockOFSystem cpu;
 
-    auto gpu_reactions_temp = make_gpu_reactions();
+    auto gpu_reactions_temp = makeGpuReactions();
     auto gpu_reactions = device_vector<gpuReaction>(gpu_reactions_temp.begin(), gpu_reactions_temp.end());
 
     auto cpu_reactions = make_cpu_reactions();
 
-    
+
     gLabel nSpecie = make_species_table().size();
-    
+
 
     Foam::scalarField c_cpu(nSpecie);
     fill_random(c_cpu);
@@ -109,7 +109,7 @@ TEST_CASE("gpuReaction::ddNdtByVdcTp")
     const gScalar p = 1E5;
     const gScalar T = 350;
 
-        
+
     auto f_cpu = [&](){
         gScalar sum = 0.0;
         for (gLabel i = 0; i < cpu_reactions.size(); ++i)
@@ -117,8 +117,8 @@ TEST_CASE("gpuReaction::ddNdtByVdcTp")
             cpu_reactions[i].ddNdtByVdcTp
             (
                 p, T, c_cpu, 0, dNdtByV_cpu, ret_cpu,
-                false, 
-                Foam::List<Foam::label>{}, 
+                false,
+                Foam::List<Foam::label>{},
                 0,
                 nSpecie,
                 work1_cpu,
@@ -129,8 +129,8 @@ TEST_CASE("gpuReaction::ddNdtByVdcTp")
         return sum;
 
     };
-    
-    auto f_gpu = 
+
+    auto f_gpu =
     [   =,
         reactions = make_mdspan(gpu_reactions, extents<1>{gpu_reactions.size()}),
         c = make_mdspan(c_gpu, extents<1>{nSpecie}),
@@ -140,7 +140,7 @@ TEST_CASE("gpuReaction::ddNdtByVdcTp")
         ret = make_mdspan(ret_gpu, extents<2>{nSpecie+2, nSpecie+2})
     ]()
     {
-        
+
         gScalar sum = 0.0;
         for (size_t i = 0; i < reactions.size(); ++i)
         {
@@ -157,17 +157,17 @@ TEST_CASE("gpuReaction::ddNdtByVdcTp")
         }
         return sum;
     };
-    
+
     BENCHMARK("CPU ddNdtByVdcTp")
     {
         return f_cpu();
     };
-    
+
     BENCHMARK("GPU ddNdtByVdcTp")
     {
         return eval(f_gpu);
     };
-    
+
 
 }
 
@@ -179,8 +179,8 @@ TEST_CASE("gpuODESystem::derivatives")
 
     Foam::MockOFSystem cpu;
 
-    auto gpu_thermos_temp = make_gpu_thermos();
-    auto gpu_reactions_temp = make_gpu_reactions();
+    auto gpu_thermos_temp = makeGpuThermos();
+    auto gpu_reactions_temp = makeGpuReactions();
 
 
     auto gpu_thermos = device_vector<gpuThermo>(gpu_thermos_temp.begin(), gpu_thermos_temp.end());
@@ -261,8 +261,8 @@ TEST_CASE("gpuODESystem::Jacobian")
 
     Foam::MockOFSystem cpu;
 
-    auto gpu_thermos_temp = make_gpu_thermos();
-    auto gpu_reactions_temp = make_gpu_reactions();
+    auto gpu_thermos_temp = makeGpuThermos();
+    auto gpu_reactions_temp = makeGpuReactions();
 
 
     auto gpu_thermos = device_vector<gpuThermo>(gpu_thermos_temp.begin(), gpu_thermos_temp.end());
@@ -354,8 +354,8 @@ TEST_CASE("gpuRosenBrock::solve() single cell")
 
     Foam::MockOFSystem cpu_system;
 
-    auto gpu_thermos_temp = make_gpu_thermos();
-    auto gpu_reactions_temp = make_gpu_reactions();
+    auto gpu_thermos_temp = makeGpuThermos();
+    auto gpu_reactions_temp = makeGpuReactions();
 
 
     auto gpu_thermos = device_vector<gpuThermo>(gpu_thermos_temp.begin(), gpu_thermos_temp.end());

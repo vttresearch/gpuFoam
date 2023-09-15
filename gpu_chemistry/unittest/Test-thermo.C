@@ -63,7 +63,7 @@ TEST_CASE("Test gpuThermo"){
         dict
     );
 
-    const gpuThermo gpu = make_gpu_thermo(cpu, dict);
+    const gpuThermo gpu = makeGpuThermo(cpu, dict);
 
 
     CHECK(toArray(cpu.highCpCoeffs())  == toArray(gpu.highCpCoeffs()));
@@ -140,7 +140,7 @@ TEST_CASE("Test gpuThermo with gri")
     using namespace FoamGpu;
 
     auto cpuThermos = make_cpu_thermos();
-    auto gpuThermos_temp = make_gpu_thermos();
+    auto gpuThermos_temp = makeGpuThermos();
     device_vector<gpuThermo> gpuThermos(gpuThermos_temp.begin(), gpuThermos_temp.end());
     CHECK(cpuThermos.size() == gLabel(gpuThermos.size()));
 

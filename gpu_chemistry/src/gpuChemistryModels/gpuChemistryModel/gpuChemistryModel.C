@@ -61,8 +61,8 @@ FoamGpu::GpuKernelEvaluator gpuChemistryModel<ThermoType>::makeEvaluator(
     const multicomponentMixture<ThermoType>& mixture) {
 
     auto gpu_thermos =
-        FoamGpu::make_gpu_thermos(mixture.specieThermos(), physicalProperties);
-    auto gpu_reactions = FoamGpu::make_gpu_reactions(
+        FoamGpu::makeGpuThermos(mixture.specieThermos(), physicalProperties);
+    auto gpu_reactions = FoamGpu::makeGpuReactions(
         mixture.specieNames(), chemistryProperties, gpu_thermos, reactions);
 
     return FoamGpu::GpuKernelEvaluator(

@@ -16,7 +16,7 @@
 namespace FoamGpu {
 
 template <class ThermoType>
-static inline gpuThermo make_gpu_thermo(const ThermoType&       cputhermo,
+static inline gpuThermo makeGpuThermo(const ThermoType&       cputhermo,
                                         const Foam::dictionary& thermoDict) {
 
     gScalar W = cputhermo.W();
@@ -49,14 +49,14 @@ static inline gpuThermo make_gpu_thermo(const ThermoType&       cputhermo,
 
 template <class ThermoType>
 static inline std::vector<gpuThermo>
-make_gpu_thermos(const Foam::PtrList<ThermoType>& cpuThermos,
+makeGpuThermos(const Foam::PtrList<ThermoType>& cpuThermos,
                  const Foam::dictionary&          physicalProperties) {
     std::vector<gpuThermo> gpuThermos;
 
     for (const auto& t : cpuThermos) {
         const auto& specieName = t.name();
         const auto  subDict    = physicalProperties.subDict(specieName);
-        gpuThermo   gpu        = make_gpu_thermo(t, subDict);
+        gpuThermo   gpu        = makeGpuThermo(t, subDict);
         // gpuThermo gpu(t.Y(), t.W(), physicalProperties.subDict(specieName));
         gpuThermos.push_back(gpu);
     }

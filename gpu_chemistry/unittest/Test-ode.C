@@ -103,11 +103,11 @@ TEST_CASE("Test gpuRosenbrock23")
 
     Foam::MockOFSystem cpu_system;
 
-    
 
-    
-    auto gpu_thermos_temp = make_gpu_thermos();
-    auto gpu_reactions_temp = make_gpu_reactions();
+
+
+    auto gpu_thermos_temp = makeGpuThermos();
+    auto gpu_reactions_temp = makeGpuReactions();
 
 
     auto gpu_thermos = device_vector<gpuThermo>(gpu_thermos_temp.begin(), gpu_thermos_temp.end());
@@ -121,7 +121,7 @@ TEST_CASE("Test gpuRosenbrock23")
         get_raw_pointer(gpu_thermos),
         get_raw_pointer(gpu_reactions)
     );
-    
+
 
     gLabel nSpecie = make_species_table().size();
     gLabel nEqns = cpu_system.nEqns();
@@ -131,7 +131,7 @@ TEST_CASE("Test gpuRosenbrock23")
     dict.add("solver", "Rosenbrock23");
     Foam::Rosenbrock23 cpu(cpu_system, dict);
     gpuRosenbrock23<gpuODESystem> gpu(gpu_system, read_gpuODESolverInputs(dict));
-    
+
 
 
     SECTION("solve(x0, y0, li, dydx0, dx, y) random values")
@@ -418,8 +418,8 @@ TEST_CASE("Test gpuRosenbrock34")
 
     Foam::MockOFSystem cpu_system;
 
-    auto gpu_thermos_temp = make_gpu_thermos();
-    auto gpu_reactions_temp = make_gpu_reactions();
+    auto gpu_thermos_temp = makeGpuThermos();
+    auto gpu_reactions_temp = makeGpuReactions();
 
 
     auto gpu_thermos = device_vector<gpuThermo>(gpu_thermos_temp.begin(), gpu_thermos_temp.end());
@@ -441,7 +441,7 @@ TEST_CASE("Test gpuRosenbrock34")
     dict.add("solver", "Rosenbrock34");
     Foam::Rosenbrock34 cpu(cpu_system, dict);
     gpuRosenbrock34<gpuODESystem> gpu(gpu_system, read_gpuODESolverInputs(dict));
-    
+
 
     SECTION("solve(x0, y0, li, dydx0, dx, y) random values")
     {
