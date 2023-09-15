@@ -33,16 +33,23 @@ struct ode_visitor
         gScalar&      dxTry,
         TwoDSpan&     a,
         gpuBuffer&     buffer
-    ){}
+    ) :
+    xStart_(xStart), 
+    xEnd_(xEnd),
+    y_(y),
+    dxTry_(dxTry),
+    a_(a),
+    buffer_(buffer)
+    {}
 
     template<class T>
     CUDA_HOSTDEV void operator()(const T& i)
     {
-        i.solve(xStart_, xEnd_, y_, dxTry_, a_, buffer_);
+        i.solve(xStart_, xEnd_, y_, 0, dxTry_, a_, buffer_);
     }
 
-    const gScalar xStart_;
-    const gScalar xEnd_;
+    gScalar xStart_;
+    gScalar xEnd_;
     Span&         y_;
     gScalar&      dxTry_;
     TwoDSpan&     a_;

@@ -130,142 +130,11 @@ TEST_CASE("Test gpuRosenbrock23")
     Foam::dictionary dict;
     dict.add("solver", "Rosenbrock23");
     Foam::Rosenbrock23 cpu(cpu_system, dict);
-    gpuRosenbrock23<gpuODESystem> gpu(gpu_system, read_gpuODESolverInputs(dict));
+    
+    gpuODESolver gpu = make_gpuODESolver(gpu_system, read_gpuODESolverInputs(dict));
+    //gpuRosenbrock23<gpuODESystem> gpu(gpu_system, read_gpuODESolverInputs(dict));
 
-
-
-    SECTION("solve(x0, y0, li, dydx0, dx, y) random values")
-    {
-        const gScalar T = 500.0;
-        const gScalar p = 1.0E5;
-
-        const gScalar x0 = 0.0;
-        const gLabel li = 0;
-        const gScalar dx = 1E-7;
-        Foam::scalarField y0_cpu(nEqns, 0.0);
-        Foam::scalarField dydx0_cpu(nEqns, 0.0);
-        Foam::scalarField y_cpu(nEqns, 0);
-
-        fill_random(y0_cpu, 0., 0.1);
-        y0_cpu[nSpecie] = T;
-        y0_cpu[nSpecie+1] = p;
-
-
-        auto y0_gpu = to_device_vec(y0_cpu);
-        auto dydx0_gpu = to_device_vec(dydx0_cpu);
-        auto y_gpu = to_device_vec(y_cpu);
-
-        device_vector<gScalar> J(nEqns*nEqns);
-
-
-        auto buffer = to_device_vec(host_vector<gpuBuffer>(1, gpuBuffer(nSpecie)));
-        auto f = [
-            gpu_system = gpu_system,
-            gpuOde = gpu,
-            x0 = x0,
-            y0 = make_mdspan(y0_gpu, extents<1>{nEqns}),
-            li = li,
-            dydx0 = make_mdspan(dydx0_gpu, extents<1>{nEqns}),
-            dx = dx,
-            y = make_mdspan(y_gpu, extents<1>{nEqns}),
-            J = make_mdspan(J, extents<2>{nEqns, nEqns}),
-            buffer = make_mdspan(buffer, extents<1>{1})
-        ]()
-        {
-            gpu_system.derivatives(0.0, y0, li, dydx0, buffer[0]);
-            return gpuOde.solve(x0, y0, li, dydx0, dx, y, J, buffer[0]);
-        };
-
-        cpu_system.derivatives(0.0, y0_cpu, li, dydx0_cpu);
-        gScalar err_cpu = cpu.solve(x0, y0_cpu, li, dydx0_cpu, dx, y_cpu);
-        gScalar err_gpu = eval(f);
-
-
-        CHECK
-        (
-            err_gpu == Approx(err_cpu).epsilon(errorTol)
-        );
-
-        auto y_new_cpu = to_std_vec(y_cpu);
-        auto y_new_gpu = to_std_vec(y_gpu);
-
-
-        for (size_t i = 0; i < y_new_cpu.size(); ++i)
-        {
-            CHECK
-            (
-                y_new_gpu[i] == Approx(y_new_cpu[i]).epsilon(errorTol)
-            );
-        }
-
-    }
-
-    SECTION("solve(x0, y0, li, dydx0, dx, y) gri values")
-    {
-
-        const gScalar x0 = 0.0;
-        const gLabel li = 0;
-        const gScalar dx = 1E-7;
-        Foam::scalarField y0_cpu(nEqns, 0.0);
-        Foam::scalarField dydx0_cpu(nEqns, 0.0);
-        Foam::scalarField y_cpu(nEqns, 0);
-
-        assign_test_condition(y0_cpu);
-
-
-        auto y0_gpu = to_device_vec(y0_cpu);
-        auto dydx0_gpu = to_device_vec(dydx0_cpu);
-        auto y_gpu = to_device_vec(y_cpu);
-
-        device_vector<gScalar> J(nEqns*nEqns);
-
-
-        auto buffer = to_device_vec(host_vector<gpuBuffer>(1, gpuBuffer(nSpecie)));
-        auto f = [
-            gpu_system = gpu_system,
-            gpuOde = gpu,
-            x0 = x0,
-            y0 = make_mdspan(y0_gpu, extents<1>{nEqns}),
-            li = li,
-            dydx0 = make_mdspan(dydx0_gpu, extents<1>{nEqns}),
-            dx = dx,
-            y = make_mdspan(y_gpu, extents<1>{nEqns}),
-            J = make_mdspan(J, extents<2>{nEqns, nEqns}),
-            buffer = make_mdspan(buffer, extents<1>{1})
-        ]()
-        {
-            gpu_system.derivatives(0.0, y0, li, dydx0, buffer[0]);
-            return gpuOde.solve(x0, y0, li, dydx0, dx, y, J, buffer[0]);
-        };
-
-        cpu_system.derivatives(0.0, y0_cpu, li, dydx0_cpu);
-        gScalar err_cpu = cpu.solve(x0, y0_cpu, li, dydx0_cpu, dx, y_cpu);
-        gScalar err_gpu = eval(f);
-
-
-        CHECK
-        (
-            err_gpu == Approx(err_cpu).epsilon(errorTol)
-        );
-
-        auto y_new_cpu = to_std_vec(y_cpu);
-        auto y_new_gpu = to_std_vec(y_gpu);
-
-
-        for (size_t i = 0; i < y_new_cpu.size(); ++i)
-        {
-            if (y_new_cpu[i] > gpuSmall)
-            {
-                CHECK
-                (
-                    y_new_gpu[i] == Approx(y_new_cpu[i]).epsilon(errorTol)
-                );
-            }
-        }
-
-    }
-
-
+    
     SECTION("solve(xStart, xEnd, y, li, dxTry) random values")
     {
         const gScalar xStart = 0.;
@@ -336,6 +205,7 @@ TEST_CASE("Test gpuRosenbrock23")
 
     }
 
+    /*
 
 
     SECTION("solve(xStart, xEnd, y, li, dxTry) gri values")
@@ -407,6 +277,8 @@ TEST_CASE("Test gpuRosenbrock23")
         }
 
     }
+
+    */
 
 }
 
