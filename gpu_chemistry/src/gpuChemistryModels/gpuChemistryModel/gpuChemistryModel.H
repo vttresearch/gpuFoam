@@ -8,7 +8,7 @@
 #include "gpuODESystem.H"
 #include "gpuReaction.H"
 #include "gpuRosenbrock34.H"
-#include "read_ode_solver_inputs.H"
+#include "readGpuOdeInputs.H"
 #include "makeGpuThermo.H"
 #include "makeGpuReactions.H"
 #include "gpuThermo.H"
