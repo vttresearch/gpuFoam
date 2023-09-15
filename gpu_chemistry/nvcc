@@ -10,10 +10,10 @@ NVCC_FLAGS += --expt-extended-lambda
 NVCC_FLAGS += --gpu-architecture=compute_80 --gpu-code=sm_80
 #NVCC_FLAGS += --gpu-architecture=compute_86 --gpu-code=sm_86
 
-#NVCC_PATH    = /usr/local/cuda/bin/nvcc
-NVCC_PATH    = $(CUDA_ROOT)/bin/nvcc
+
+#NVCC_PATH    = $(CUDA_ROOT)/bin/nvcc
 #NVCC_PATH    = nvcc
-CC          = $(NVCC_PATH) $(NVCC_FLAGS)
+CC          = nvcc $(NVCC_FLAGS)
 
 
 #include $(DEFAULT_RULES)/c++$(WM_COMPILE_OPTION)

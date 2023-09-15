@@ -10,9 +10,9 @@ cd ${0%/*} || exit 1    # run from this directory
 #export CUDA_HEADERS=${CUDA_ROOT:-/usr/local/cuda}/include
 #export CUDA_LIBS=${CUDA_ROOT:-/usr/local/cuda}/lib64
 
-export CUDA_ROOT=$NVHPC_ROOT/cuda
-export CUDA_HEADERS=$CUDA_ROOT/include
-export CUDA_LIBS=$CUDA_ROOT/lib64
+#export CUDA_ROOT=$NVHPC_ROOT/cuda
+#export CUDA_HEADERS=$CUDA_ROOT/include
+#export CUDA_LIBS=$CUDA_ROOT/lib64
 
 wmakeLnInclude src
 wmake src/gpuKernelEvaluator

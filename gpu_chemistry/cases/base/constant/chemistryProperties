@@ -1,0 +1,39 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | DLBFoam: Dynamic Load Balancing                 |
+|  \\    /   O peration     | for fast reactive simulations                   |
+|   \\  /    A nd           |                                                 |
+|    \\/     M anipulation  | 2020, Aalto University, Finland                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version         2;
+    format          ascii;
+    class           dictionary;
+    location        "constant";
+    object          chemistryProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+chemistry       on;
+
+initialChemicalTimeStep 1;
+
+
+chemistryType
+{
+    //solver          ode;
+    //method          chemistryModel;
+    solver          none;
+    method          gpuChemistryModel;
+}
+
+odeCoeffs
+{
+    solver          Rosenbrock23;
+    absTol          1e-08;
+    relTol          1e-05;
+}
+
+#include "$FOAM_CASE/constant/reactionsYao"
+// ************************************************************************* //

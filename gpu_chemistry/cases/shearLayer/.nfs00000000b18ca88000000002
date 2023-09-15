@@ -1,0 +1,623 @@
+Warning: Failed writing log files to directory [/var/log/nvidia-mps]. No logs will be available.
+[2023-09-15 23:15:26.611 Control 803983] Starting control daemon using socket /tmp/nvidia-mps/control
+[2023-09-15 23:15:26.611 Control 803983] To connect CUDA applications to this daemon, set env CUDA_MPS_PIPE_DIRECTORY=/tmp/nvidia-mps
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] NEW CLIENT 804981 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.546 Control 803983] Starting new server 805080 for user 10960
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] NEW CLIENT 804976 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] NEW CLIENT 804977 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] NEW CLIENT 804980 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] NEW CLIENT 804968 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] NEW CLIENT 804969 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] NEW CLIENT 804964 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] NEW CLIENT 804965 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] NEW CLIENT 804973 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] NEW CLIENT 804959 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] NEW CLIENT 804957 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] NEW CLIENT 804956 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] NEW CLIENT 804954 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] NEW CLIENT 804952 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] NEW CLIENT 804961 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.546 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.546 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.547 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.547 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.547 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.547 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.547 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.547 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.547 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.547 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.547 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.547 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.547 Control 803983] NEW CLIENT 804972 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.547 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.547 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.547 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.547 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.547 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.547 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.547 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.547 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.547 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.547 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:40.547 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.547 Control 803983] NEW CLIENT 804955 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.547 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.547 Control 803983] NEW CLIENT 804962 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.547 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.547 Control 803983] NEW CLIENT 804960 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.547 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.547 Control 803983] NEW CLIENT 804958 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.547 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.547 Control 803983] NEW CLIENT 804963 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.547 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.547 Control 803983] NEW CLIENT 804953 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.547 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.547 Control 803983] NEW CLIENT 804983 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.547 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.547 Control 803983] NEW CLIENT 804982 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.547 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.547 Control 803983] NEW CLIENT 804978 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.547 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.547 Control 803983] NEW CLIENT 804979 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.547 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.547 Control 803983] NEW CLIENT 804975 from user 10960: Server is not ready, push client to pending list
+[2023-09-15 23:15:40.548 Other 805080] Startup
+[2023-09-15 23:15:40.548 Other 805080] Connecting to control daemon on socket: /tmp/nvidia-mps/control
+[2023-09-15 23:15:40.548 Control 803983] Accepting connection...
+[2023-09-15 23:15:40.548 Other 805080] Initializing server process
+[2023-09-15 23:15:43.872 Server 805080] Creating server context on device 0 (NVIDIA A100 80GB PCIe)
+[2023-09-15 23:15:43.913 Server 805080] Creating server context on device 1 (NVIDIA A100 80GB PCIe)
+[2023-09-15 23:15:43.953 Server 805080] Created named shared memory region /cuda.shm.2ad0.c48d8.1
+[2023-09-15 23:15:43.953 Control 803983] NEW SERVER 805080: Ready
+[2023-09-15 23:15:43.953 Server 805080] Active Threads Percentage set to 100.0
+[2023-09-15 23:15:43.953 Server 805080] Server Priority set to 0
+[2023-09-15 23:15:43.953 Server 805080] Server has started
+[2023-09-15 23:15:43.953 Server 805080] Received new client request
+[2023-09-15 23:15:43.959 Server 805080] Worker created
+[2023-09-15 23:15:43.960 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.960 Server 805080] Received new client request
+[2023-09-15 23:15:43.960 Server 805080] Worker created
+[2023-09-15 23:15:43.960 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.960 Server 805080] Received new client request
+[2023-09-15 23:15:43.960 Server 805080] Worker created
+[2023-09-15 23:15:43.960 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.960 Server 805080] Received new client request
+[2023-09-15 23:15:43.960 Server 805080] Worker created
+[2023-09-15 23:15:43.960 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.960 Server 805080] Received new client request
+[2023-09-15 23:15:43.960 Server 805080] Worker created
+[2023-09-15 23:15:43.960 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.960 Server 805080] Received new client request
+[2023-09-15 23:15:43.960 Server 805080] Worker created
+[2023-09-15 23:15:43.960 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.960 Server 805080] Received new client request
+[2023-09-15 23:15:43.961 Server 805080] Worker created
+[2023-09-15 23:15:43.961 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.961 Server 805080] Received new client request
+[2023-09-15 23:15:43.961 Server 805080] Worker created
+[2023-09-15 23:15:43.961 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.961 Server 805080] Received new client request
+[2023-09-15 23:15:43.961 Server 805080] Worker created
+[2023-09-15 23:15:43.961 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.961 Server 805080] Received new client request
+[2023-09-15 23:15:43.961 Server 805080] Worker created
+[2023-09-15 23:15:43.961 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.961 Server 805080] Received new client request
+[2023-09-15 23:15:43.961 Server 805080] Worker created
+[2023-09-15 23:15:43.961 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.961 Server 805080] Received new client request
+[2023-09-15 23:15:43.961 Server 805080] Worker created
+[2023-09-15 23:15:43.961 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.961 Server 805080] Received new client request
+[2023-09-15 23:15:43.961 Server 805080] Worker created
+[2023-09-15 23:15:43.962 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.962 Server 805080] Received new client request
+[2023-09-15 23:15:43.970 Server 805080] Worker created
+[2023-09-15 23:15:43.970 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.970 Server 805080] Received new client request
+[2023-09-15 23:15:43.970 Server 805080] Worker created
+[2023-09-15 23:15:43.970 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.970 Server 805080] Received new client request
+[2023-09-15 23:15:43.970 Server 805080] Worker created
+[2023-09-15 23:15:43.971 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.971 Server 805080] Received new client request
+[2023-09-15 23:15:43.971 Server 805080] Worker created
+[2023-09-15 23:15:43.971 Server 805080] Received new client request
+[2023-09-15 23:15:43.971 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.971 Server 805080] Worker created
+[2023-09-15 23:15:43.971 Server 805080] Received new client request
+[2023-09-15 23:15:43.971 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.971 Server 805080] Worker created
+[2023-09-15 23:15:43.971 Server 805080] Received new client request
+[2023-09-15 23:15:43.971 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.971 Server 805080] Worker created
+[2023-09-15 23:15:43.971 Server 805080] Received new client request
+[2023-09-15 23:15:43.971 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.971 Server 805080] Worker created
+[2023-09-15 23:15:43.971 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.971 Server 805080] Received new client request
+[2023-09-15 23:15:43.971 Server 805080] Worker created
+[2023-09-15 23:15:43.971 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.971 Server 805080] Received new client request
+[2023-09-15 23:15:43.971 Server 805080] Worker created
+[2023-09-15 23:15:43.971 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.971 Server 805080] Received new client request
+[2023-09-15 23:15:43.971 Server 805080] Worker created
+[2023-09-15 23:15:43.971 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.971 Server 805080] Received new client request
+[2023-09-15 23:15:43.971 Server 805080] Worker created
+[2023-09-15 23:15:43.971 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.971 Server 805080] Received new client request
+[2023-09-15 23:15:43.971 Server 805080] Worker created
+[2023-09-15 23:15:43.971 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.972 Server 805080] Received new client request
+[2023-09-15 23:15:43.972 Server 805080] Worker created
+[2023-09-15 23:15:43.972 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.972 Control 803983] Accepting connection...
+[2023-09-15 23:15:43.972 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:43.972 Control 803983] Accepting connection...
+[2023-09-15 23:15:43.972 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:43.972 Control 803983] Accepting connection...
+[2023-09-15 23:15:43.972 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:43.972 Control 803983] Accepting connection...
+[2023-09-15 23:15:43.972 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:43.972 Control 803983] Accepting connection...
+[2023-09-15 23:15:43.972 Control 803983] User did not send valid credentials
+[2023-09-15 23:15:43.972 Control 803983] Accepting connection...
+[2023-09-15 23:15:43.972 Control 803983] NEW CLIENT 804970 from user 10960: Server already exists
+[2023-09-15 23:15:43.972 Server 805080] Received new client request
+[2023-09-15 23:15:43.972 Server 805080] Worker created
+[2023-09-15 23:15:43.972 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.972 Control 803983] Accepting connection...
+[2023-09-15 23:15:43.972 Control 803983] NEW CLIENT 804966 from user 10960: Server already exists
+[2023-09-15 23:15:43.972 Server 805080] Received new client request
+[2023-09-15 23:15:43.972 Server 805080] Worker created
+[2023-09-15 23:15:43.972 Control 803983] Accepting connection...
+[2023-09-15 23:15:43.972 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.972 Control 803983] NEW CLIENT 804971 from user 10960: Server already exists
+[2023-09-15 23:15:43.972 Server 805080] Received new client request
+[2023-09-15 23:15:43.972 Server 805080] Worker created
+[2023-09-15 23:15:43.972 Control 803983] Accepting connection...
+[2023-09-15 23:15:43.972 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.972 Control 803983] NEW CLIENT 804967 from user 10960: Server already exists
+[2023-09-15 23:15:43.972 Server 805080] Received new client request
+[2023-09-15 23:15:43.972 Server 805080] Worker created
+[2023-09-15 23:15:43.972 Control 803983] Accepting connection...
+[2023-09-15 23:15:43.972 Server 805080] Creating worker thread
+[2023-09-15 23:15:43.972 Control 803983] NEW CLIENT 804974 from user 10960: Server already exists
+[2023-09-15 23:15:43.972 Server 805080] Received new client request
+[2023-09-15 23:15:43.972 Server 805080] Worker created
+[2023-09-15 23:15:43.972 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.289 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.289 Control 803983] NEW CLIENT 804975 from user 10960: Server already exists
+[2023-09-15 23:15:44.290 Server 805080] Received new client request
+[2023-09-15 23:15:44.290 Server 805080] Worker created
+[2023-09-15 23:15:44.290 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.290 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.290 Server 805080] Status of client {804975, 1} is ACTIVE
+[2023-09-15 23:15:44.399 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.399 Control 803983] NEW CLIENT 804955 from user 10960: Server already exists
+[2023-09-15 23:15:44.399 Server 805080] Received new client request
+[2023-09-15 23:15:44.399 Server 805080] Worker created
+[2023-09-15 23:15:44.399 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.399 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.399 Server 805080] Status of client {804955, 1} is ACTIVE
+[2023-09-15 23:15:44.402 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.402 Control 803983] NEW CLIENT 804978 from user 10960: Server already exists
+[2023-09-15 23:15:44.402 Server 805080] Received new client request
+[2023-09-15 23:15:44.402 Server 805080] Worker created
+[2023-09-15 23:15:44.402 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.402 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.402 Server 805080] Status of client {804978, 1} is ACTIVE
+[2023-09-15 23:15:44.408 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.408 Control 803983] NEW CLIENT 804979 from user 10960: Server already exists
+[2023-09-15 23:15:44.408 Server 805080] Received new client request
+[2023-09-15 23:15:44.408 Server 805080] Worker created
+[2023-09-15 23:15:44.408 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.408 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.408 Server 805080] Status of client {804979, 1} is ACTIVE
+[2023-09-15 23:15:44.420 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.420 Control 803983] NEW CLIENT 804961 from user 10960: Server already exists
+[2023-09-15 23:15:44.420 Server 805080] Received new client request
+[2023-09-15 23:15:44.420 Server 805080] Worker created
+[2023-09-15 23:15:44.420 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.420 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.420 Server 805080] Status of client {804961, 1} is ACTIVE
+[2023-09-15 23:15:44.430 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.430 Control 803983] NEW CLIENT 804963 from user 10960: Server already exists
+[2023-09-15 23:15:44.430 Server 805080] Received new client request
+[2023-09-15 23:15:44.430 Server 805080] Worker created
+[2023-09-15 23:15:44.431 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.431 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.431 Server 805080] Status of client {804963, 1} is ACTIVE
+[2023-09-15 23:15:44.449 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.449 Control 803983] NEW CLIENT 804958 from user 10960: Server already exists
+[2023-09-15 23:15:44.449 Server 805080] Received new client request
+[2023-09-15 23:15:44.449 Server 805080] Worker created
+[2023-09-15 23:15:44.449 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.449 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.449 Server 805080] Status of client {804958, 1} is ACTIVE
+[2023-09-15 23:15:44.460 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.460 Control 803983] NEW CLIENT 804982 from user 10960: Server already exists
+[2023-09-15 23:15:44.460 Server 805080] Received new client request
+[2023-09-15 23:15:44.471 Server 805080] Worker created
+[2023-09-15 23:15:44.471 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.471 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.471 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.471 Server 805080] Status of client {804982, 1} is ACTIVE
+[2023-09-15 23:15:44.471 Control 803983] NEW CLIENT 804959 from user 10960: Server already exists
+[2023-09-15 23:15:44.471 Server 805080] Received new client request
+[2023-09-15 23:15:44.472 Server 805080] Worker created
+[2023-09-15 23:15:44.472 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.472 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.472 Server 805080] Status of client {804959, 1} is ACTIVE
+[2023-09-15 23:15:44.483 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.483 Control 803983] NEW CLIENT 804970 from user 10960: Server already exists
+[2023-09-15 23:15:44.483 Server 805080] Received new client request
+[2023-09-15 23:15:44.483 Server 805080] Worker created
+[2023-09-15 23:15:44.484 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.484 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.484 Server 805080] Status of client {804970, 1} is ACTIVE
+[2023-09-15 23:15:44.499 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.499 Control 803983] NEW CLIENT 804957 from user 10960: Server already exists
+[2023-09-15 23:15:44.499 Server 805080] Received new client request
+[2023-09-15 23:15:44.499 Server 805080] Worker created
+[2023-09-15 23:15:44.499 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.499 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.499 Server 805080] Status of client {804957, 1} is ACTIVE
+[2023-09-15 23:15:44.512 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.512 Control 803983] NEW CLIENT 804973 from user 10960: Server already exists
+[2023-09-15 23:15:44.512 Server 805080] Received new client request
+[2023-09-15 23:15:44.512 Server 805080] Worker created
+[2023-09-15 23:15:44.512 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.512 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.512 Server 805080] Status of client {804973, 1} is ACTIVE
+[2023-09-15 23:15:44.520 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.520 Control 803983] NEW CLIENT 804968 from user 10960: Server already exists
+[2023-09-15 23:15:44.521 Server 805080] Received new client request
+[2023-09-15 23:15:44.521 Server 805080] Worker created
+[2023-09-15 23:15:44.521 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.521 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.521 Server 805080] Status of client {804968, 1} is ACTIVE
+[2023-09-15 23:15:44.527 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.527 Control 803983] NEW CLIENT 804964 from user 10960: Server already exists
+[2023-09-15 23:15:44.527 Server 805080] Received new client request
+[2023-09-15 23:15:44.527 Server 805080] Worker created
+[2023-09-15 23:15:44.527 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.527 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.527 Server 805080] Status of client {804964, 1} is ACTIVE
+[2023-09-15 23:15:44.537 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.537 Control 803983] NEW CLIENT 804980 from user 10960: Server already exists
+[2023-09-15 23:15:44.537 Server 805080] Received new client request
+[2023-09-15 23:15:44.537 Server 805080] Worker created
+[2023-09-15 23:15:44.537 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.537 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.537 Server 805080] Status of client {804980, 1} is ACTIVE
+[2023-09-15 23:15:44.547 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.547 Control 803983] NEW CLIENT 804977 from user 10960: Server already exists
+[2023-09-15 23:15:44.547 Server 805080] Received new client request
+[2023-09-15 23:15:44.547 Server 805080] Worker created
+[2023-09-15 23:15:44.547 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.547 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.547 Server 805080] Status of client {804977, 1} is ACTIVE
+[2023-09-15 23:15:44.552 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.552 Control 803983] NEW CLIENT 804962 from user 10960: Server already exists
+[2023-09-15 23:15:44.552 Server 805080] Received new client request
+[2023-09-15 23:15:44.552 Server 805080] Worker created
+[2023-09-15 23:15:44.552 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.552 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.552 Server 805080] Status of client {804962, 1} is ACTIVE
+[2023-09-15 23:15:44.573 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.573 Control 803983] NEW CLIENT 804983 from user 10960: Server already exists
+[2023-09-15 23:15:44.573 Server 805080] Received new client request
+[2023-09-15 23:15:44.573 Server 805080] Worker created
+[2023-09-15 23:15:44.573 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.573 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.573 Server 805080] Status of client {804983, 1} is ACTIVE
+[2023-09-15 23:15:44.598 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.598 Control 803983] NEW CLIENT 804972 from user 10960: Server already exists
+[2023-09-15 23:15:44.598 Server 805080] Received new client request
+[2023-09-15 23:15:44.598 Server 805080] Worker created
+[2023-09-15 23:15:44.598 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.598 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.598 Server 805080] Status of client {804972, 1} is ACTIVE
+[2023-09-15 23:15:44.617 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.617 Control 803983] NEW CLIENT 804960 from user 10960: Server already exists
+[2023-09-15 23:15:44.617 Server 805080] Received new client request
+[2023-09-15 23:15:44.617 Server 805080] Worker created
+[2023-09-15 23:15:44.617 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.617 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.617 Server 805080] Status of client {804960, 1} is ACTIVE
+[2023-09-15 23:15:44.627 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.627 Control 803983] NEW CLIENT 804953 from user 10960: Server already exists
+[2023-09-15 23:15:44.627 Server 805080] Received new client request
+[2023-09-15 23:15:44.627 Server 805080] Worker created
+[2023-09-15 23:15:44.628 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.628 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.628 Server 805080] Status of client {804953, 1} is ACTIVE
+[2023-09-15 23:15:44.638 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.638 Control 803983] NEW CLIENT 804981 from user 10960: Server already exists
+[2023-09-15 23:15:44.638 Server 805080] Received new client request
+[2023-09-15 23:15:44.638 Server 805080] Worker created
+[2023-09-15 23:15:44.639 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.639 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.639 Server 805080] Status of client {804981, 1} is ACTIVE
+[2023-09-15 23:15:44.665 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.665 Control 803983] NEW CLIENT 804969 from user 10960: Server already exists
+[2023-09-15 23:15:44.665 Server 805080] Received new client request
+[2023-09-15 23:15:44.665 Server 805080] Worker created
+[2023-09-15 23:15:44.665 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.665 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.665 Server 805080] Status of client {804969, 1} is ACTIVE
+[2023-09-15 23:15:44.672 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.672 Control 803983] NEW CLIENT 804952 from user 10960: Server already exists
+[2023-09-15 23:15:44.672 Server 805080] Received new client request
+[2023-09-15 23:15:44.672 Server 805080] Worker created
+[2023-09-15 23:15:44.672 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.672 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.672 Server 805080] Status of client {804952, 1} is ACTIVE
+[2023-09-15 23:15:44.677 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.677 Control 803983] NEW CLIENT 804971 from user 10960: Server already exists
+[2023-09-15 23:15:44.677 Server 805080] Received new client request
+[2023-09-15 23:15:44.677 Server 805080] Worker created
+[2023-09-15 23:15:44.677 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.677 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.677 Server 805080] Status of client {804971, 1} is ACTIVE
+[2023-09-15 23:15:44.701 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.701 Control 803983] NEW CLIENT 804954 from user 10960: Server already exists
+[2023-09-15 23:15:44.701 Server 805080] Received new client request
+[2023-09-15 23:15:44.701 Server 805080] Worker created
+[2023-09-15 23:15:44.701 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.701 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.701 Server 805080] Status of client {804954, 1} is ACTIVE
+[2023-09-15 23:15:44.712 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.712 Control 803983] NEW CLIENT 804967 from user 10960: Server already exists
+[2023-09-15 23:15:44.712 Server 805080] Received new client request
+[2023-09-15 23:15:44.712 Server 805080] Worker created
+[2023-09-15 23:15:44.712 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.712 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.712 Server 805080] Status of client {804967, 1} is ACTIVE
+[2023-09-15 23:15:44.737 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.737 Control 803983] NEW CLIENT 804956 from user 10960: Server already exists
+[2023-09-15 23:15:44.737 Server 805080] Received new client request
+[2023-09-15 23:15:44.737 Server 805080] Worker created
+[2023-09-15 23:15:44.737 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.737 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.737 Server 805080] Status of client {804956, 1} is ACTIVE
+[2023-09-15 23:15:44.747 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.747 Control 803983] NEW CLIENT 804965 from user 10960: Server already exists
+[2023-09-15 23:15:44.747 Server 805080] Received new client request
+[2023-09-15 23:15:44.747 Server 805080] Worker created
+[2023-09-15 23:15:44.747 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.747 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.747 Server 805080] Status of client {804965, 1} is ACTIVE
+[2023-09-15 23:15:44.913 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.913 Control 803983] NEW CLIENT 804974 from user 10960: Server already exists
+[2023-09-15 23:15:44.913 Server 805080] Received new client request
+[2023-09-15 23:15:44.913 Server 805080] Worker created
+[2023-09-15 23:15:44.913 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.913 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.913 Server 805080] Status of client {804974, 1} is ACTIVE
+[2023-09-15 23:15:44.977 Control 803983] Accepting connection...
+[2023-09-15 23:15:44.977 Control 803983] NEW CLIENT 804976 from user 10960: Server already exists
+[2023-09-15 23:15:44.977 Server 805080] Received new client request
+[2023-09-15 23:15:44.977 Server 805080] Worker created
+[2023-09-15 23:15:44.977 Server 805080] Creating worker thread
+[2023-09-15 23:15:44.977 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:44.977 Server 805080] Status of client {804976, 1} is ACTIVE
+[2023-09-15 23:15:45.157 Control 803983] Accepting connection...
+[2023-09-15 23:15:45.157 Control 803983] NEW CLIENT 804966 from user 10960: Server already exists
+[2023-09-15 23:15:45.157 Server 805080] Received new client request
+[2023-09-15 23:15:45.157 Server 805080] Worker created
+[2023-09-15 23:15:45.157 Server 805080] Creating worker thread
+[2023-09-15 23:15:45.157 Server 805080] Device NVIDIA A100 80GB PCIe (uuid 0x4e4db976-0x691bf0d5-0x1f6e095a-0x81c8da31) is associated
+[2023-09-15 23:15:45.157 Server 805080] Status of client {804966, 1} is ACTIVE
+[2023-09-15 23:18:55.761 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.761 Server 805080] Client {804956, 1} exit
+[2023-09-15 23:18:55.761 Server 805080] Client disconnected. Number of active client contexts is 31.
+[2023-09-15 23:18:55.782 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.782 Server 805080] Client {804955, 1} exit
+[2023-09-15 23:18:55.782 Server 805080] Client disconnected. Number of active client contexts is 30.
+[2023-09-15 23:18:55.793 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.793 Server 805080] Client {804957, 1} exit
+[2023-09-15 23:18:55.793 Server 805080] Client disconnected. Number of active client contexts is 29.
+[2023-09-15 23:18:55.793 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.793 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.793 Server 805080] Client {804977, 1} exit
+[2023-09-15 23:18:55.793 Server 805080] Client disconnected. Number of active client contexts is 28.
+[2023-09-15 23:18:55.793 Server 805080] Client {804980, 1} exit
+[2023-09-15 23:18:55.793 Server 805080] Client disconnected. Number of active client contexts is 27.
+[2023-09-15 23:18:55.794 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.794 Server 805080] Client {804981, 1} exit
+[2023-09-15 23:18:55.794 Server 805080] Client disconnected. Number of active client contexts is 26.
+[2023-09-15 23:18:55.801 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.801 Server 805080] Client {804976, 1} exit
+[2023-09-15 23:18:55.801 Server 805080] Client disconnected. Number of active client contexts is 25.
+[2023-09-15 23:18:55.803 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.803 Server 805080] Client {804983, 1} exit
+[2023-09-15 23:18:55.803 Server 805080] Client disconnected. Number of active client contexts is 24.
+[2023-09-15 23:18:55.805 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.805 Server 805080] Client {804979, 1} exit
+[2023-09-15 23:18:55.805 Server 805080] Client disconnected. Number of active client contexts is 23.
+[2023-09-15 23:18:55.808 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.808 Server 805080] Client {804968, 1} exit
+[2023-09-15 23:18:55.808 Server 805080] Client disconnected. Number of active client contexts is 22.
+[2023-09-15 23:18:55.811 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.811 Server 805080] Client {804959, 1} exit
+[2023-09-15 23:18:55.811 Server 805080] Client disconnected. Number of active client contexts is 21.
+[2023-09-15 23:18:55.814 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.814 Server 805080] Client {804961, 1} exit
+[2023-09-15 23:18:55.814 Server 805080] Client disconnected. Number of active client contexts is 20.
+[2023-09-15 23:18:55.816 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.816 Server 805080] Client {804969, 1} exit
+[2023-09-15 23:18:55.816 Server 805080] Client disconnected. Number of active client contexts is 19.
+[2023-09-15 23:18:55.819 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.819 Server 805080] Client {804954, 1} exit
+[2023-09-15 23:18:55.819 Server 805080] Client disconnected. Number of active client contexts is 18.
+[2023-09-15 23:18:55.823 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.823 Server 805080] Client {804973, 1} exit
+[2023-09-15 23:18:55.823 Server 805080] Client disconnected. Number of active client contexts is 17.
+[2023-09-15 23:18:55.827 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.827 Server 805080] Client {804952, 1} exit
+[2023-09-15 23:18:55.827 Server 805080] Client disconnected. Number of active client contexts is 16.
+[2023-09-15 23:18:55.843 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.843 Server 805080] Client {804972, 1} exit
+[2023-09-15 23:18:55.843 Server 805080] Client disconnected. Number of active client contexts is 15.
+[2023-09-15 23:18:55.843 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.843 Server 805080] Client {804963, 1} exit
+[2023-09-15 23:18:55.843 Server 805080] Client disconnected. Number of active client contexts is 14.
+[2023-09-15 23:18:55.844 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.844 Server 805080] Client {804975, 1} exit
+[2023-09-15 23:18:55.844 Server 805080] Client disconnected. Number of active client contexts is 13.
+[2023-09-15 23:18:55.847 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.847 Server 805080] Client {804960, 1} exit
+[2023-09-15 23:18:55.847 Server 805080] Client disconnected. Number of active client contexts is 12.
+[2023-09-15 23:18:55.848 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.848 Server 805080] Client {804978, 1} exit
+[2023-09-15 23:18:55.848 Server 805080] Client disconnected. Number of active client contexts is 11.
+[2023-09-15 23:18:55.849 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.849 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.849 Server 805080] Client {804965, 1} exit
+[2023-09-15 23:18:55.849 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.849 Server 805080] Client disconnected. Number of active client contexts is 10.
+[2023-09-15 23:18:55.849 Server 805080] Client {804967, 1} exit
+[2023-09-15 23:18:55.849 Server 805080] Client disconnected. Number of active client contexts is 9.
+[2023-09-15 23:18:55.849 Server 805080] Client {804974, 1} exit
+[2023-09-15 23:18:55.849 Server 805080] Client disconnected. Number of active client contexts is 8.
+[2023-09-15 23:18:55.857 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.857 Server 805080] Client {804982, 1} exit
+[2023-09-15 23:18:55.857 Server 805080] Client disconnected. Number of active client contexts is 7.
+[2023-09-15 23:18:55.859 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.859 Server 805080] Client {804958, 1} exit
+[2023-09-15 23:18:55.859 Server 805080] Client disconnected. Number of active client contexts is 6.
+[2023-09-15 23:18:55.863 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.863 Server 805080] Client {804964, 1} exit
+[2023-09-15 23:18:55.863 Server 805080] Client disconnected. Number of active client contexts is 5.
+[2023-09-15 23:18:55.864 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.864 Server 805080] Client {804966, 1} exit
+[2023-09-15 23:18:55.864 Server 805080] Client disconnected. Number of active client contexts is 4.
+[2023-09-15 23:18:55.868 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.868 Server 805080] Client {804970, 1} exit
+[2023-09-15 23:18:55.868 Server 805080] Client disconnected. Number of active client contexts is 3.
+[2023-09-15 23:18:55.872 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.872 Server 805080] Client {804971, 1} exit
+[2023-09-15 23:18:55.872 Server 805080] Client disconnected. Number of active client contexts is 2.
+[2023-09-15 23:18:55.881 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.881 Server 805080] Client {804962, 1} exit
+[2023-09-15 23:18:55.881 Server 805080] Client disconnected. Number of active client contexts is 1.
+[2023-09-15 23:18:55.882 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:55.882 Server 805080] Client {804953, 1} exit
+[2023-09-15 23:18:55.882 Server 805080] Client disconnected. Number of active client contexts is 0.
+[2023-09-15 23:18:56.443 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.443 Server 805080] Client process disconnected
+[2023-09-15 23:18:56.524 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.524 Server 805080] Client process disconnected
+[2023-09-15 23:18:56.531 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.531 Server 805080] Client process disconnected
+[2023-09-15 23:18:56.531 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.531 Server 805080] Client process disconnected
+[2023-09-15 23:18:56.534 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.534 Server 805080] Client process disconnected
+[2023-09-15 23:18:56.539 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.539 Server 805080] Client process disconnected
+[2023-09-15 23:18:56.540 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.540 Server 805080] Client process disconnected
+[2023-09-15 23:18:56.545 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.545 Server 805080] Client process disconnected
+[2023-09-15 23:18:56.545 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.545 Server 805080] Client process disconnected
+[2023-09-15 23:18:56.545 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.545 Server 805080] Client process disconnected
+[2023-09-15 23:18:56.545 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.545 Server 805080] Client process disconnected
+[2023-09-15 23:18:56.549 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.549 Server 805080] Client process disconnected
+[2023-09-15 23:18:56.551 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.551 Server 805080] Client process disconnected
+[2023-09-15 23:18:56.553 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.553 Server 805080] Client process disconnected
+[2023-09-15 23:18:56.558 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.558 Server 805080] Client process disconnected
+[2023-09-15 23:18:56.560 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.560 Server 805080] Client process disconnected
+[2023-09-15 23:18:56.564 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.564 Server 805080] Client process disconnected
+[2023-09-15 23:18:56.564 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.564 Server 805080] Client process disconnected
+[2023-09-15 23:18:56.568 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.568 Server 805080] Client process disconnected
+[2023-09-15 23:18:56.571 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.571 Server 805080] Client process disconnected
+[2023-09-15 23:18:56.571 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.571 Server 805080] Client process disconnected
+[2023-09-15 23:18:56.572 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.572 Server 805080] Client process disconnected
+[2023-09-15 23:18:56.572 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.572 Server 805080] Client process disconnected
+[2023-09-15 23:18:56.696 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.696 Server 805080] Client process disconnected
+[2023-09-15 23:18:56.819 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.819 Server 805080] Client process disconnected
+[2023-09-15 23:18:56.858 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:56.858 Server 805080] Client process disconnected
+[2023-09-15 23:18:57.463 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:57.463 Server 805080] Client process disconnected
+[2023-09-15 23:18:57.463 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:57.463 Server 805080] Client process disconnected
+[2023-09-15 23:18:57.463 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:57.463 Server 805080] Client process disconnected
+[2023-09-15 23:18:57.466 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:57.466 Server 805080] Client process disconnected
+[2023-09-15 23:18:57.466 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:57.466 Server 805080] Client process disconnected
+[2023-09-15 23:18:57.467 Server 805080] Receive command failed, assuming client exit
+[2023-09-15 23:18:57.467 Server 805080] Client process disconnected

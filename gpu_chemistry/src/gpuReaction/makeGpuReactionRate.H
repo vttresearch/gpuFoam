@@ -78,7 +78,20 @@ make_reaction_rate(const Foam::speciesTable& species,
                    const Foam::dictionary&   dict) {
     using namespace gpu;
 
-    const Foam::word& reactionTypeName = dict.lookup("type");
+    const Foam::word& temp = dict.lookup("type");
+
+    //Allow for typenames where the substring "Reaction" has been subtracted.
+    //This is likely some backwards compatibility thing.
+    std::string reactionTypeName = [=](){}
+    {
+        auto pos = temp.find("Reaction");
+        if (pos != std::string::npos )
+        {
+            return std::string(temp.begin(), temp.begin()+pos);
+        }
+        return temp;
+    }();
+    
 
     if (reactionTypeName == "reversibleArrhenius") {
         return gpuReactionRate(make_Arrhenius(dict), false);
@@ -102,7 +115,8 @@ make_reaction_rate(const Foam::speciesTable& species,
                                false);
     }
 
-    throw std::logic_error("Invalid reaction type");
+    std::string msg = "Invalid reaction type: " + temp;
+    throw std::logic_error(msg);
 }
 
 } // namespace FoamGpu
