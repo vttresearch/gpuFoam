@@ -48,7 +48,11 @@ jobs:
         sudo add-apt-repository "http://dl.openfoam.org/ubuntu dev"
         sudo apt-get update
         sudo apt-get -y install openfoam-dev
-        . /opt/openfoam-dev/etc/bashrc
+        ls /opt
+
+
+
+    #. /opt/openfoam-dev/etc/bashrc
 
 
 
