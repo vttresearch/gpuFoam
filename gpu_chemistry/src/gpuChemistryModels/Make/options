@@ -11,8 +11,7 @@ EXE_INC = \
     -I$(LIB_SRC)/thermophysicalModels/chemistryModel/lnInclude \
     -I../lnInclude \
     -I../../../gpu_utils/common/lnInclude \
-    -I../gpuKernelEvaluator/lnInclude \
-    -std=c++17 \
+    -I../gpuKernelEvaluator/lnInclude
     #-ftree-vectorize -fopt-info-vec-missed
 
 

@@ -761,14 +761,14 @@ inline CUDA_HOSTDEV void gpuReaction::dkrdc(const gScalar p,
     (void)li;
     if (isIrreversible()) {
 
-        for (gLabel i = 0; i < gLabel(std::size(dkrdc)); ++i) {
+        for (gLabel i = 0; i < gLabel(dkrdc.size()); ++i) {
             dkrdc[i] = 0.0;
         }
     } else {
         const gScalar rSmall = sqrt(gpuSmall);
         const gScalar Kc     = max(this->Kc(p, T), rSmall);
 
-        for (gLabel i = 0; i < gLabel(std::size(dkrdc)); ++i) {
+        for (gLabel i = 0; i < gLabel(dkrdc.size()); ++i) {
             dkrdc[i] = dkfdc[i] / Kc;
         }
     }
@@ -893,7 +893,7 @@ gpuReaction::jac_dCdC_contribution(const gScalar p,
         this->dkrdc(p, T, c, 0, dkfdc, kr, dkrdc);
 
         // Do the compute here once and reuse the first work array
-        for (gLabel j = 0; j < gLabel(std::size(c)); ++j) {
+        for (gLabel j = 0; j < gLabel(c.size()); ++j) {
             dkfdc[j] = dkfdc[j] * Cf - dkrdc[j] * Cr;
         }
 
@@ -903,7 +903,7 @@ gpuReaction::jac_dCdC_contribution(const gScalar p,
             const gLabel  si = llhs[i].index;
             const gScalar sl = llhs[i].stoichCoeff;
 
-            for (gLabel j = 0; j < gLabel(std::size(c)); ++j) {
+            for (gLabel j = 0; j < gLabel(c.size()); ++j) {
                 ddNdtByVdcTp(si, j) -= sl * dkfdc[j];
             }
         }
@@ -912,7 +912,7 @@ gpuReaction::jac_dCdC_contribution(const gScalar p,
         for (size_t i = 0; i < rrhs.size(); ++i) {
             const gLabel  si = rrhs[i].index;
             const gScalar sr = rrhs[i].stoichCoeff;
-            for (gLabel j = 0; j < gLabel(std::size(c)); ++j) {
+            for (gLabel j = 0; j < gLabel(c.size()); ++j) {
                 ddNdtByVdcTp(si, j) += sr * dkfdc[j];
             }
         }

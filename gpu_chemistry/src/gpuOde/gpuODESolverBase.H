@@ -62,7 +62,7 @@ protected:
         // Calculate the maximum error
         gScalar maxErr = 0.0;
 
-        for (gLabel i = 0; i < gLabel(std::size(y)); ++i) {
+        for (gLabel i = 0; i < gLabel(y.size()); ++i) {
 
             gScalar t = normaliseError(y0[i], y[i], err[i]);
             maxErr    = std::max(maxErr, t);

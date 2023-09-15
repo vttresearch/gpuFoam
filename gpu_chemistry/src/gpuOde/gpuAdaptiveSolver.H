@@ -89,7 +89,7 @@ public:
         x += dx;
 
         // y = yTemp;
-        for (gLabel i = 0; i < gLabel(std::size(y)); ++i) { y[i] = yTemp[i]; }
+        for (gLabel i = 0; i < gLabel(y.size()); ++i) { y[i] = yTemp[i]; }
 
         // If the error is small increase the step-size
         if (err > std::pow(maxScale_ / safeScale_, -1.0 / alphaInc_)) {

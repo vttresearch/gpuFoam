@@ -28,8 +28,8 @@ public:
     /// @return Either high or low coefficient array based on the input
     /// temperature.
     inline CUDA_HOSTDEV const gScalar* coeffs(gScalar T) const {
-        if (T < Tcommon_) { return lowCpCoeffs_.data(); }
-        return highCpCoeffs_.data();
+        if (T < Tcommon_) { return &lowCpCoeffs_[0]; }
+        return &highCpCoeffs_[0];
     }
 
 public:

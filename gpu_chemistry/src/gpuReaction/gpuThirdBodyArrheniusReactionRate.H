@@ -60,7 +60,7 @@ public:
                                  Span2&        ddc) const {
         const gScalar k = gpuArrheniusReactionRate::operator()(p, T, c, li);
 
-        for (gLabel i = 0; i < gLabel(std::size(ddc)); ++i) {
+        for (gLabel i = 0; i < gLabel(ddc.size()); ++i) {
             ddc[i] = thirdBodyEfficiencies_.dMdc(c)[i] * k;
         }
     }

@@ -1,9 +1,7 @@
 EXE_INC = \
     -I../lnInclude \
     -I../../../gpu_utils/common/lnInclude \
-    -I$(CUDA_HEADERS) \
-    -std=c++17
-    #-Wunused-parameter
+    -I$(CUDA_HEADERS)
 
 
 #LIB_LIBS = -lcudart_static -lcudart

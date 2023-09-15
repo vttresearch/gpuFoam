@@ -122,11 +122,11 @@ GpuKernelEvaluator::computeRR(gScalar                    deltaT,
 
     const gLabel nCells = rho.size();
 
-    auto [YNew_arr, deltaTChemNew] =
-        computeYNew(deltaT, deltaTChemMax, deltaTChem, Y);
+    auto pair = computeYNew(deltaT, deltaTChemMax, deltaTChem, Y);
+    auto YNew_arr = std::get<0>(pair);
+    auto deltaTChemNew = std::get<1>(pair);
 
     auto YNew = make_mdspan(YNew_arr, extents<2>{nCells, nEqns_});
-
     auto Y0 = make_mdspan(Y, extents<2>{nCells, nEqns_});
 
     std::vector<gScalar> RR_arr(nCells * nSpecie_);

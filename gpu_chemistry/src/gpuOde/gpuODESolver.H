@@ -75,7 +75,7 @@ struct gpuODESolver{
                             gpuBuffer&     buffer) const
     {
         (void) li;
-        ode_visitor v(xStart, xEnd, y, dxTry, a, buffer);
+        ode_visitor<Span, TwoDSpan> v(xStart, xEnd, y, dxTry, a, buffer);
         variant::apply_visitor(v, solver_);
     }
 

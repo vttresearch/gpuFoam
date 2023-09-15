@@ -87,7 +87,7 @@ public:
 
         kInf_.ddc(p, T, c, li, ddc);
 
-        for (gLabel i = 0; i < gLabel(std::size(ddc)); ++i) {
+        for (gLabel i = 0; i < gLabel(ddc.size()); ++i) {
             ddc[i] *= (Pr / (1.0 + Pr)) * F;
         }
     }

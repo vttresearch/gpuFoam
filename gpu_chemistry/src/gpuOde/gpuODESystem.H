@@ -292,7 +292,7 @@ public:
 
         // Evaluate contributions from reactions
         // dfdx = Zero;
-        for (gLabel i = 0; i < gLabel(std::size(dfdx)); ++i) {
+        for (gLabel i = 0; i < gLabel(y.size()); ++i) {
             dfdx[i] = gScalar(0);
         }
 

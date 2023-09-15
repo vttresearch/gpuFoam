@@ -63,7 +63,7 @@ public:
                                  const Span1&  c,
                                  const gLabel  li,
                                  Span2&        ddc) const {
-        for (gLabel i = 0; i < gLabel(std::size(ddc)); ++i) { ddc[i] = 0; }
+        for (gLabel i = 0; i < gLabel(ddc.size()); ++i) { ddc[i] = 0; }
     }
 };
 

@@ -14,6 +14,6 @@ TEST_CASE("make_mdspan"){
 
     //REQUIRE_THROWS(make_mdspan(v, extents<2>(2,1)));
 
-    CHECK(std::size(s) == 2*3);
+    CHECK(s.size() == 2*3);
 
 }
