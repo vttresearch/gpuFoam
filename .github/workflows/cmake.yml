@@ -40,9 +40,12 @@ jobs:
     - name: Set up MPI
       run: sudo apt-get install libopenmpi-dev
 
+
     #Nvhpc-sdk set-up
     - name: Set up nvhpc
-      run: sudo apt-get install nvhpc
+      run: |
+        apt-cache search nvhpc
+        sudo apt-get install nvhpc
 
     #OpenFOAM-dev (Foundation set-up)
     - name: Set up OpenFOAM-dev
