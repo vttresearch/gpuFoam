@@ -36,7 +36,7 @@ __global__ void cuda_kernel(gScalar                       deltaT,
                             S2                            Yvf,
                             S3                            Jss,
                             S4                            buffer,
-                            gpuRosenbrock34<gpuODESystem> ode) {
+                            gpuODESolver ode) {
 
     int celli = blockIdx.x * blockDim.x + threadIdx.x;
     if (celli >= nCells) return;
@@ -79,7 +79,7 @@ GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
                            thrust::raw_pointer_cast(dThermos.data()),
                            thrust::raw_pointer_cast(dReactions.data()));
 
-    gpuRosenbrock34<gpuODESystem> ode(odeSystem, odeInputs_);
+    gpuODESolver ode = make_gpuODESolver(odeSystem, odeInputs_);
 
     // Convert fields from host to device
     auto ddeltaTChem_arr = toDevice(deltaTChem);

@@ -9,10 +9,9 @@
 #include "gpuReactionRate.H"
 
 #include "gpuODESolverInputs.H"
-#include "gpuODESolverBase.H"
+#include "makeGpuOdeSolver.H"
 #include "gpuODESystem.H"
 #include "gpuReaction.H"
-#include "gpuRosenbrock34.H"
 
 namespace FoamGpu {
 
