@@ -1,4 +1,4 @@
-name: CMake
+name: Compile and test
 
 on:
   push:
@@ -40,6 +40,10 @@ jobs:
     - name: Set up MPI
       run: sudo apt-get install libopenmpi-dev
 
+    #Nvhpc-sdk set-up
+    - name: Set up nvhpc
+      run: sudo apt-get install nvhpc
+
     #OpenFOAM-dev (Foundation set-up)
     - name: Set up OpenFOAM-dev
       run: |
@@ -48,11 +52,16 @@ jobs:
         sudo add-apt-repository "http://dl.openfoam.org/ubuntu dev"
         sudo apt-get update
         sudo apt-get -y install openfoam-dev
-        ls /opt
 
+    #gpuFoam compilation
+    - name: Compile gpuFoam
+      run: |
+        source /opt/openfoam-dev/etc/bashrc
+        ./Allwmake
 
-
-    #. /opt/openfoam-dev/etc/bashrc
+    #unittests
+    - name: Run gpuChemistry unittests
+      run: testGpuChemistry
 
 
 
