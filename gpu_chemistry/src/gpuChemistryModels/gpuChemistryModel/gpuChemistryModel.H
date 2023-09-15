@@ -3,6 +3,7 @@
 #include <vector>
 
 
+#include "basicChemistryModel.H"
 
 #include "gpuODESystem.H"
 #include "gpuReaction.H"
@@ -18,31 +19,33 @@
 #include "chemistryReductionMethod.H"
 #include "chemistryTabulationMethod.H"
 
-#include "janafThermo.H"
+
 #include "multicomponentMixture.H"
-#include "perfectGas.H"
-
-
-#include "volFields.H"
-
 #include "gpuKernelEvaluator.H"
-
+#include "validThermoType.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam {
 
-template <class ThermoType>
+
 class gpuChemistryModel : public basicChemistryModel {
 
+public:
+
+    using cpuThermoType = FoamGpu::validThermoType;
+
+
+private:
+
     //- Reference to the multi component mixture
-    const multicomponentMixture<ThermoType>& mixture_;
+    const multicomponentMixture<cpuThermoType>& mixture_;
 
     //- Thermodynamic data of the species
-    const PtrList<ThermoType>& specieThermos_;
+    const PtrList<cpuThermoType>& specieThermos_;
 
     //- Reactions
-    const ReactionList<ThermoType> reactions_;
+    const ReactionList<cpuThermoType> reactions_;
 
     //- List of reaction rate per specie [kg/m^3/s]
     PtrList<volScalarField::Internal> RR_;
@@ -91,10 +94,10 @@ private:
     static FoamGpu::GpuKernelEvaluator
     makeEvaluator(label                                    nEqns,
                    label                                    nSpecie,
-                   const ReactionList<ThermoType>&          reactions,
+                   const ReactionList<cpuThermoType>&          reactions,
                    const dictionary&                        physicalProperties,
                    const dictionary&                        chemistryProperties,
-                   const multicomponentMixture<ThermoType>& mixture);
+                   const multicomponentMixture<cpuThermoType>& mixture);
 
     /// @brief Computes and updates the reaction rates (RR_) as well as
     /// chemistry time steps (chemDeltaT_).
@@ -178,7 +181,3 @@ public:
 
 
 } // End namespace Foam
-
-#ifdef NoRepository
-#include "gpuChemistryModel.C"
-#endif

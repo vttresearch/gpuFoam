@@ -16,9 +16,11 @@ FoamFile
 
 chemistryType
 {
-    solver          none;
-    method          gpuChemistryModel;
-    //method          ode;
+    solver            none;
+    method            gpuChemistryModel;
+    //solver          none;
+    //method          gpuChemistryModel;
+   //solver       someName;
 }
 
 chemistry       on;

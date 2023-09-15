@@ -10,6 +10,7 @@
 #include "gpuPerfectGas.H"
 #include "makeGpuThermo.H"
 #include "makeGpuReactions.H"
+#include "validThermoType.H"
 
 #include "FixedList.H"
 #include "IOmanip.H"
@@ -140,21 +141,8 @@ static const char *THERMOS =
 #include "gri_thermos.h"
 ;
 
-using cpuThermo =
-        Foam::sutherlandTransport
-        <
-            Foam::species::thermo
-            <
-                Foam::janafThermo
-                <
-                    Foam::perfectGas
-                    <
-                        Foam::specie
-                    >
-                >,
-                Foam::sensibleEnthalpy
-            >
-        >;
+using cpuThermo = FoamGpu::validThermoType;
+
 
 namespace FoamGpu
 {

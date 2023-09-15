@@ -49,6 +49,7 @@ runTimeModifiable yes;
 libs
 (
     "libGpuChemistryModel.so"
+    //"libGpuChemistryModel.so"
 );
 
 DebugSwitches
