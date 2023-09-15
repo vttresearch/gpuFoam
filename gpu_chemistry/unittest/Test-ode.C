@@ -94,22 +94,81 @@ TEST_CASE("Test ludecompose")
     }
 }
 
+struct TestParams{
+    const gScalar xStart;
+    const gScalar xEnd;
+    const gScalar dxTry;
+};
+
+auto callGpuSolve
+(
+    const Foam::scalarField& y0,
+    const FoamGpu::gpuODESolver& ode,
+    TestParams p
+)
+{
+    using namespace FoamGpu;
+
+    const gLabel nEqns = y0.size();
+    const gLabel nSpecie = nEqns - 2;
+
+    const gScalar xStart = p.xStart;
+    const gScalar xEnd = p.xEnd;
+    const gScalar dxTry = p.dxTry;
+    const gLabel li = 0;
+
+    auto y = to_device_vec(y0);
+    device_vector<gScalar> J (nEqns*nEqns);
+    auto buffer = to_device_vec(host_vector<gpuBuffer>(1, gpuBuffer(nSpecie)));
+    
+    auto f = [
+        ode = ode,
+        xStart = xStart,
+        xEnd = xEnd,
+        y = make_mdspan(y, extents<1>{nEqns}),
+        li = li,
+        dxTry = dxTry,
+        J = make_mdspan(J, extents<2>{nEqns, nEqns}),
+        buffer = make_mdspan(buffer, extents<1>{1})
+    ]()
+    {
+        gScalar dxTry_temp = dxTry;
+        ode.solve(xStart, xEnd, y, li, dxTry_temp, J, buffer[0]);
+        return dxTry_temp;
+    };
+
+    auto unused = eval(f);
+    (void) unused;
+    return to_std_vec(y);
+
+}
+
+auto callCpuSolve(const Foam::scalarField& y0, const Foam::ODESolver& ode, TestParams p)
+{
+    using namespace Foam;
+    
+    const scalar xStart = p.xStart;
+    const scalar xEnd = p.xEnd; //1E-5;
+    const scalar dxTry = p.dxTry;
+    const label li = 0;
+    
+    scalarField y = y0;
+    scalar dxTry_temp = dxTry;
+    ode.solve(xStart, xEnd, y, li, dxTry_temp);
 
 
-TEST_CASE("Test gpuRosenbrock23")
+    return to_std_vec(y);
+
+}
+
+TEST_CASE("Test ODE.solve")
 {
 
     using namespace FoamGpu;
 
     Foam::MockOFSystem cpu_system;
-
-
-
-
     auto gpu_thermos_temp = makeGpuThermos();
     auto gpu_reactions_temp = makeGpuReactions();
-
-
     auto gpu_thermos = device_vector<gpuThermo>(gpu_thermos_temp.begin(), gpu_thermos_temp.end());
     auto gpu_reactions = device_vector<gpuReaction>(gpu_reactions_temp.begin(), gpu_reactions_temp.end());
 
@@ -126,469 +185,128 @@ TEST_CASE("Test gpuRosenbrock23")
     gLabel nSpecie = make_species_table().size();
     gLabel nEqns = cpu_system.nEqns();
 
-
-    Foam::dictionary dict;
-    dict.add("solver", "Rosenbrock23");
-    Foam::Rosenbrock23 cpu(cpu_system, dict);
-    
-    gpuODESolver gpu = make_gpuODESolver(gpu_system, read_gpuODESolverInputs(dict));
-    //gpuRosenbrock23<gpuODESystem> gpu(gpu_system, read_gpuODESolverInputs(dict));
-
-    
-    SECTION("solve(xStart, xEnd, y, li, dxTry) random values")
-    {
-        const gScalar xStart = 0.;
-        const gScalar xEnd = 2E-7; //1E-5;
-        const gLabel li = 0;
-        const gScalar dxTry = 1E-7;
-
+    const Foam::scalarField y0_random = [=](){
         const gScalar T = 500.0;
         const gScalar p = 1.0E5;
-        Foam::scalarField y_cpu(nEqns, 0.0);
-        fill_random(y_cpu, 0.0, 0.1);
-        y_cpu[nSpecie] = T;
-        y_cpu[nSpecie+1] = p;
+        Foam::scalarField y0(nEqns, 0.0);
+        fill_random(y0, 0.0, 0.1);
+        y0[nSpecie] = T;
+        y0[nSpecie+1] = p;
+        return y0;
+    }();
 
-        auto y_gpu = to_device_vec(y_cpu);
+    const Foam::scalarField y0_gri = [=](){
+        Foam::scalarField y0(nEqns, 0.0);
+        assign_test_condition(y0);
+        return y0;
+    }();
 
-        device_vector<gScalar> J(nEqns*nEqns);
-
-        auto buffer = to_device_vec(host_vector<gpuBuffer>(1, gpuBuffer(nSpecie)));
-        auto f = [
-            gpu = gpu,
-            xStart = xStart,
-            xEnd = xEnd,
-            y = make_mdspan(y_gpu, extents<1>{nEqns}),
-            li = li,
-            dxTry = dxTry,
-            J = make_mdspan(J, extents<2>{nEqns, nEqns}),
-            buffer = make_mdspan(buffer, extents<1>{1})
-        ]()
-        {
-            gScalar dxTry_temp = dxTry;
-            gpu.solve(xStart, xEnd, y, li, dxTry_temp, J, buffer[0]);
-            return dxTry_temp;
-        };
-
-        auto f2 =
-        [
-            &cpu=cpu,
-            xStart = xStart,
-            xEnd = xEnd,
-            &y = y_cpu,
-            li = li,
-            dxTry = dxTry
-        ]()
-        {
-
-            gScalar dxTry_temp = dxTry;
-            cpu.solve(xStart, xEnd, y, li, dxTry_temp);
-            return dxTry_temp;
-        };
-
-
-        CHECK
-        (
-            eval(f) == Approx(f2()).epsilon(errorTol)
-        );
-
-        auto y_new_cpu = to_std_vec(y_cpu);
-        auto y_new_gpu = to_std_vec(y_gpu);
-
-        for (size_t i = 0; i < y_new_cpu.size(); ++i)
-        {
-            CHECK
-            (
-                y_new_gpu[i] == Approx(y_new_cpu[i]).epsilon(errorTol)
-            );
-        }
-
-    }
-
-    /*
-
-
-    SECTION("solve(xStart, xEnd, y, li, dxTry) gri values")
+    SECTION("Rosenbrock23")
     {
-        const gScalar xStart = 0.;
-        const gScalar xEnd = 1E-5; //1E-5;
-        const gLabel li = 0;
-        const gScalar dxTry = 1E-7;
 
-        Foam::scalarField y_cpu(nEqns, 0.0);
+        Foam::dictionary dict;
+        dict.add("solver", "Rosenbrock23");
 
-        assign_test_condition(y_cpu);
+        auto cpu = Foam::ODESolver::New(cpu_system, dict); 
+        auto gpu = make_gpuODESolver(gpu_system, read_gpuODESolverInputs(dict));
 
-        auto y_gpu = to_device_vec(y_cpu);
-
-        device_vector<gScalar> J(nEqns*nEqns);
-
-        auto buffer = to_device_vec(host_vector<gpuBuffer>(1, gpuBuffer(nSpecie)));
-        auto f = [
-            gpu = gpu,
-            xStart = xStart,
-            xEnd = xEnd,
-            y = make_mdspan(y_gpu, extents<1>{nEqns}),
-            li = li,
-            dxTry = dxTry,
-            J = make_mdspan(J, extents<2>{nEqns, nEqns}),
-            buffer = make_mdspan(buffer, extents<1>{1})
-        ]()
+        SECTION("Random values")
         {
-            gScalar dxTry_temp = dxTry;
-            gpu.solve(xStart, xEnd, y, li, dxTry_temp, J, buffer[0]);
-            return dxTry_temp;
-        };
-
-        auto f2 =
-        [
-            &cpu=cpu,
-            xStart = xStart,
-            xEnd = xEnd,
-            &y = y_cpu,
-            li = li,
-            dxTry = dxTry
-        ]()
-        {
-
-            gScalar dxTry_temp = dxTry;
-            cpu.solve(xStart, xEnd, y, li, dxTry_temp);
-            return dxTry_temp;
-        };
+            TestParams params{0.0, 2E-7, 1E-7};
 
 
-        CHECK
-        (
-            eval(f) == Approx(f2()).epsilon(errorTol)
-        );
+            auto y_gpu = callGpuSolve(y0_random, gpu, params);
+            auto y_cpu = callCpuSolve(y0_random, cpu, params);
 
-        auto y_new_cpu = to_std_vec(y_cpu);
-        auto y_new_gpu = to_std_vec(y_gpu);
-
-        for (size_t i = 0; i < y_new_cpu.size(); ++i)
-        {
-            if (y_new_cpu[i] > gpuSmall)
+            for (size_t i = 0; i < y_cpu.size(); ++i)
             {
                 CHECK
                 (
-                    y_new_gpu[i] == Approx(y_new_cpu[i]).epsilon(errorTol)
+                    y_gpu[i] == Approx(y_cpu[i]).epsilon(errorTol)
                 );
             }
+
+        }
+
+        SECTION("Gri values")
+        {
+            TestParams params{0.0, 1E-5, 1E-7};
+            Foam::scalarField y0(nEqns, 0.0);   
+            assign_test_condition(y0);
+            auto y_gpu = callGpuSolve(y0_gri, gpu, params);
+            auto y_cpu = callCpuSolve(y0_gri, cpu, params);
+
+            for (size_t i = 0; i < y_cpu.size(); ++i)
+            {
+                //0 == 0 comparisons fail also with gcc
+                if (y_gpu[i] > gpuSmall)
+                {
+                    CHECK
+                    (
+                        y_gpu[i] == Approx(y_cpu[i]).epsilon(errorTol)
+                    );
+                }
+
+            }
+
         }
 
     }
 
-    */
-
-}
-
-
-TEST_CASE("Test gpuRosenbrock34")
-{
-
-    using namespace FoamGpu;
-
-    Foam::MockOFSystem cpu_system;
-
-    auto gpu_thermos_temp = makeGpuThermos();
-    auto gpu_reactions_temp = makeGpuReactions();
-
-
-    auto gpu_thermos = device_vector<gpuThermo>(gpu_thermos_temp.begin(), gpu_thermos_temp.end());
-    auto gpu_reactions = device_vector<gpuReaction>(gpu_reactions_temp.begin(), gpu_reactions_temp.end());
-
-
-    gpuODESystem gpu_system
-    (
-        cpu_system.nEqns(),
-        gLabel(gpu_reactions.size()),
-        get_raw_pointer(gpu_thermos),
-        get_raw_pointer(gpu_reactions)
-    );
-
-    gLabel nSpecie = make_species_table().size();
-    gLabel nEqns = cpu_system.nEqns();
-
-    Foam::dictionary dict;
-    dict.add("solver", "Rosenbrock34");
-    Foam::Rosenbrock34 cpu(cpu_system, dict);
-    gpuRosenbrock34<gpuODESystem> gpu(gpu_system, read_gpuODESolverInputs(dict));
-
-
-    SECTION("solve(x0, y0, li, dydx0, dx, y) random values")
-    {
-        const gScalar T = 500.0;
-        const gScalar p = 1.0E5;
-
-        const gScalar x0 = 0.0;
-        const gLabel li = 0;
-        const gScalar dx = 1E-7;
-        Foam::scalarField y0_cpu(nEqns, 0.0);
-        Foam::scalarField dydx0_cpu(nEqns, 0.0);
-        Foam::scalarField y_cpu(nEqns, 0);
-
-        fill_random(y0_cpu, 0., 0.1);
-        y0_cpu[nSpecie] = T;
-        y0_cpu[nSpecie+1] = p;
-
-
-        auto y0_gpu = to_device_vec(y0_cpu);
-        auto dydx0_gpu = to_device_vec(dydx0_cpu);
-        auto y_gpu = to_device_vec(y_cpu);
-
-        device_vector<gScalar> J(nEqns*nEqns);
-
-
-        auto buffer = to_device_vec(host_vector<gpuBuffer>(1, gpuBuffer(nSpecie)));
-        auto f = [
-            gpu_system = gpu_system,
-            gpuOde = gpu,
-            x0 = x0,
-            y0 = make_mdspan(y0_gpu, extents<1>{nEqns}),
-            li = li,
-            dydx0 = make_mdspan(dydx0_gpu, extents<1>{nEqns}),
-            dx = dx,
-            y = make_mdspan(y_gpu, extents<1>{nEqns}),
-            J = make_mdspan(J, extents<2>{nEqns, nEqns}),
-            buffer = make_mdspan(buffer, extents<1>{1})
-        ]()
-        {
-            gpu_system.derivatives(0.0, y0, li, dydx0, buffer[0]);
-            return gpuOde.solve(x0, y0, li, dydx0, dx, y, J, buffer[0]);
-        };
-
-        cpu_system.derivatives(0.0, y0_cpu, li, dydx0_cpu);
-        gScalar err_cpu = cpu.solve(x0, y0_cpu, li, dydx0_cpu, dx, y_cpu);
-        gScalar err_gpu = eval(f);
-
-
-        CHECK
-        (
-            err_gpu == Approx(err_cpu).epsilon(errorTol)
-        );
-
-        auto y_new_cpu = to_std_vec(y_cpu);
-        auto y_new_gpu = to_std_vec(y_gpu);
-
-
-        for (size_t i = 0; i < y_new_cpu.size(); ++i)
-        {
-            CHECK
-            (
-                y_new_gpu[i] == Approx(y_new_cpu[i]).epsilon(errorTol)
-            );
-        }
-
-    }
-
-    SECTION("solve(x0, y0, li, dydx0, dx, y) gri values")
+    SECTION("Rosenbrock34")
     {
 
-        const gScalar x0 = 0.0;
-        const gLabel li = 0;
-        const gScalar dx = 1E-7;
-        Foam::scalarField y0_cpu(nEqns, 0.0);
-        Foam::scalarField dydx0_cpu(nEqns, 0.0);
-        Foam::scalarField y_cpu(nEqns, 0);
+        Foam::dictionary dict;
+        dict.add("solver", "Rosenbrock34");
 
-        assign_test_condition(y0_cpu);
+        auto cpu = Foam::ODESolver::New(cpu_system, dict); 
+        auto gpu = make_gpuODESolver(gpu_system, read_gpuODESolverInputs(dict));
 
-
-        auto y0_gpu = to_device_vec(y0_cpu);
-        auto dydx0_gpu = to_device_vec(dydx0_cpu);
-        auto y_gpu = to_device_vec(y_cpu);
-
-        device_vector<gScalar> J(nEqns*nEqns);
-
-
-        auto buffer = to_device_vec(host_vector<gpuBuffer>(1, gpuBuffer(nSpecie)));
-        auto f = [
-            gpu_system = gpu_system,
-            gpuOde = gpu,
-            x0 = x0,
-            y0 = make_mdspan(y0_gpu, extents<1>{nEqns}),
-            li = li,
-            dydx0 = make_mdspan(dydx0_gpu, extents<1>{nEqns}),
-            dx = dx,
-            y = make_mdspan(y_gpu, extents<1>{nEqns}),
-            J = make_mdspan(J, extents<2>{nEqns, nEqns}),
-            buffer = make_mdspan(buffer, extents<1>{1})
-        ]()
+        SECTION("Random values")
         {
-            gpu_system.derivatives(0.0, y0, li, dydx0, buffer[0]);
-            return gpuOde.solve(x0, y0, li, dydx0, dx, y, J, buffer[0]);
-        };
-
-        cpu_system.derivatives(0.0, y0_cpu, li, dydx0_cpu);
-        gScalar err_cpu = cpu.solve(x0, y0_cpu, li, dydx0_cpu, dx, y_cpu);
-        gScalar err_gpu = eval(f);
+            TestParams params{0.0, 2E-7, 1E-7};
 
 
-        CHECK
-        (
-            err_gpu == Approx(err_cpu).epsilon(errorTol)
-        );
+            auto y_gpu = callGpuSolve(y0_random, gpu, params);
+            auto y_cpu = callCpuSolve(y0_random, cpu, params);
 
-        auto y_new_cpu = to_std_vec(y_cpu);
-        auto y_new_gpu = to_std_vec(y_gpu);
-
-
-        for (size_t i = 0; i < y_new_cpu.size(); ++i)
-        {
-            if (y_new_cpu[i] > gpuSmall)
+            for (size_t i = 0; i < y_cpu.size(); ++i)
             {
                 CHECK
                 (
-                    y_new_gpu[i] == Approx(y_new_cpu[i]).epsilon(errorTol)
+                    y_gpu[i] == Approx(y_cpu[i]).epsilon(errorTol)
                 );
             }
+
         }
 
-    }
-
-
-    SECTION("solve(xStart, xEnd, y, li, dxTry) random values")
-    {
-        const gScalar xStart = 0.;
-        const gScalar xEnd = 2E-7; //1E-5;
-        const gLabel li = 0;
-        const gScalar dxTry = 1E-7;
-
-        const gScalar T = 500.0;
-        const gScalar p = 1.0E5;
-        Foam::scalarField y_cpu(nEqns, 0.0);
-        fill_random(y_cpu, 0.0, 0.1);
-        y_cpu[nSpecie] = T;
-        y_cpu[nSpecie+1] = p;
-
-        auto y_gpu = to_device_vec(y_cpu);
-
-        device_vector<gScalar> J(nEqns*nEqns);
-
-        auto buffer = to_device_vec(host_vector<gpuBuffer>(1, gpuBuffer(nSpecie)));
-        auto f = [
-            gpu = gpu,
-            xStart = xStart,
-            xEnd = xEnd,
-            y = make_mdspan(y_gpu, extents<1>{nEqns}),
-            li = li,
-            dxTry = dxTry,
-            J = make_mdspan(J, extents<2>{nEqns, nEqns}),
-            buffer = make_mdspan(buffer, extents<1>{1})
-        ]()
+        SECTION("Gri values")
         {
-            gScalar dxTry_temp = dxTry;
-            gpu.solve(xStart, xEnd, y, li, dxTry_temp, J, buffer[0]);
-            return dxTry_temp;
-        };
+            TestParams params{0.0, 1E-5, 1E-7};
+            Foam::scalarField y0(nEqns, 0.0);   
+            assign_test_condition(y0);
+            auto y_gpu = callGpuSolve(y0_gri, gpu, params);
+            auto y_cpu = callCpuSolve(y0_gri, cpu, params);
 
-        auto f2 =
-        [
-            &cpu=cpu,
-            xStart = xStart,
-            xEnd = xEnd,
-            &y = y_cpu,
-            li = li,
-            dxTry = dxTry
-        ]()
-        {
-
-            gScalar dxTry_temp = dxTry;
-            cpu.solve(xStart, xEnd, y, li, dxTry_temp);
-            return dxTry_temp;
-        };
-
-
-        CHECK
-        (
-            eval(f) == Approx(f2()).epsilon(errorTol)
-        );
-
-        auto y_new_cpu = to_std_vec(y_cpu);
-        auto y_new_gpu = to_std_vec(y_gpu);
-
-        for (size_t i = 0; i < y_new_cpu.size(); ++i)
-        {
-            CHECK
-            (
-                y_new_gpu[i] == Approx(y_new_cpu[i]).epsilon(errorTol)
-            );
-        }
-
-    }
-
-
-
-    SECTION("solve(xStart, xEnd, y, li, dxTry) gri values")
-    {
-        const gScalar xStart = 0.;
-        const gScalar xEnd = 1E-5; //1E-5;
-        const gLabel li = 0;
-        const gScalar dxTry = 1E-7;
-
-        Foam::scalarField y_cpu(nEqns, 0.0);
-
-        assign_test_condition(y_cpu);
-
-        auto y_gpu = to_device_vec(y_cpu);
-
-        device_vector<gScalar> J(nEqns*nEqns);
-
-        auto buffer = to_device_vec(host_vector<gpuBuffer>(1, gpuBuffer(nSpecie)));
-        auto f = [
-            gpu = gpu,
-            xStart = xStart,
-            xEnd = xEnd,
-            y = make_mdspan(y_gpu, extents<1>{nEqns}),
-            li = li,
-            dxTry = dxTry,
-            J = make_mdspan(J, extents<2>{nEqns, nEqns}),
-            buffer = make_mdspan(buffer, extents<1>{1})
-        ]()
-        {
-            gScalar dxTry_temp = dxTry;
-            gpu.solve(xStart, xEnd, y, li, dxTry_temp, J, buffer[0]);
-            return dxTry_temp;
-        };
-
-        auto f2 =
-        [
-            &cpu=cpu,
-            xStart = xStart,
-            xEnd = xEnd,
-            &y = y_cpu,
-            li = li,
-            dxTry = dxTry
-        ]()
-        {
-
-            gScalar dxTry_temp = dxTry;
-            cpu.solve(xStart, xEnd, y, li, dxTry_temp);
-            return dxTry_temp;
-        };
-
-
-        CHECK
-        (
-            eval(f) == Approx(f2()).epsilon(errorTol)
-        );
-
-        auto y_new_cpu = to_std_vec(y_cpu);
-        auto y_new_gpu = to_std_vec(y_gpu);
-
-        for (size_t i = 0; i < y_new_cpu.size(); ++i)
-        {
-            if (y_new_cpu[i] > gpuSmall)
+            for (size_t i = 0; i < y_cpu.size(); ++i)
             {
-                CHECK
-                (
-                    y_new_gpu[i] == Approx(y_new_cpu[i]).epsilon(errorTol)
-                );
+                //0 == 0 comparisons fail also with gcc
+                if (y_gpu[i] > gpuSmall)
+                {
+                    CHECK
+                    (
+                        y_gpu[i] == Approx(y_cpu[i]).epsilon(errorTol)
+                    );
+                }
+
             }
+
         }
 
     }
 
 }
+
+
 
 
