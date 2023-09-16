@@ -1,6 +1,8 @@
 EXE_INC = \
     -I../catchMain/lnInclude \
     -I../src/lnInclude \
+    -I../src/gpuChemistryModels/lnInclude \
+    -I../src/gpuKernelEvaluator/lnInclude \
     -I../../gpu_utils/common/lnInclude \
     -I../unittest \
     -I$(LIB_SRC)/physicalProperties/lnInclude \
@@ -16,6 +18,8 @@ EXE_INC = \
     -std=c++17
 
 EXE_LIBS = \
+    -L$(FOAM_USER_LIBBIN) \
+    -lGpuKernelEvaluator \
     -lCatchMain \
     -lmeshTools \
     -lthermophysicalProperties \
@@ -29,6 +33,5 @@ EXE_LIBS = \
     -lchemistryModel \
     -lblockMesh
 
-
-
+#include ../nvcc
 #include ../nvcpp

@@ -3,18 +3,14 @@
 #include <iostream>
 
 #include "cuda_host_dev.H"
+#include "host_device_vectors.H"
 #include "gpuBuffer.H"
 
-#include <thrust/device_vector.h>
 #include <thrust/execution_policy.h>
 #include <thrust/extrema.h> //min_element
 #include <thrust/host_vector.h>
 
 namespace FoamGpu {
-
-template <class T> using host_vector = thrust::host_vector<T>;
-
-template <class T> using device_vector = thrust::device_vector<T>;
 
 template <class Container> static inline auto toDevice(const Container& c) {
     using value = typename Container::value_type;

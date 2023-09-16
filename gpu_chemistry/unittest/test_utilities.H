@@ -273,11 +273,11 @@ static inline void fill_random(T& v, double LO = 0.0, double HI = 1.0)
         e = random_number(LO, HI);
     }
 }
-
-static inline void assign_test_condition(Foam::scalarField& f)
+template<class T>
+static inline void assign_test_condition(T& f)
 {
     gLabel nSpecie = 53;
-    if (f.size() != nSpecie + 2){
+    if (gLabel(f.size()) != nSpecie + 2){
         throw std::logic_error("Field size not gri");
     }
 
