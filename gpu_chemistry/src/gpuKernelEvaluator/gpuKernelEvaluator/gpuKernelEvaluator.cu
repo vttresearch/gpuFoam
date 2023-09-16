@@ -83,41 +83,8 @@ __global__ void cuda_kernel(Op op, gLabel nCells) {
         op(celli);
     }
 }
-/*
-template <class S1, class S2, class S3, class S4>
-__global__ void cuda_kernel(gScalar                       deltaT,
-                            gLabel                        nCells,
-                            gLabel                        nSpecie,
-                            S1                            deltaTChem,
-                            S2                            Yvf,
-                            S3                            Jss,
-                            S4                            buffer,
-                            gpuODESolver ode) {
 
-    int celli = blockIdx.x * blockDim.x + threadIdx.x;
-    if (celli >= nCells) return;
 
-    auto Y = mdspan<gScalar, 1>(&Yvf(celli, 0), extents<1>{nSpecie + 2});
-    auto J = mdspan<gScalar, 2>(&Jss(celli, 0, 0),
-                                extents<2>{nSpecie + 2, nSpecie + 2});
-
-    // Initialise time progress
-    gScalar timeLeft = deltaT;
-
-    constexpr gLabel li = 0;
-
-    // Calculate the chemical source terms
-    while (timeLeft > gpuSmall) {
-        gScalar dt = timeLeft;
-
-        ode.solve(0, dt, Y, li, deltaTChem[celli], J, buffer[celli]);
-
-        for (int i = 0; i < nSpecie; i++) { Y[i] = std::max(0.0, Y[i]); }
-
-        timeLeft -= dt;
-    }
-}
-*/
 std::pair<std::vector<gScalar>, std::vector<gScalar>>
 GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
                                 gScalar                     deltaTChemMax,
@@ -151,26 +118,21 @@ GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
         host_vector<gpuBuffer>(nCells, gpuBuffer(nSpecie_));
 
     auto buffer = make_mdspan(buffer_arr, extents<1>{nCells});
+    singleCell op(deltaT, nSpecie_, ddeltaTChem, dYvf, Jss, buffer, ode);
+    thrust::for_each
+    (
+        thrust::make_counting_iterator(0),
+        thrust::make_counting_iterator(nCells),
+        op
+    );
 
+    /*
     singleCell op(deltaT, nSpecie_, ddeltaTChem, dYvf, Jss, buffer, ode);
     gLabel NTHREADS = 32;
     gLabel NBLOCKS  = (nCells + NTHREADS - 1) / NTHREADS;
     cuda_kernel<<<NBLOCKS, NTHREADS>>>(op, nCells);
-    /*
-    gLabel NTHREADS = 32;
-    gLabel NBLOCKS  = (nCells + NTHREADS - 1) / NTHREADS;
-    // kernel<<<(nCells()+255)/256, 256>>>(nCells(), op);
-    // kernel<<<NBLOCKS, NTHREADS>>>(nCells_, op);
-
-    cuda_kernel<<<NBLOCKS, NTHREADS>>>(
-        deltaT, nCells, nSpecie_, ddeltaTChem, dYvf, Jss, buffer, ode);
-    cudaDeviceSynchronize();
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        printf("Error: %s\n", cudaGetErrorString(err));
-        assert(0);
-    }
     */
+    
     return std::make_pair(toStdVec(dYvf_arr), toStdVec(ddeltaTChem_arr));
 }
 
