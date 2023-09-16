@@ -31,4 +31,4 @@ EXE_LIBS = \
 
 
 
-include ../nvcpp
+#include ../nvcpp

@@ -82,14 +82,14 @@ make_reaction_rate(const Foam::speciesTable& species,
 
     //Allow for typenames where the substring "Reaction" has been subtracted.
     //This is likely some backwards compatibility thing.
-    std::string reactionTypeName = [=](){}
+    std::string reactionTypeName = [=]()
     {
         auto pos = temp.find("Reaction");
         if (pos != std::string::npos )
         {
             return std::string(temp.begin(), temp.begin()+pos);
         }
-        return temp;
+        return std::string(temp.begin(), temp.end());
     }();
     
 
