@@ -3,8 +3,7 @@
 #include "test_utilities.H"
 
 #include "ODESystem.H"
-//#include "basicChemistryModel.H"
-//#include "chemistryModel.H"
+#include "create_inputs.H"
 
 namespace Foam
 {
@@ -17,8 +16,8 @@ class MockOFSystem
     public ODESystem
 {
 
-    const PtrList<cpuThermo> specieThermos_;
-    const ReactionList<cpuThermo> reactions_;
+    const PtrList<FoamThermoType> specieThermos_;
+    const ReactionList<FoamThermoType> reactions_;
     label nSpecie_;
     mutable scalarField Y_;
     mutable scalarField c_;
@@ -36,10 +35,10 @@ class MockOFSystem
 
 public:
 
-    MockOFSystem() :
-        specieThermos_(FoamGpu::make_cpu_thermos()),
-        reactions_(FoamGpu::make_cpu_reactions()),
-        nSpecie_(FoamGpu::make_species_table().size()),
+    MockOFSystem(TestData::Mechanism m) :
+        specieThermos_(TestData::makeCpuThermos(m)),
+        reactions_(TestData::makeCpuReactions(m)),
+        nSpecie_(TestData::speciesCount(m)),
         Y_(nSpecie_),
         c_(nSpecie_),
         YTpWork_(scalarField(nSpecie_ + 2)),

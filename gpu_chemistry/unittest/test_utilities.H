@@ -15,15 +15,7 @@
 
 
 
-constexpr int CH4_idx = 0;
-constexpr int O2_idx = 4;
-constexpr int N2_idx = 47;
 
-constexpr double CH4_val = 0.2;
-constexpr double O2_val = 0.5;
-constexpr double N2_val = 0.3;
-constexpr double T_inf = 1000.0;
-constexpr double p_inf = 1.36789e+06;
 
 //Note, here the "error" is a comparison against a cpu result.
 //When compiled with an nvidia compiler, the arithmetic operations are computed
@@ -133,25 +125,6 @@ static inline void fill_random(T& v, double LO = 0.0, double HI = 1.0)
     {
         e = random_number(LO, HI);
     }
-}
-template<class T>
-static inline void assign_test_condition(T& f)
-{
-    gLabel nSpecie = 53;
-    if (gLabel(f.size()) != nSpecie + 2){
-        throw std::logic_error("Field size not gri");
-    }
-
-    for (auto& e : f)
-    {
-        e = 0.0;
-    }
-    f[CH4_idx] = CH4_val;
-    f[O2_idx] = O2_val;
-    f[N2_idx] = N2_val;
-
-    f[nSpecie] = T_inf;
-    f[nSpecie+1] = p_inf;
 }
 
 

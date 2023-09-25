@@ -1,6 +1,7 @@
 
 #include "catch.H"
 #include "test_utilities.H"
+#include "create_inputs.H"
 #include "mock_of_odesystem.H"
 #include "gpuODESystem.H"
 #include "makeGpuOdeSolver.H"
@@ -120,7 +121,7 @@ auto callGpuSolve
     auto y = to_device_vec(y0);
     device_vector<gScalar> J (nEqns*nEqns);
     auto buffer = to_device_vec(host_vector<gpuBuffer>(1, gpuBuffer(nSpecie)));
-    
+
     auto f = [
         ode = ode,
         xStart = xStart,
@@ -139,36 +140,60 @@ auto callGpuSolve
 
     auto unused = eval(f);
     (void) unused;
-    return to_std_vec(y);
+
+    auto ret = to_std_vec(y);
+
+    //Round small values to zero to avoid -0 == 0 comparisons
+    for (auto& e : ret)
+    {
+        if (std::abs(e) < gpuSmall)
+        {
+            e = 0.0;
+        }
+    }
+    return ret;
 
 }
 
 auto callCpuSolve(const Foam::scalarField& y0, const Foam::ODESolver& ode, TestParams p)
 {
     using namespace Foam;
-    
+
     const scalar xStart = p.xStart;
     const scalar xEnd = p.xEnd; //1E-5;
     const scalar dxTry = p.dxTry;
     const label li = 0;
-    
+
     scalarField y = y0;
     scalar dxTry_temp = dxTry;
     ode.solve(xStart, xEnd, y, li, dxTry_temp);
 
+    auto ret = to_std_vec(y);
 
-    return to_std_vec(y);
+    //Round small values to zero to avoid -0 == 0 comparisons
+    for (auto& e : ret)
+    {
+        if (std::abs(e) < gpuSmall)
+        {
+            e = 0.0;
+        }
+    }
+
+    return ret;
 
 }
 
-TEST_CASE("Test ODE.solve")
+
+
+
+static inline void runMechanismTests(TestData::Mechanism mech)
 {
 
     using namespace FoamGpu;
 
-    Foam::MockOFSystem cpu_system;
-    auto gpu_thermos_temp = makeGpuThermos();
-    auto gpu_reactions_temp = makeGpuReactions();
+    Foam::MockOFSystem cpu_system(mech);
+    auto gpu_thermos_temp = makeGpuThermos(mech);
+    auto gpu_reactions_temp = makeGpuReactions(mech);
     auto gpu_thermos = device_vector<gpuThermo>(gpu_thermos_temp.begin(), gpu_thermos_temp.end());
     auto gpu_reactions = device_vector<gpuReaction>(gpu_reactions_temp.begin(), gpu_reactions_temp.end());
 
@@ -181,132 +206,55 @@ TEST_CASE("Test ODE.solve")
         get_raw_pointer(gpu_reactions)
     );
 
-
-    gLabel nSpecie = make_species_table().size();
-    gLabel nEqns = cpu_system.nEqns();
-
-    const Foam::scalarField y0_random = [=](){
-        const gScalar T = 500.0;
-        const gScalar p = 1.0E5;
-        Foam::scalarField y0(nEqns, 0.0);
-        fill_random(y0, 0.0, 0.1);
-        y0[nSpecie] = T;
-        y0[nSpecie+1] = p;
+    const Foam::scalarField y0 = [=](){
+        gLabel nEqns = TestData::equationCount(mech);
+        Foam::scalarField y0(nEqns);
+        assign_test_condition(y0, mech);
         return y0;
     }();
 
-    const Foam::scalarField y0_gri = [=](){
-        Foam::scalarField y0(nEqns, 0.0);
-        assign_test_condition(y0);
-        return y0;
-    }();
+    TestParams params{0.0, 1E-5, 1E-7};
 
-    SECTION("Rosenbrock23")
     {
-
         Foam::dictionary dict;
         dict.add("solver", "Rosenbrock23");
 
-        auto cpu = Foam::ODESolver::New(cpu_system, dict); 
+        auto cpu = Foam::ODESolver::New(cpu_system, dict);
         auto gpu = make_gpuODESolver(gpu_system, read_gpuODESolverInputs(dict));
+        auto y_gpu = callGpuSolve(y0, gpu, params);
+        auto y_cpu = callCpuSolve(y0, cpu, params);
 
-        SECTION("Random values")
-        {
-            TestParams params{0.0, 2E-7, 1E-7};
-
-
-            auto y_gpu = callGpuSolve(y0_random, gpu, params);
-            auto y_cpu = callCpuSolve(y0_random, cpu, params);
-
-            for (size_t i = 0; i < y_cpu.size(); ++i)
-            {
-                CHECK
-                (
-                    y_gpu[i] == Approx(y_cpu[i]).epsilon(errorTol)
-                );
-            }
-
-        }
-
-        SECTION("Gri values")
-        {
-            TestParams params{0.0, 1E-5, 1E-7};
-            Foam::scalarField y0(nEqns, 0.0);   
-            assign_test_condition(y0);
-            auto y_gpu = callGpuSolve(y0_gri, gpu, params);
-            auto y_cpu = callCpuSolve(y0_gri, cpu, params);
-
-            for (size_t i = 0; i < y_cpu.size(); ++i)
-            {
-                //0 == 0 comparisons fail also with gcc
-                if (y_gpu[i] > gpuSmall)
-                {
-                    CHECK
-                    (
-                        y_gpu[i] == Approx(y_cpu[i]).epsilon(errorTol)
-                    );
-                }
-
-            }
-
-        }
-
+        REQUIRE_THAT
+        (
+            y_gpu,
+            Catch::Matchers::Approx(to_std_vec(y_cpu)).epsilon(errorTol)
+        );
     }
 
-    SECTION("Rosenbrock34")
+
     {
 
         Foam::dictionary dict;
         dict.add("solver", "Rosenbrock34");
-
-        auto cpu = Foam::ODESolver::New(cpu_system, dict); 
+        auto cpu = Foam::ODESolver::New(cpu_system, dict);
         auto gpu = make_gpuODESolver(gpu_system, read_gpuODESolverInputs(dict));
+        auto y_gpu = callGpuSolve(y0, gpu, params);
+        auto y_cpu = callCpuSolve(y0, cpu, params);
 
-        SECTION("Random values")
-        {
-            TestParams params{0.0, 2E-7, 1E-7};
-
-
-            auto y_gpu = callGpuSolve(y0_random, gpu, params);
-            auto y_cpu = callCpuSolve(y0_random, cpu, params);
-
-            for (size_t i = 0; i < y_cpu.size(); ++i)
-            {
-                CHECK
-                (
-                    y_gpu[i] == Approx(y_cpu[i]).epsilon(errorTol)
-                );
-            }
-
-        }
-
-        SECTION("Gri values")
-        {
-            TestParams params{0.0, 1E-5, 1E-7};
-            Foam::scalarField y0(nEqns, 0.0);   
-            assign_test_condition(y0);
-            auto y_gpu = callGpuSolve(y0_gri, gpu, params);
-            auto y_cpu = callCpuSolve(y0_gri, cpu, params);
-
-            for (size_t i = 0; i < y_cpu.size(); ++i)
-            {
-                //0 == 0 comparisons fail also with gcc
-                if (y_gpu[i] > gpuSmall)
-                {
-                    CHECK
-                    (
-                        y_gpu[i] == Approx(y_cpu[i]).epsilon(errorTol)
-                    );
-                }
-
-            }
-
-        }
-
+        REQUIRE_THAT
+        (
+            y_gpu,
+            Catch::Matchers::Approx(to_std_vec(y_cpu)).epsilon(errorTol)
+        );
     }
 
 }
 
 
+TEST_CASE("Temp")
+{
+    runMechanismTests(TestData::GRI);
+    runMechanismTests(TestData::H2);
+}
 
 
