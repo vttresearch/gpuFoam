@@ -5,17 +5,10 @@
 #include "gpuKernelEvaluator.H"
 #include "readGpuOdeInputs.H"
 #include "test_utilities.H"
+#include "create_inputs.H"
 #include "benchmark_utilities.H"
 
-struct BenchmarkParams{
 
-    static constexpr gScalar deltaT = 1E-6;
-    static constexpr gScalar deltaTChemMax = 1E8;
-    static constexpr gScalar chemdeltaTMin = 1E-7;
-    static constexpr gScalar chemDeltaTmax = 1E-6;
-    static constexpr gLabel nCells = 2;
-
-};
 
 
 auto callGpuSolve
@@ -33,17 +26,26 @@ auto callGpuSolve
 }
 
 
+static inline Foam::dictionary make_dict(std::string solverName)
+{
+    Foam::dictionary dict;
+    dict.add("solver", solverName);
+    dict.add("absTol", BenchmarkParams::absTol);
+    dict.add("relTol", BenchmarkParams::relTol);
+    return dict;
+}
 
 //std::vector<gScalar> make_random_
 
-FoamGpu::GpuKernelEvaluator make_evaluator(const Foam::dictionary& odeDict)
+FoamGpu::GpuKernelEvaluator make_evaluator
+(
+    const Foam::dictionary& odeDict, TestData::Mechanism m)
 {
     using namespace FoamGpu;
-    auto thermos = makeGpuThermos();
-    auto reactions = makeGpuReactions();
-    gLabel nSpecie = make_species_table().size();
-    gLabel nEqns = nSpecie + 2;
-
+    auto thermos = TestData::makeGpuThermos(m);
+    auto reactions = TestData::makeGpuReactions(m);
+    gLabel nSpecie = TestData::speciesCount(m);
+    gLabel nEqns = TestData::equationCount(m);
 
     auto inputs = read_gpuODESolverInputs(odeDict);
 
@@ -60,21 +62,21 @@ FoamGpu::GpuKernelEvaluator make_evaluator(const Foam::dictionary& odeDict)
 
 TEST_CASE("Benchmark GpuKernelEvaluator")
 {
+    auto mech = TestData::H2;
+
     const gScalar deltaT = BenchmarkParams::deltaT;
     const gScalar deltaTChemMax = BenchmarkParams::deltaTChemMax;
     const gLabel nCells = BenchmarkParams::nCells;
-    gLabel nSpecie = FoamGpu::make_species_table().size();
-    gLabel nEqns = nSpecie + 2;
-
 
     const auto rho = make_random_rhos(nCells);
     const auto deltaTChem = make_random_deltaTChem(nCells);
-    const auto Yvf = make_random_y0s(nCells, nEqns);
-
+    //const auto Yvf = make_tutorial_y0s(nCells, mech);
+    const auto Yvf = make_random_y0s(nCells, TestData::equationCount(mech));
+    /*
     {
         Foam::dictionary dict;
         dict.add("solver", "Rosenbrock23");
-        auto eval = make_evaluator(dict);
+        auto eval = make_evaluator(dict, mech);
 
         auto r = callGpuSolve
             (
@@ -88,13 +90,13 @@ TEST_CASE("Benchmark GpuKernelEvaluator")
 
         std::cout << std::get<2>(r) << std::endl;
     }
+    */
 
 
-    /*
+
     {
-        Foam::dictionary dict;
-        dict.add("solver", "Rosenbrock23");
-        auto eval = make_evaluator(dict);
+        auto dict = make_dict("Rosenbrock23");
+        auto eval = make_evaluator(dict, mech);
 
         BENCHMARK("Rosenbrock23")
         {
@@ -114,9 +116,8 @@ TEST_CASE("Benchmark GpuKernelEvaluator")
 
 
     {
-        Foam::dictionary dict;
-        dict.add("solver", "Rosenbrock34");
-        auto eval = make_evaluator(dict);
+        auto dict = make_dict("Rosenbrock34");
+        auto eval = make_evaluator(dict, mech);
 
         BENCHMARK("Rosenbrock34")
         {
@@ -132,6 +133,6 @@ TEST_CASE("Benchmark GpuKernelEvaluator")
 
         };
     }
-    */
+
 
 }

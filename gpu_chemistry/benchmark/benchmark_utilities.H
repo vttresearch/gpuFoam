@@ -2,6 +2,20 @@
 
 #include <vector>
 #include "gpu_constants.H"
+#include "create_inputs.H"
+
+struct BenchmarkParams{
+
+    static constexpr gScalar deltaT = 1E-6;
+    static constexpr gScalar deltaTChemMax = 1E8;
+    static constexpr gScalar chemdeltaTMin = 1E-7;
+    static constexpr gScalar chemDeltaTmax = 1E-6;
+    static constexpr gLabel nCells = 1000;
+
+    static constexpr gScalar absTol = 1E-1;
+    static constexpr gScalar relTol = 1E-12;
+
+};
 
 static inline
 std::vector<gScalar> make_random_y0s(gLabel nCells, gLabel nEqns)
@@ -10,8 +24,6 @@ std::vector<gScalar> make_random_y0s(gLabel nCells, gLabel nEqns)
 
     gLabel nSpecie = nEqns - 2;
     std::vector<gScalar> ret(nCells * nEqns);
-    auto gri_y = std::vector<gScalar>(nEqns);
-    assign_test_condition(gri_y);
     auto yvf = make_mdspan(ret, extents<2>{nCells, nEqns});
     for (gLabel i = 0; i < nCells; ++i){
         for (gLabel j = 0; j < nSpecie; ++j){
@@ -23,18 +35,18 @@ std::vector<gScalar> make_random_y0s(gLabel nCells, gLabel nEqns)
     return ret;
 }
 static inline
-std::vector<gScalar> make_gri_y0s(gLabel nCells, gLabel nEqns)
+std::vector<gScalar> make_tutorial_y0s(gLabel nCells, TestData::Mechanism mech)
 {
     using namespace FoamGpu;
-
+    const gLabel nEqns = TestData::equationCount(mech);
     std::vector<gScalar> ret(nCells * nEqns);
-    auto gri_y = std::vector<gScalar>(nEqns);
-    assign_test_condition(gri_y);
+    auto y0 = std::vector<gScalar>(nEqns);
+    assign_test_condition(y0, mech);
     auto yvf = make_mdspan(ret, extents<2>{nCells, nEqns});
     for (gLabel i = 0; i < nCells; ++i){
 
         for (gLabel j = 0; j < nEqns; ++j){
-            yvf(i, j) = gri_y[j];
+            yvf(i, j) = y0[j];
         }
 
     }
@@ -47,7 +59,7 @@ std::vector<gScalar> make_random_rhos(gLabel nCells)
 {
     using namespace FoamGpu;
     std::vector<gScalar> ret(nCells, 1.0);
-    //fill_random(ret, 0.9, 1.3);
+    fill_random(ret, 0.9, 1.3);
     return ret;
 }
 static inline
@@ -55,7 +67,7 @@ std::vector<gScalar> make_random_deltaTChem(gLabel nCells)
 {
     using namespace FoamGpu;
     std::vector<gScalar> ret(nCells, 1E-7);
-    //fill_random(ret, BenchmarkParams::chemdeltaTMin, BenchmarkParams::chemDeltaTmax);
+    fill_random(ret, BenchmarkParams::chemdeltaTMin, BenchmarkParams::chemDeltaTmax);
     return ret;
 }
 

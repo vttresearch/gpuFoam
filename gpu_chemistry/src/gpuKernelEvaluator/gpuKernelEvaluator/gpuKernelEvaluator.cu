@@ -122,6 +122,7 @@ GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
     singleCell op(deltaT, nSpecie_, ddeltaTChem, dYvf, Jss, buffer, ode);
     thrust::for_each
     (
+        thrust::device,
         thrust::make_counting_iterator(0),
         thrust::make_counting_iterator(nCells),
         op
