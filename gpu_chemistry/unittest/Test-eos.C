@@ -2,7 +2,7 @@
 
 
 #include "test_utilities.H"
-
+#include "create_inputs.H"
 
 #include "thermodynamicConstants.H"
 #include "fundamentalConstants.H"
@@ -37,7 +37,7 @@ TEST_CASE("Test gpuConstans")
 TEST_CASE("Test perfectGas"){
 
     using namespace FoamGpu;
-    
+
     SECTION("Constructors")
     {
         REQUIRE_NOTHROW(gpuPerfectGas());

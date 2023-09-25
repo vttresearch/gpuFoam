@@ -5,26 +5,13 @@
 #include "error_handling.H"
 
 #include "host_device_vectors.H"
+
+
 #include "gpuThermo.H"
-#include "gpuReaction.H"
-#include "gpuPerfectGas.H"
-#include "makeGpuThermo.H"
-#include "makeGpuReactions.H"
-#include "validThermoType.H"
-
 #include "FixedList.H"
-#include "IOmanip.H"
-#include "janafThermo.H"
-#include "specie.H"
-#include "perfectGas.H"
 
-#include "thermo.H"
-#include "sensibleEnthalpy.H"
-#include "speciesTable.H"
-#include "ReactionList.H"
-#include "sutherlandTransport.H"
-#include "ArrheniusReactionRate.H"
-#include "ReversibleReaction.H"
+
+
 
 
 
@@ -133,132 +120,6 @@ static inline auto to_device_vec(const T& c)
 
 
 
-static const char *REACTIONS =
-#include "gri_reactions.h"
-;
-
-static const char *THERMOS =
-#include "gri_thermos.h"
-;
-
-using cpuThermo = FoamGpu::validThermoType;
-
-
-namespace FoamGpu
-{
-
-
-
-
-
-
-static inline Foam::dictionary get_thermo_dict()
-{
-
-    std::string t_str(THERMOS);
-    Foam::IStringStream t_temp(t_str);
-
-    Foam::dictionary thermoDict(t_temp);
-    return thermoDict;
-}
-
-static inline Foam::dictionary get_reaction_dict()
-{
-    std::string t_str(REACTIONS);
-    Foam::IStringStream t_temp(t_str);
-
-    Foam::dictionary reactionDict(t_temp);
-    return reactionDict;
-
-}
-
-static inline Foam::PtrList<cpuThermo> make_cpu_thermos()
-{
-    using namespace Foam;
-
-    dictionary thermoDict = get_thermo_dict();
-    List<word> species = thermoDict.lookup("species");
-    PtrList<cpuThermo> ret;
-
-    for (auto specie : species)
-    {
-        ret.append
-        (
-            new cpuThermo(specie, thermoDict.subDict(specie))
-        );
-    }
-    return ret;
-}
-
-static inline Foam::speciesTable make_species_table(){
-    using namespace Foam;
-
-    dictionary thermoDict = get_thermo_dict();
-    List<word> s_list = thermoDict.lookup("species");
-    speciesTable species(s_list);
-    return species;
-}
-
-
-
-static inline std::vector<gpuThermo> makeGpuThermos()
-{
-    using namespace Foam;
-
-    dictionary thermoDict = get_thermo_dict();
-    auto cpuThermos = make_cpu_thermos();
-
-    std::vector<gpuThermo> ret;
-    for (label i = 0; i < cpuThermos.size(); ++i)
-    {
-        auto subDict = thermoDict.subDict(cpuThermos[i].name());
-
-        auto gpuThermo = makeGpuThermo
-        (
-            cpuThermos[i],
-            subDict
-        );
-        ret.push_back(gpuThermo);
-    }
-
-    return ret;
-}
-
-static inline const auto make_cpu_reactions()
-{
-    using namespace Foam;
-
-    auto thermos = make_cpu_thermos();
-    auto species = make_species_table();
-    dictionary reactionDict = get_reaction_dict();
-
-    return ReactionList<cpuThermo>(species, thermos, reactionDict);
-
-}
-
-static inline std::vector<gpuReaction> makeGpuReactions()
-{
-    using namespace Foam;
-
-    auto thermos = make_cpu_thermos();
-    dictionary thermoDict = get_thermo_dict();
-    List<word> s_list = thermoDict.lookup("species");
-    speciesTable species(s_list);
-    dictionary reactionDict = get_reaction_dict();
-
-    auto gpu_thermos = makeGpuThermos();
-    auto cpu_reactions = make_cpu_reactions();
-    auto ret =
-        makeGpuReactions
-        (
-            species,
-            reactionDict,
-            gpu_thermos,
-            cpu_reactions
-        );
-
-    return ret;
-}
 
 static inline double random_number(double LO, double HI){
     double r = LO + static_cast <double> (rand()) /( static_cast <double> (RAND_MAX/(HI-LO)));
@@ -295,7 +156,6 @@ static inline void assign_test_condition(T& f)
 
 
 
-} //Foam
 
 
 

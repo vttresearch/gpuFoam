@@ -2,7 +2,7 @@
 
 
 #include "test_utilities.H"
-
+#include "create_inputs.H"
 
 
 Foam::dictionary get_dictionary()
@@ -135,46 +135,88 @@ TEST_CASE("Test gpuThermo"){
 
 
 
-TEST_CASE("Test gpuThermo with gri")
+TEST_CASE("Test gpuThermo properties")
 {
     using namespace FoamGpu;
 
-    auto cpuThermos = make_cpu_thermos();
-    auto gpuThermos_temp = makeGpuThermos();
-    device_vector<gpuThermo> gpuThermos(gpuThermos_temp.begin(), gpuThermos_temp.end());
-    CHECK(cpuThermos.size() == gLabel(gpuThermos.size()));
 
-    for (gLabel i = 0; i < cpuThermos.size(); ++i)
+    SECTION("Gri")
     {
-        const auto& cpu = cpuThermos[i];
-        const auto  gpu = &(gpuThermos[i]);
+        auto cpuThermos = TestData::makeCpuThermos(TestData::GRI);
+        auto gpuThermos_temp = TestData::makeGpuThermos(TestData::GRI);
+        device_vector<gpuThermo> gpuThermos(gpuThermos_temp.begin(), gpuThermos_temp.end());
+        CHECK(cpuThermos.size() == gLabel(gpuThermos.size()));
 
-        //scalar p = 1E5;
-        //scalar T = 300.546;
-        gScalar p = 1E5;
-        gScalar T = 431.4321;
+        for (gLabel i = 0; i < cpuThermos.size(); ++i)
+        {
+            const auto& cpu = cpuThermos[i];
+            const auto  gpu = &(gpuThermos[i]);
 
-        REQUIRE(eval([=](){return gpu->W();}) == Approx(cpu.W()).epsilon(errorTol));
-        REQUIRE(eval([=](){return gpu->Y();}) == Approx(cpu.Y()));
-        REQUIRE(eval([=](){return gpu->R();}) == Approx(cpu.R()));
-        REQUIRE(eval([=](){return gpu->Cp(p, T);}) == Approx(cpu.Cp(p, T)).epsilon(errorTol));
-        REQUIRE(eval([=](){return gpu->Ha(p, T);}) == Approx(cpu.Ha(p, T)).epsilon(errorTol));
-        REQUIRE(eval([=](){return gpu->Hs(p, T);}) == Approx(cpu.Hs(p, T)).epsilon(errorTol));
-        REQUIRE(eval([=](){return gpu->Hf(    );}) == Approx(cpu.Hf(    )).epsilon(errorTol));
-        REQUIRE(eval([=](){return gpu->S(p, T);}) == Approx(cpu.S(p, T)).epsilon(errorTol));
-        REQUIRE(eval([=](){return gpu->Gstd(T);}) == Approx(cpu.Gstd(T)).epsilon(errorTol));
-        REQUIRE(eval([=](){return gpu->dCpdT(p, T);}) == Approx(cpu.dCpdT(p, T)).epsilon(errorTol));
+            gScalar p = 1E5;
+            gScalar T = 431.4321;
 
-        REQUIRE(eval([=](){return gpu->Cv(p, T);}) == Approx(cpu.Cv(p, T)).epsilon(errorTol));
-        REQUIRE(eval([=](){return gpu->Es(p, T);}) == Approx(cpu.Es(p, T)).epsilon(errorTol));
-        REQUIRE(eval([=](){return gpu->Ea(p, T);}) == Approx(cpu.Ea(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->W();}) == Approx(cpu.W()).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Y();}) == Approx(cpu.Y()));
+            REQUIRE(eval([=](){return gpu->R();}) == Approx(cpu.R()));
+            REQUIRE(eval([=](){return gpu->Cp(p, T);}) == Approx(cpu.Cp(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Ha(p, T);}) == Approx(cpu.Ha(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Hs(p, T);}) == Approx(cpu.Hs(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Hf(    );}) == Approx(cpu.Hf(    )).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->S(p, T);}) == Approx(cpu.S(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Gstd(T);}) == Approx(cpu.Gstd(T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->dCpdT(p, T);}) == Approx(cpu.dCpdT(p, T)).epsilon(errorTol));
 
-        REQUIRE(eval([=](){return gpu->K(p, T);}) == Approx(cpu.K(p, T)).epsilon(errorTol));
-        REQUIRE(eval([=](){return gpu->Kp(p, T);}) == Approx(cpu.Kp(p, T)).epsilon(errorTol));
-        REQUIRE(eval([=](){return gpu->Kc(p, T);}) == Approx(cpu.Kc(p, T)).epsilon(errorTol));
-        REQUIRE(eval([=](){return gpu->dKcdTbyKc(p, T);}) == Approx(cpu.dKcdTbyKc(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Cv(p, T);}) == Approx(cpu.Cv(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Es(p, T);}) == Approx(cpu.Es(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Ea(p, T);}) == Approx(cpu.Ea(p, T)).epsilon(errorTol));
 
+            REQUIRE(eval([=](){return gpu->K(p, T);}) == Approx(cpu.K(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Kp(p, T);}) == Approx(cpu.Kp(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Kc(p, T);}) == Approx(cpu.Kc(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->dKcdTbyKc(p, T);}) == Approx(cpu.dKcdTbyKc(p, T)).epsilon(errorTol));
+
+        }
     }
+
+    SECTION("H2")
+    {
+        auto cpuThermos = TestData::makeCpuThermos(TestData::H2);
+        auto gpuThermos_temp = TestData::makeGpuThermos(TestData::H2);
+        device_vector<gpuThermo> gpuThermos(gpuThermos_temp.begin(), gpuThermos_temp.end());
+        CHECK(cpuThermos.size() == gLabel(gpuThermos.size()));
+
+        for (gLabel i = 0; i < cpuThermos.size(); ++i)
+        {
+            const auto& cpu = cpuThermos[i];
+            const auto  gpu = &(gpuThermos[i]);
+
+            gScalar p = 1E5;
+            gScalar T = 431.4321;
+
+            REQUIRE(eval([=](){return gpu->W();}) == Approx(cpu.W()).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Y();}) == Approx(cpu.Y()));
+            REQUIRE(eval([=](){return gpu->R();}) == Approx(cpu.R()));
+            REQUIRE(eval([=](){return gpu->Cp(p, T);}) == Approx(cpu.Cp(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Ha(p, T);}) == Approx(cpu.Ha(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Hs(p, T);}) == Approx(cpu.Hs(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Hf(    );}) == Approx(cpu.Hf(    )).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->S(p, T);}) == Approx(cpu.S(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Gstd(T);}) == Approx(cpu.Gstd(T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->dCpdT(p, T);}) == Approx(cpu.dCpdT(p, T)).epsilon(errorTol));
+
+            REQUIRE(eval([=](){return gpu->Cv(p, T);}) == Approx(cpu.Cv(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Es(p, T);}) == Approx(cpu.Es(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Ea(p, T);}) == Approx(cpu.Ea(p, T)).epsilon(errorTol));
+
+            REQUIRE(eval([=](){return gpu->K(p, T);}) == Approx(cpu.K(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Kp(p, T);}) == Approx(cpu.Kp(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Kc(p, T);}) == Approx(cpu.Kc(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->dKcdTbyKc(p, T);}) == Approx(cpu.dKcdTbyKc(p, T)).epsilon(errorTol));
+
+        }
+    }
+
+
 
 }
 

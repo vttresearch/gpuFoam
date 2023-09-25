@@ -1,8 +1,12 @@
 #include "catch.H"
 
+#include "speciesTable.H"
+#include "ArrheniusReactionRate.H"
+
 #include "gpuReaction.H"
 
 #include "test_utilities.H"
+#include "create_inputs.H"
 
 TEST_CASE("variant")
 {
@@ -69,7 +73,7 @@ TEST_CASE("Test gpuReactionRate")
 
     SECTION("operator()")
     {
-        auto nSpecie = make_species_table().size();
+        auto nSpecie = makeSpeciesTable(TestData::GRI).size();
         const Foam::scalarField c_cpu(nSpecie, 0.123);
         const device_vector<gScalar> c_gpu = host_vector<gScalar>(c_cpu.begin(), c_cpu.end());
         const auto c = make_mdspan(c_gpu, extents<1>{nSpecie});
@@ -197,22 +201,24 @@ TEST_CASE("gpuSpeciesCoeffs pow")
 }
 
 
-
-
-
-TEST_CASE("Test gpuReaction with gri")
+static inline void reactionTests(TestData::Mechanism mech)
 {
 
     using namespace FoamGpu;
 
-    auto cpu_reactions = make_cpu_reactions();
-    auto gpu_reactions_temp = makeGpuReactions();
+    auto cpu_reactions = makeCpuReactions(mech);
+    auto gpu_reactions_temp = makeGpuReactions(mech);
 
+    const gLabel nSpecie = TestData::speciesCount(mech);
+    const gLabel nEqns = TestData::equationCount(mech);
+    const gScalar p = 1E5;
+    const gScalar T = 431.4321;
+    const gLabel li = 0;
 
+    const Foam::scalarField c_cpu(nSpecie, 0.123);
+    const device_vector<gScalar> c_gpu = host_vector<gScalar>(c_cpu.begin(), c_cpu.end());
 
     device_vector<gpuReaction>  gpu_reactions(gpu_reactions_temp.begin(), gpu_reactions_temp.end());
-
-
     CHECK(cpu_reactions.size() == gLabel(gpu_reactions.size()));
 
     SECTION("Thigh/Tlow")
@@ -229,18 +235,9 @@ TEST_CASE("Test gpuReaction with gri")
     }
 
 
-
-
-
-
     SECTION("omega")
     {
-        gLabel nSpecie = make_cpu_thermos().size();
-        const gScalar p = 1E5;
-        const gScalar T = 431.4321;
-        const gLabel li = 0;
-        const Foam::scalarField c_cpu(nSpecie, 0.123);
-        const device_vector<gScalar> c_gpu = host_vector<gScalar>(c_cpu.begin(), c_cpu.end());
+
         const auto c = make_mdspan(c_gpu, extents<1>{nSpecie});
 
         for (gLabel i = 0; i < cpu_reactions.size(); ++i)
@@ -264,14 +261,11 @@ TEST_CASE("Test gpuReaction with gri")
     }
 
 
+
     SECTION("kf/kr/dkfdT/dkrdT")
     {
-        gLabel nSpecie = make_species_table().size();
-        gScalar p = 1E5;
-        gScalar T = 431.4321;
-        gLabel li = 0;
-        const Foam::scalarField c_cpu(nSpecie, 0.123);
-        const device_vector<gScalar> c_gpu = host_vector<gScalar>(c_cpu.begin(), c_cpu.end());
+
+
         const auto c = make_mdspan(c_gpu, extents<1>{nSpecie});
 
         for (gLabel i = 0; i < cpu_reactions.size(); ++i)
@@ -346,13 +340,8 @@ TEST_CASE("Test gpuReaction with gri")
 
     SECTION("dNdtByV")
     {
-        gLabel nSpecie = make_species_table().size();
-        gScalar p = 1E5;
-        gScalar T = 431.4321;
-        gLabel li = 0;
-        const Foam::scalarField c_cpu(nSpecie, 0.123);
 
-        const device_vector<gScalar> c_gpu = host_vector<gScalar>(c_cpu.begin(), c_cpu.end());
+
         //Here it is important to have same initial condition as the function only modifies
         //certain values
         Foam::scalarField res_cpu(nSpecie, 0.435);
@@ -382,63 +371,38 @@ TEST_CASE("Test gpuReaction with gri")
             {
                 REQUIRE(dNdtByV_gpu[i] == Approx(dNdtByV_cpu[i]).epsilon(errorTol));
             }
-
-            //REQUIRE_THAT(to_std_vec(res_gpu), Catch::Matchers::Approx(to_std_vec(res_cpu)).epsilon(errorTol));
-
-
         }
 
     }
 
     SECTION("ddNdtByVdcTp")
     {
-        gLabel nSpecie = make_species_table().size();
-        gScalar p = 1E5;
-        gScalar T = 431.4321;
-        gLabel li = 0;
+
         Foam::List<gLabel> c2s;
         gLabel csi0 = 0;
         gLabel Tsi = nSpecie;
 
 
 
-        const Foam::scalarField c_cpu(nSpecie, 0.123);
         Foam::scalarField dNdtByV_cpu(nSpecie, 1.0);
-        Foam::scalarSquareMatrix ddNdtByVdcTp_cpu(nSpecie+2, 11.3);
+        Foam::scalarSquareMatrix ddNdtByVdcTp_cpu(nEqns, 11.3);
         Foam::scalarField cTpWork0_cpu(nSpecie, 11.1);
         Foam::scalarField cTpWork1_cpu(nSpecie, 13.5);
 
-        const device_vector<gScalar> c_gpu(c_cpu.begin(), c_cpu.end());
-        device_vector<gScalar> dNdtByV_gpu
-        (
-            dNdtByV_cpu.begin(), dNdtByV_cpu.end()
-        );
-        device_vector<gScalar> ddNdtByVdcTp_gpu
-        (
-            ddNdtByVdcTp_cpu.size(),
-            11.3
-        );
+        auto dNdtByV_gpu = to_device_vec(dNdtByV_cpu);
+        auto ddNdtByVdcTp_gpu = device_vector<gScalar>
+            (
+                ddNdtByVdcTp_cpu.v(),
+                ddNdtByVdcTp_cpu.v() + ddNdtByVdcTp_cpu.size()
+            );
 
-        device_vector<gScalar> cTpWork0_gpu
-        (
-            cTpWork0_cpu.begin(),
-            cTpWork0_cpu.end()
-        );
-
-        device_vector<gScalar> cTpWork1_gpu
-        (
-            cTpWork1_cpu.begin(),
-            cTpWork1_cpu.end()
-        );
-
+        auto cTpWork0_gpu = to_device_vec(cTpWork0_cpu);
+        auto cTpWork1_gpu = to_device_vec(cTpWork1_cpu);
 
         for (gLabel i = 0; i < cpu_reactions.size(); ++i)
         {
             const auto& cpu = cpu_reactions[i];
             const auto  gpu = &(gpu_reactions[i]);
-
-            cTpWork0_cpu = 0.0;
-            cTpWork1_cpu = 0.0;
 
             cpu.ddNdtByVdcTp
             (
@@ -461,7 +425,7 @@ TEST_CASE("Test gpuReaction with gri")
                 =,
                 c = make_mdspan(c_gpu, extents<1>{nSpecie}),
                 dNdtByV = make_mdspan(dNdtByV_gpu, extents<1>{nSpecie}),
-                ddNdtByVdcTp = make_mdspan(ddNdtByVdcTp_gpu, extents<2>{nSpecie+2, nSpecie+2}),
+                ddNdtByVdcTp = make_mdspan(ddNdtByVdcTp_gpu, extents<2>{nEqns, nEqns}),
                 cTpWork0 = make_mdspan(cTpWork0_gpu, extents<1>{nSpecie}),
                 cTpWork1 = make_mdspan(cTpWork1_gpu, extents<1>{nSpecie})
             ]
@@ -484,87 +448,54 @@ TEST_CASE("Test gpuReaction with gri")
                 return 0;
             };
 
-            cTpWork0_gpu.assign(cTpWork0_gpu.size(), 0.0);
-            cTpWork1_gpu.assign(cTpWork1_gpu.size(), 0.0);
-
-
             eval(f);
 
 
             REQUIRE_THAT(to_std_vec(dNdtByV_gpu), Catch::Matchers::Approx(to_std_vec(dNdtByV_cpu)).epsilon(errorTol));
 
+
+
             std::vector<double> r_cpu(ddNdtByVdcTp_cpu.v(), ddNdtByVdcTp_cpu.v() + ddNdtByVdcTp_cpu.size());
             std::vector<double> r_gpu = to_std_vec(ddNdtByVdcTp_gpu);
-
-
-            for (gLabel i = 0; i < gLabel(r_cpu.size()); ++i)
-            {
-                REQUIRE
-                (
-                    r_gpu[i] == Approx(r_cpu[i]).epsilon(errorTol)
-                );
-            }
-            //REQUIRE_THAT(r_cpu, Catch::Matchers::Approx(r_gpu).epsilon(errorTol));
-
-
+            REQUIRE_THAT(r_gpu, Catch::Matchers::Approx(r_cpu).epsilon(errorTol));
 
         }
-
-
 
     }
 
 
     SECTION("ddNdtByVdcTp with small concentrations")
     {
-        gLabel nSpecie = make_species_table().size();
-        gScalar p = 1E5;
-        gScalar T = 431.4321;
-        gLabel li = 0;
         Foam::List<gLabel> c2s;
         gLabel csi0 = 0;
         gLabel Tsi = nSpecie;
 
+        Foam::scalarField c_cpu2(nSpecie);
+        fill_random(c_cpu2);
+        c_cpu2[3] = 1E-4;
+        c_cpu2[5] = 1E-5;
+        c_cpu2[6] = 1E-7;
+        c_cpu2[7] = gpuSmall;
+        c_cpu2[8] = 0.9*gpuSmall;
+        c_cpu2[9] = gpuVSmall;
 
-
-        Foam::scalarField c_cpu(nSpecie);
-        fill_random(c_cpu);
-        c_cpu[3] = 1E-4;
-        c_cpu[5] = 1E-5;
-        c_cpu[6] = 1E-7;
-        c_cpu[7] = gpuSmall;
-        c_cpu[8] = 0.9*gpuSmall;
-        c_cpu[9] = gpuVSmall;
-
-
+        auto c_gpu2 = to_device_vec(c_cpu2);
 
         Foam::scalarField dNdtByV_cpu(nSpecie, 1.0);
-        Foam::scalarSquareMatrix ddNdtByVdcTp_cpu(nSpecie+2, 11.3);
+        Foam::scalarSquareMatrix ddNdtByVdcTp_cpu(nEqns, 11.3);
         Foam::scalarField cTpWork0_cpu(nSpecie, 11.1);
         Foam::scalarField cTpWork1_cpu(nSpecie, 13.5);
 
-        const device_vector<gScalar> c_gpu(c_cpu.begin(), c_cpu.end());
-        device_vector<gScalar> dNdtByV_gpu
-        (
-            dNdtByV_cpu.begin(), dNdtByV_cpu.end()
-        );
-        device_vector<gScalar> ddNdtByVdcTp_gpu
-        (
-            ddNdtByVdcTp_cpu.size(),
-            11.3
-        );
 
-        device_vector<gScalar> cTpWork0_gpu
-        (
-            cTpWork0_cpu.begin(),
-            cTpWork0_cpu.end()
-        );
+        auto dNdtByV_gpu = to_device_vec(dNdtByV_cpu);
+        auto ddNdtByVdcTp_gpu = device_vector<gScalar>
+            (
+                ddNdtByVdcTp_cpu.v(),
+                ddNdtByVdcTp_cpu.v() + ddNdtByVdcTp_cpu.size()
+            );
 
-        device_vector<gScalar> cTpWork1_gpu
-        (
-            cTpWork1_cpu.begin(),
-            cTpWork1_cpu.end()
-        );
+        auto cTpWork0_gpu = to_device_vec(cTpWork0_cpu);
+        auto cTpWork1_gpu = to_device_vec(cTpWork1_cpu);
 
 
         for (gLabel i = 0; i < cpu_reactions.size(); ++i)
@@ -572,14 +503,11 @@ TEST_CASE("Test gpuReaction with gri")
             const auto& cpu = cpu_reactions[i];
             const auto  gpu = &(gpu_reactions[i]);
 
-            cTpWork0_cpu = 0.0;
-            cTpWork1_cpu = 0.0;
-
             cpu.ddNdtByVdcTp
             (
                 p,
                 T,
-                c_cpu,
+                c_cpu2,
                 li,
                 dNdtByV_cpu,
                 ddNdtByVdcTp_cpu,
@@ -594,9 +522,9 @@ TEST_CASE("Test gpuReaction with gri")
             auto f =
             [
                 =,
-                c = make_mdspan(c_gpu, extents<1>{nSpecie}),
+                c = make_mdspan(c_gpu2, extents<1>{nSpecie}),
                 dNdtByV = make_mdspan(dNdtByV_gpu, extents<1>{nSpecie}),
-                ddNdtByVdcTp = make_mdspan(ddNdtByVdcTp_gpu, extents<2>{nSpecie+2, nSpecie+2}),
+                ddNdtByVdcTp = make_mdspan(ddNdtByVdcTp_gpu, extents<2>{nEqns, nEqns}),
                 cTpWork0 = make_mdspan(cTpWork0_gpu, extents<1>{nSpecie}),
                 cTpWork1 = make_mdspan(cTpWork1_gpu, extents<1>{nSpecie})
             ]
@@ -619,28 +547,17 @@ TEST_CASE("Test gpuReaction with gri")
                 return 0;
             };
 
-            cTpWork0_gpu.assign(cTpWork0_gpu.size(), 0.0);
-            cTpWork1_gpu.assign(cTpWork1_gpu.size(), 0.0);
-
 
             eval(f);
 
 
             REQUIRE_THAT(to_std_vec(dNdtByV_gpu), Catch::Matchers::Approx(to_std_vec(dNdtByV_cpu)).epsilon(errorTol));
 
+
             std::vector<double> r_cpu(ddNdtByVdcTp_cpu.v(), ddNdtByVdcTp_cpu.v() + ddNdtByVdcTp_cpu.size());
             std::vector<double> r_gpu = to_std_vec(ddNdtByVdcTp_gpu);
 
-
-            for (gLabel i = 0; i < gLabel(r_cpu.size()); ++i)
-            {
-                CHECK
-                (
-                    r_gpu[i] == Approx(r_cpu[i]).epsilon(errorTol)
-                );
-            }
-            //REQUIRE_THAT(r_cpu, Catch::Matchers::Approx(r_gpu).epsilon(errorTol));
-
+            REQUIRE_THAT(r_gpu, Catch::Matchers::Approx(r_cpu).epsilon(errorTol));
 
 
         }
@@ -648,7 +565,23 @@ TEST_CASE("Test gpuReaction with gri")
 
     }
 
+}
 
+
+
+TEST_CASE("Test gpuReaction functions")
+{
+
+
+    SECTION("GRI")
+    {
+        reactionTests(TestData::GRI);
+    }
+
+    SECTION("H2")
+    {
+        reactionTests(TestData::H2);
+    }
 
 
 }

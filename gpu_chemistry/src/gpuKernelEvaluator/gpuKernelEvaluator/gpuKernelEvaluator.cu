@@ -78,7 +78,7 @@ template <class Op>
 __global__ void cuda_kernel(Op op, gLabel nCells) {
 
     int celli = blockIdx.x * blockDim.x + threadIdx.x;
-    if (celli < nCells) 
+    if (celli < nCells)
     {
         op(celli);
     }
@@ -118,6 +118,7 @@ GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
         host_vector<gpuBuffer>(nCells, gpuBuffer(nSpecie_));
 
     auto buffer = make_mdspan(buffer_arr, extents<1>{nCells});
+
     singleCell op(deltaT, nSpecie_, ddeltaTChem, dYvf, Jss, buffer, ode);
     thrust::for_each
     (
@@ -126,13 +127,14 @@ GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
         op
     );
 
+
     /*
     singleCell op(deltaT, nSpecie_, ddeltaTChem, dYvf, Jss, buffer, ode);
     gLabel NTHREADS = 32;
     gLabel NBLOCKS  = (nCells + NTHREADS - 1) / NTHREADS;
     cuda_kernel<<<NBLOCKS, NTHREADS>>>(op, nCells);
     */
-    
+
     return std::make_pair(toStdVec(dYvf_arr), toStdVec(ddeltaTChem_arr));
 }
 

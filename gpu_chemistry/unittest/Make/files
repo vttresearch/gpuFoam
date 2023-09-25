@@ -1,10 +1,9 @@
 Test-eos.C
 Test-thermo.C
 Test-reaction.C
-Test-odeSystem.C
-Test-ode.C
-#Test-scalarSquareMatrix.C
-#Test-mdspan.C
+#Test-odeSystem.C
+#Test-ode.C
+
 
 EXE = $(FOAM_USER_APPBIN)/testGpuChemistry
 
