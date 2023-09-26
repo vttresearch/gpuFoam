@@ -93,26 +93,6 @@ static inline auto toArray(typename FoamGpu::gpuThermo::coeffArray a)
     return ret;
 }
 
-
-template<class T>
-static inline auto to_std_vec(const T& c)
-{
-    using value_type = typename T::value_type;
-    host_vector<value_type> temp(c.begin(), c.end());
-    return std::vector<value_type>(temp.begin(), temp.end());
-}
-
-template<class T>
-static inline auto to_device_vec(const T& c)
-{
-    using value_type = typename T::value_type;
-    host_vector<value_type> temp(c.begin(), c.end());
-    return device_vector<value_type>(temp.begin(), temp.end());
-}
-
-
-
-
 static inline double random_number(double LO, double HI){
     double r = LO + static_cast <double> (rand()) /( static_cast <double> (RAND_MAX/(HI-LO)));
     return r;

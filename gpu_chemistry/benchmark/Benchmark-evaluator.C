@@ -60,79 +60,70 @@ FoamGpu::GpuKernelEvaluator make_evaluator
 
 }
 
-TEST_CASE("Benchmark GpuKernelEvaluator")
+static inline void warmup()
 {
     auto mech = TestData::H2;
-
     const gScalar deltaT = BenchmarkParams::deltaT;
     const gScalar deltaTChemMax = BenchmarkParams::deltaTChemMax;
     const gLabel nCells = BenchmarkParams::nCells;
 
     const auto rho = make_random_rhos(nCells);
     const auto deltaTChem = make_random_deltaTChem(nCells);
-    //const auto Yvf = make_tutorial_y0s(nCells, mech);
-    const auto Yvf = make_random_y0s(nCells, TestData::equationCount(mech));
-    /*
-    {
-        Foam::dictionary dict;
-        dict.add("solver", "Rosenbrock23");
-        auto eval = make_evaluator(dict, mech);
-
-        auto r = callGpuSolve
-            (
-                deltaT,
-                deltaTChemMax,
-                rho,
-                deltaTChem,
-                Yvf,
-                eval
-            );
-
-        std::cout << std::get<2>(r) << std::endl;
-    }
-    */
-
-
-
-    {
+    const auto Yvf = make_tutorial_y0s(nCells, mech);
+    //const auto Yvf = make_random_y0s(nCells, TestData::equationCount(mech));
+    
+    //No idea why this is necessary, but without it, the first benchmark results are way off
+    BENCHMARK_ADVANCED("WARMUP")(Catch::Benchmark::Chronometer meter) {
         auto dict = make_dict("Rosenbrock23");
         auto eval = make_evaluator(dict, mech);
+        meter.measure([&] { return callGpuSolve(deltaT, deltaTChemMax, rho, deltaTChem, Yvf, eval);});
+    };
+}
 
-        BENCHMARK("Rosenbrock23")
-        {
-            return callGpuSolve
-            (
-                deltaT,
-                deltaTChemMax,
-                rho,
-                deltaTChem,
-                Yvf,
-                eval
-            );
+static inline
+void runBenchmarks(TestData::Mechanism mech)
+{
+    const gScalar deltaT = BenchmarkParams::deltaT;
+    const gScalar deltaTChemMax = BenchmarkParams::deltaTChemMax;
+    const gLabel nCells = BenchmarkParams::nCells;
 
-        };
-    }
+    const auto rho = make_random_rhos(nCells);
+    const auto deltaTChem = make_random_deltaTChem(nCells);
+    const auto Yvf = make_tutorial_y0s(nCells, mech);
+    //const auto Yvf = make_random_y0s(nCells, TestData::equationCount(mech));
+    /*
+    //No idea why this is necessary, but without it, the first benchmark results are way off
+    BENCHMARK_ADVANCED("WARMUP")(Catch::Benchmark::Chronometer meter) {
+        auto dict = make_dict("Rosenbrock23");
+        auto eval = make_evaluator(dict, mech);
+        meter.measure([&] { return callGpuSolve(deltaT, deltaTChemMax, rho, deltaTChem, Yvf, eval);});
+    };
+    */
+
+    BENCHMARK_ADVANCED("Rosenbrock23")(Catch::Benchmark::Chronometer meter) {
+        auto dict = make_dict("Rosenbrock23");
+        auto eval = make_evaluator(dict, mech);
+        meter.measure([&] { return callGpuSolve(deltaT, deltaTChemMax, rho, deltaTChem, Yvf, eval);});
+    };
 
 
-
-    {
+    BENCHMARK_ADVANCED("Rosenbrock34")(Catch::Benchmark::Chronometer meter) {
         auto dict = make_dict("Rosenbrock34");
         auto eval = make_evaluator(dict, mech);
+        meter.measure([&] { return callGpuSolve(deltaT, deltaTChemMax, rho, deltaTChem, Yvf, eval);});
+    };
+}
 
-        BENCHMARK("Rosenbrock34")
-        {
-            return callGpuSolve
-            (
-                deltaT,
-                deltaTChemMax,
-                rho,
-                deltaTChem,
-                Yvf,
-                eval
-            );
+TEST_CASE("Benchmark warmup")
+{
+    warmup();
+}
+TEST_CASE("Benchmark GpuKernelEvaluator (H2)")
+{
+    runBenchmarks(TestData::H2);
+}
 
-        };
-    }
-
-
+TEST_CASE("Benchmark GpuKernelEvaluator (GRI)")
+{
+    runBenchmarks(TestData::GRI);
 }

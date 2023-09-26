@@ -13,7 +13,7 @@ TEST_CASE("Test gpuBuffer")
 
     //No idea why this cant be created directly on device...
     //auto buffer_temp = host_vector<gpuBuffer>(1, gpuBuffer(43));
-    auto buffer = to_device_vec(host_vector<gpuBuffer>(1, gpuBuffer(43)));
+    auto buffer = toDeviceVector(host_vector<gpuBuffer>(1, gpuBuffer(43)));
 
 
     auto f =
@@ -44,8 +44,8 @@ static inline void runMechanismTests(TestData::Mechanism mech)
     auto gpu_reactions_temp = TestData::makeGpuReactions(mech);
 
 
-    auto gpu_thermos = to_device_vec(gpu_thermos_temp);
-    auto gpu_reactions = to_device_vec(gpu_reactions_temp);
+    auto gpu_thermos = toDeviceVector(gpu_thermos_temp);
+    auto gpu_reactions = toDeviceVector(gpu_reactions_temp);
 
 
     gpuODESystem gpu
@@ -71,15 +71,15 @@ static inline void runMechanismTests(TestData::Mechanism mech)
     {
 
         const Foam::scalarField y_cpu = y0;
-        const auto y_gpu = to_device_vec(y0);
+        const auto y_gpu = toDeviceVector(y0);
 
         Foam::scalarField dy_cpu(nEqns, 0.31);
-        auto dy_gpu = to_device_vec(dy_cpu);
+        auto dy_gpu = toDeviceVector(dy_cpu);
 
 
         cpu.derivatives(0.0, y_cpu, li, dy_cpu);
 
-        auto buffer = to_device_vec(host_vector<gpuBuffer>(1, gpuBuffer(nSpecie)));
+        auto buffer = toDeviceVector(host_vector<gpuBuffer>(1, gpuBuffer(nSpecie)));
 
         auto f =
         [
@@ -98,8 +98,8 @@ static inline void runMechanismTests(TestData::Mechanism mech)
 
         REQUIRE_THAT
         (
-            to_std_vec(dy_gpu),
-            Catch::Matchers::Approx(to_std_vec(dy_cpu)).epsilon(errorTol)
+            toStdVector(dy_gpu),
+            Catch::Matchers::Approx(toStdVector(dy_cpu)).epsilon(errorTol)
         );
 
     }
@@ -113,15 +113,15 @@ static inline void runMechanismTests(TestData::Mechanism mech)
         const gScalar time = 0.1;
 
         const Foam::scalarField y_cpu = y0;
-        const auto y_gpu = to_device_vec(y0);
+        const auto y_gpu = toDeviceVector(y0);
 
         Foam::scalarField dy_cpu(nEqns, 0.31);
-        auto dy_gpu = to_device_vec(dy_cpu);
+        auto dy_gpu = toDeviceVector(dy_cpu);
 
         Foam::scalarSquareMatrix J_cpu(nEqns, 0.1);
         device_vector<gScalar> J_gpu(J_cpu.size(), 0.2);
 
-        auto buffer = to_device_vec(host_vector<gpuBuffer>(1, gpuBuffer(nSpecie)));
+        auto buffer = toDeviceVector(host_vector<gpuBuffer>(1, gpuBuffer(nSpecie)));
 
         cpu.jacobian(time, y_cpu, li, dy_cpu, J_cpu);
 
@@ -144,16 +144,16 @@ static inline void runMechanismTests(TestData::Mechanism mech)
 
         REQUIRE_THAT
         (
-            to_std_vec(dy_gpu),
-            Catch::Matchers::Approx(to_std_vec(dy_cpu)).epsilon(errorTol)
+            toStdVector(dy_gpu),
+            Catch::Matchers::Approx(toStdVector(dy_cpu)).epsilon(errorTol)
         );
 
         auto Jacobian_cpu = std::vector<gScalar>(J_cpu.v(), J_cpu.v()+J_cpu.size());
-        auto Jacobian_gpu = to_std_vec(J_gpu);
+        auto Jacobian_gpu = toStdVector(J_gpu);
 
         REQUIRE_THAT
         (
-            to_std_vec(Jacobian_gpu),
+            toStdVector(Jacobian_gpu),
             Catch::Matchers::Approx(Jacobian_cpu).epsilon(errorTol)
         );
 

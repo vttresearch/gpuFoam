@@ -12,17 +12,6 @@
 
 namespace FoamGpu {
 
-template <class Container> static inline auto toDevice(const Container& c) {
-    using value = typename Container::value_type;
-    host_vector<value> temp(c.begin(), c.end());
-    return device_vector<value>(temp.begin(), temp.end());
-}
-
-template <class T>
-static inline std::vector<T> toStdVec(const device_vector<T>& c) {
-    host_vector<T> temp(c.begin(), c.end());
-    return std::vector<T>(temp.begin(), temp.end());
-}
 
 template<class S1, class S2, class S3, class S4>
 struct singleCell{
@@ -94,8 +83,8 @@ GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
     const gLabel nCells = deltaTChem.size();
 
     // Convert thermos and reactions from host to device
-    const auto dThermos   = toDevice(hThermos_);
-    const auto dReactions = toDevice(hReactions_);
+    const auto dThermos   = toDeviceVector(hThermos_);
+    const auto dReactions = toDeviceVector(hReactions_);
 
     gpuODESystem odeSystem(nEqns_,
                            dReactions.size(),
@@ -105,8 +94,8 @@ GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
     gpuODESolver ode = make_gpuODESolver(odeSystem, odeInputs_);
 
     // Convert fields from host to device
-    auto ddeltaTChem_arr = toDevice(deltaTChem);
-    auto dYvf_arr        = toDevice(Y);
+    auto ddeltaTChem_arr = toDeviceVector(deltaTChem);
+    auto dYvf_arr        = toDeviceVector(Y);
     auto ddeltaTChem     = make_mdspan(ddeltaTChem_arr, extents<1>{nCells});
     auto dYvf            = make_mdspan(dYvf_arr, extents<2>{nCells, nEqns_});
 
@@ -136,7 +125,7 @@ GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
     cuda_kernel<<<NBLOCKS, NTHREADS>>>(op, nCells);
     */
 
-    return std::make_pair(toStdVec(dYvf_arr), toStdVec(ddeltaTChem_arr));
+    return std::make_pair(toStdVector(dYvf_arr), toStdVector(ddeltaTChem_arr));
 }
 
 std::tuple<std::vector<gScalar>, std::vector<gScalar>, gScalar>

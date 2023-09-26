@@ -53,7 +53,7 @@ TEST_CASE("Test ludecompose")
 
 
         auto r_cpu1 = std::vector(m_cpu.v(), m_cpu.v() + size*size);
-        auto r_gpu1 = to_std_vec(m_gpu);
+        auto r_gpu1 = toStdVector(m_gpu);
 
         REQUIRE_THAT
         (
@@ -62,8 +62,8 @@ TEST_CASE("Test ludecompose")
         );
         REQUIRE_THAT
         (
-            to_std_vec(pivot_gpu),
-            Catch::Matchers::Approx(to_std_vec(pivot_cpu)).epsilon(errorTol)
+            toStdVector(pivot_gpu),
+            Catch::Matchers::Approx(toStdVector(pivot_cpu)).epsilon(errorTol)
         );
 
 
@@ -85,12 +85,12 @@ TEST_CASE("Test ludecompose")
 
         REQUIRE_THAT
         (
-            to_std_vec(source_gpu),
-            Catch::Matchers::Approx(to_std_vec(source_cpu)).epsilon(errorTol)
+            toStdVector(source_gpu),
+            Catch::Matchers::Approx(toStdVector(source_cpu)).epsilon(errorTol)
         );
 
 
-        CHECK(to_std_vec(source_gpu) == to_std_vec(source_cpu));
+        CHECK(toStdVector(source_gpu) == toStdVector(source_cpu));
 
     }
 }
@@ -118,9 +118,9 @@ auto callGpuSolve
     const gScalar dxTry = p.dxTry;
     const gLabel li = 0;
 
-    auto y = to_device_vec(y0);
+    auto y = toDeviceVector(y0);
     device_vector<gScalar> J (nEqns*nEqns);
-    auto buffer = to_device_vec(host_vector<gpuBuffer>(1, gpuBuffer(nSpecie)));
+    auto buffer = toDeviceVector(host_vector<gpuBuffer>(1, gpuBuffer(nSpecie)));
 
     auto f = [
         ode = ode,
@@ -141,7 +141,7 @@ auto callGpuSolve
     auto unused = eval(f);
     (void) unused;
 
-    auto ret = to_std_vec(y);
+    auto ret = toStdVector(y);
 
     //Round small values to zero to avoid -0 == 0 comparisons
     for (auto& e : ret)
@@ -168,7 +168,7 @@ auto callCpuSolve(const Foam::scalarField& y0, const Foam::ODESolver& ode, TestP
     scalar dxTry_temp = dxTry;
     ode.solve(xStart, xEnd, y, li, dxTry_temp);
 
-    auto ret = to_std_vec(y);
+    auto ret = toStdVector(y);
 
     //Round small values to zero to avoid -0 == 0 comparisons
     for (auto& e : ret)
@@ -227,7 +227,7 @@ static inline void runMechanismTests(TestData::Mechanism mech)
         REQUIRE_THAT
         (
             y_gpu,
-            Catch::Matchers::Approx(to_std_vec(y_cpu)).epsilon(errorTol)
+            Catch::Matchers::Approx(toStdVector(y_cpu)).epsilon(errorTol)
         );
     }
 
@@ -244,7 +244,7 @@ static inline void runMechanismTests(TestData::Mechanism mech)
         REQUIRE_THAT
         (
             y_gpu,
-            Catch::Matchers::Approx(to_std_vec(y_cpu)).epsilon(errorTol)
+            Catch::Matchers::Approx(toStdVector(y_cpu)).epsilon(errorTol)
         );
     }
 

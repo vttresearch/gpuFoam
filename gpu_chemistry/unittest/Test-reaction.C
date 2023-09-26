@@ -312,8 +312,8 @@ static inline void reactionTests(TestData::Mechanism mech)
 
             REQUIRE_THAT
             (
-                to_std_vec(dkfdc_gpu_temp),
-                Catch::Matchers::Approx(to_std_vec(dkfdc_cpu)).epsilon(errorTol)
+                toStdVector(dkfdc_gpu_temp),
+                Catch::Matchers::Approx(toStdVector(dkfdc_cpu)).epsilon(errorTol)
             );
 
 
@@ -327,8 +327,8 @@ static inline void reactionTests(TestData::Mechanism mech)
 
             REQUIRE_THAT
             (
-                to_std_vec(dkrdc_gpu_temp),
-                Catch::Matchers::Approx(to_std_vec(dkrdc_cpu)).epsilon(errorTol)
+                toStdVector(dkrdc_gpu_temp),
+                Catch::Matchers::Approx(toStdVector(dkrdc_cpu)).epsilon(errorTol)
             );
 
 
@@ -364,8 +364,8 @@ static inline void reactionTests(TestData::Mechanism mech)
 
             cpu.dNdtByV(p, T, c_cpu, li, res_cpu, false, Foam::List<gLabel>{}, 0);
 
-            auto dNdtByV_cpu = to_std_vec(res_gpu);
-            auto dNdtByV_gpu = to_std_vec(res_cpu);
+            auto dNdtByV_cpu = toStdVector(res_gpu);
+            auto dNdtByV_gpu = toStdVector(res_cpu);
 
             for (gLabel i = 0; i < gLabel(dNdtByV_cpu.size()); ++i)
             {
@@ -389,15 +389,15 @@ static inline void reactionTests(TestData::Mechanism mech)
         Foam::scalarField cTpWork0_cpu(nSpecie, 11.1);
         Foam::scalarField cTpWork1_cpu(nSpecie, 13.5);
 
-        auto dNdtByV_gpu = to_device_vec(dNdtByV_cpu);
+        auto dNdtByV_gpu = toDeviceVector(dNdtByV_cpu);
         auto ddNdtByVdcTp_gpu = device_vector<gScalar>
             (
                 ddNdtByVdcTp_cpu.v(),
                 ddNdtByVdcTp_cpu.v() + ddNdtByVdcTp_cpu.size()
             );
 
-        auto cTpWork0_gpu = to_device_vec(cTpWork0_cpu);
-        auto cTpWork1_gpu = to_device_vec(cTpWork1_cpu);
+        auto cTpWork0_gpu = toDeviceVector(cTpWork0_cpu);
+        auto cTpWork1_gpu = toDeviceVector(cTpWork1_cpu);
 
         for (gLabel i = 0; i < cpu_reactions.size(); ++i)
         {
@@ -451,12 +451,12 @@ static inline void reactionTests(TestData::Mechanism mech)
             eval(f);
 
 
-            REQUIRE_THAT(to_std_vec(dNdtByV_gpu), Catch::Matchers::Approx(to_std_vec(dNdtByV_cpu)).epsilon(errorTol));
+            REQUIRE_THAT(toStdVector(dNdtByV_gpu), Catch::Matchers::Approx(toStdVector(dNdtByV_cpu)).epsilon(errorTol));
 
 
 
             std::vector<double> r_cpu(ddNdtByVdcTp_cpu.v(), ddNdtByVdcTp_cpu.v() + ddNdtByVdcTp_cpu.size());
-            std::vector<double> r_gpu = to_std_vec(ddNdtByVdcTp_gpu);
+            std::vector<double> r_gpu = toStdVector(ddNdtByVdcTp_gpu);
             REQUIRE_THAT(r_gpu, Catch::Matchers::Approx(r_cpu).epsilon(errorTol));
 
         }
@@ -479,7 +479,7 @@ static inline void reactionTests(TestData::Mechanism mech)
         c_cpu2[8] = 0.9*gpuSmall;
         c_cpu2[9] = gpuVSmall;
 
-        auto c_gpu2 = to_device_vec(c_cpu2);
+        auto c_gpu2 = toDeviceVector(c_cpu2);
 
         Foam::scalarField dNdtByV_cpu(nSpecie, 1.0);
         Foam::scalarSquareMatrix ddNdtByVdcTp_cpu(nEqns, 11.3);
@@ -487,15 +487,15 @@ static inline void reactionTests(TestData::Mechanism mech)
         Foam::scalarField cTpWork1_cpu(nSpecie, 13.5);
 
 
-        auto dNdtByV_gpu = to_device_vec(dNdtByV_cpu);
+        auto dNdtByV_gpu = toDeviceVector(dNdtByV_cpu);
         auto ddNdtByVdcTp_gpu = device_vector<gScalar>
             (
                 ddNdtByVdcTp_cpu.v(),
                 ddNdtByVdcTp_cpu.v() + ddNdtByVdcTp_cpu.size()
             );
 
-        auto cTpWork0_gpu = to_device_vec(cTpWork0_cpu);
-        auto cTpWork1_gpu = to_device_vec(cTpWork1_cpu);
+        auto cTpWork0_gpu = toDeviceVector(cTpWork0_cpu);
+        auto cTpWork1_gpu = toDeviceVector(cTpWork1_cpu);
 
 
         for (gLabel i = 0; i < cpu_reactions.size(); ++i)
@@ -551,11 +551,11 @@ static inline void reactionTests(TestData::Mechanism mech)
             eval(f);
 
 
-            REQUIRE_THAT(to_std_vec(dNdtByV_gpu), Catch::Matchers::Approx(to_std_vec(dNdtByV_cpu)).epsilon(errorTol));
+            REQUIRE_THAT(toStdVector(dNdtByV_gpu), Catch::Matchers::Approx(toStdVector(dNdtByV_cpu)).epsilon(errorTol));
 
 
             std::vector<double> r_cpu(ddNdtByVdcTp_cpu.v(), ddNdtByVdcTp_cpu.v() + ddNdtByVdcTp_cpu.size());
-            std::vector<double> r_gpu = to_std_vec(ddNdtByVdcTp_gpu);
+            std::vector<double> r_gpu = toStdVector(ddNdtByVdcTp_gpu);
 
             REQUIRE_THAT(r_gpu, Catch::Matchers::Approx(r_cpu).epsilon(errorTol));
 

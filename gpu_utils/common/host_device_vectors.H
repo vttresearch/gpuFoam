@@ -26,3 +26,20 @@ using device_vector = std::vector<T>;
 
 
 #endif
+
+
+template<class Container>
+static inline auto toDeviceVector(const Container& c)
+{
+    using value = typename Container::value_type;
+    host_vector<value> temp(c.begin(), c.end());
+    return device_vector<value>(temp.begin(), temp.end());
+}
+
+template<class Container>
+static inline auto toStdVector(const Container& c)
+{
+    using value = typename Container::value_type;
+    host_vector<value> temp(c.begin(), c.end());
+    return std::vector<value>(temp.begin(), temp.end());
+}
