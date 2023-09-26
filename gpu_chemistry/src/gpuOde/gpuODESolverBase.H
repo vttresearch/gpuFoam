@@ -90,6 +90,8 @@ public:
     
 
     // Constructors
+    gpuODESolverBase() = default;
+
     //- Construct for given ODESystem specifying tolerances
     gpuODESolverBase(const gpuODESolverInputs& i)
         : absTol_(i.absTol)

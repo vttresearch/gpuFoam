@@ -7,13 +7,16 @@
 #include "gpuThermo.H"
 
 #include "gpuReactionRate.H"
-
+#include "host_device_vectors.H"
 #include "gpuODESolverInputs.H"
 #include "makeGpuOdeSolver.H"
 #include "gpuODESystem.H"
 #include "gpuReaction.H"
 #include "error_handling.H"
+#include "thermosAndReactions.H"
+
 namespace FoamGpu {
+
 
 struct GpuKernelEvaluator {
 
@@ -42,7 +45,10 @@ public:
                        const std::vector<gpuReaction>& reactions,
                        gpuODESolverInputs          odeInputs);
 
-    ~GpuKernelEvaluator();
+
+    GpuKernelEvaluator(const GpuKernelEvaluator& other) = delete;
+
+    ~GpuKernelEvaluator() = default;
     
 
     /// @brief Computes the reaction rate based on the input flow properties.
@@ -61,11 +67,16 @@ public:
               const std::vector<gScalar> Yvf) const;
 
 private:
-    gLabel nEqns_, nSpecie_;
-    gpuThermo*               dThermos_;
-    gpuReaction*             dReactions_;
+    gLabel nEqns_, nSpecie_, nReactions_;
+    thermosAndReactions     thermosReactions_;
     gpuODESystem             system_;
     gpuODESolver             solver_;
+
+
+    void allocate();
+    void deallocate();
+
+
 };
 
 } // namespace FoamGpu

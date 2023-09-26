@@ -57,7 +57,7 @@ public:
 
     System odes_;
 
-
+    gpuRosenbrock23() = default;
 
     gpuRosenbrock23(const System& ode, const gpuODESolverInputs& i)
         : gpuODESolverBase<gpuRosenbrock23<System>>(i)

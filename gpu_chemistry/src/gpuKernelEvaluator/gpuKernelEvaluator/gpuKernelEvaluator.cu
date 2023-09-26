@@ -12,41 +12,27 @@
 
 namespace FoamGpu {
 
-template<class T>
-static inline T* allocateAndTransfer
-(
-    const std::vector<T>& t
-)
-{
-    T* ptr;
-    const auto size = t.size();
-    const auto bytesize = size * sizeof(T);
-    
-    CHECK_CUDA_ERROR(cudaMalloc((void**)&ptr, bytesize));
-    CHECK_CUDA_ERROR(cudaMemcpy(ptr, t.data(), bytesize, cudaMemcpyHostToDevice));
-    
-    return ptr;
-}
+
 
 GpuKernelEvaluator::GpuKernelEvaluator
-(gLabel                         nEqns,
-                       gLabel                         nSpecie,
-                       const std::vector<gpuThermo>&  thermos,
-                       const std::vector<gpuReaction>& reactions,
-                       gpuODESolverInputs          odeInputs)
-        : nEqns_(nEqns)
-        , nSpecie_(nSpecie)
-        , dThermos_(allocateAndTransfer(thermos))
-        , dReactions_(allocateAndTransfer(reactions))
-        , system_(nEqns_, gLabel(reactions.size()), dThermos_,dReactions_)
-        , solver_(make_gpuODESolver(system_, odeInputs))
-        {}
+(
+    gLabel                         nEqns,
+    gLabel                         nSpecie,
+    const std::vector<gpuThermo>&  thermos,
+    const std::vector<gpuReaction>& reactions,
+    gpuODESolverInputs          odeInputs
+)
+: nEqns_(nEqns)
+, nSpecie_(nSpecie)
+, nReactions_(gLabel(reactions.size()))
+, thermosReactions_(thermos, reactions)
+, system_(nEqns_, gLabel(reactions.size()), thermosReactions_.thermos(),thermosReactions_.reactions())
+, solver_(make_gpuODESolver(system_, odeInputs))
+{}
 
-GpuKernelEvaluator::~GpuKernelEvaluator()
-{
-    CHECK_CUDA_ERROR(cudaFree(dThermos_));
-    CHECK_CUDA_ERROR(cudaFree(dReactions_));   
-}
+
+
+
 
 
 template<class S1, class S2, class S3, class S4>

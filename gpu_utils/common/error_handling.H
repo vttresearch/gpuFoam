@@ -6,7 +6,7 @@
 
 
 #ifdef __NVIDIA_COMPILER__
-
+#include <assert.h>
 #include "cuda_runtime.h"
 
 

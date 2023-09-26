@@ -62,6 +62,8 @@ struct gpuODESolver{
 
     gpu::solver solver_;
 
+    gpuODESolver() = default;
+
     gpuODESolver(const gpu::solver& solver) : solver_(solver)
     {}
 

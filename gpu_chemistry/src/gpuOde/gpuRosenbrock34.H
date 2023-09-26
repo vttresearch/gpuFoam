@@ -66,7 +66,7 @@ public:
 
     System odes_;
 
-
+    gpuRosenbrock34() = default;
 
     gpuRosenbrock34(const System& ode, const gpuODESolverInputs& i)
         : gpuODESolverBase<gpuRosenbrock34<System>>(i)

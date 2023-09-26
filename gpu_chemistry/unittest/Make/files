@@ -3,6 +3,7 @@ Test-thermo.C
 Test-reaction.C
 Test-odeSystem.C
 Test-ode.C
+Test-evaluator.C
 
 
 EXE = $(FOAM_USER_APPBIN)/testGpuChemistry
