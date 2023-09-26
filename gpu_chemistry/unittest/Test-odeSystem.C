@@ -40,13 +40,8 @@ static inline void runMechanismTests(TestData::Mechanism mech)
 
     Foam::MockOFSystem cpu(mech);
 
-    auto gpu_thermos_temp = TestData::makeGpuThermos(mech);
-    auto gpu_reactions_temp = TestData::makeGpuReactions(mech);
-
-
-    auto gpu_thermos = toDeviceVector(gpu_thermos_temp);
-    auto gpu_reactions = toDeviceVector(gpu_reactions_temp);
-
+    auto gpu_thermos = toDeviceVector(makeGpuThermos(mech));
+    auto gpu_reactions = toDeviceVector(makeGpuReactions(mech));
 
     gpuODESystem gpu
     (

@@ -15,6 +15,8 @@ namespace FoamGpu {
 
 struct gpuODESystem {
 
+private:
+
     gLabel             nEqns_;
     gLabel             nReactions_;
     const gpuThermo*   thermos_;
@@ -215,8 +217,10 @@ struct gpuODESystem {
     }
 
 public:
-    gpuODESystem() = default;
 
+    
+    gpuODESystem() = default;
+        
     gpuODESystem(gLabel             nEqns,
                  gLabel             nReactions,
                  const gpuThermo*   thermos,

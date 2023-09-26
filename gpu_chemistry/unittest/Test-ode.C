@@ -10,7 +10,7 @@
 #include "Rosenbrock23.H"
 #include "mdspan.H"
 #include "ludecompose.H"
-#include "mock_of_rosenbrock34.H"
+
 
 
 
@@ -192,10 +192,9 @@ static inline void runMechanismTests(TestData::Mechanism mech)
     using namespace FoamGpu;
 
     Foam::MockOFSystem cpu_system(mech);
-    auto gpu_thermos_temp = makeGpuThermos(mech);
-    auto gpu_reactions_temp = makeGpuReactions(mech);
-    auto gpu_thermos = device_vector<gpuThermo>(gpu_thermos_temp.begin(), gpu_thermos_temp.end());
-    auto gpu_reactions = device_vector<gpuReaction>(gpu_reactions_temp.begin(), gpu_reactions_temp.end());
+    
+    auto gpu_thermos = toDeviceVector(makeGpuThermos(mech));
+    auto gpu_reactions = toDeviceVector(makeGpuReactions(mech));
 
 
     gpuODESystem gpu_system

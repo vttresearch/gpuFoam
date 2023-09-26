@@ -12,7 +12,7 @@
 #include "makeGpuOdeSolver.H"
 #include "gpuODESystem.H"
 #include "gpuReaction.H"
-
+#include "error_handling.H"
 namespace FoamGpu {
 
 struct GpuKernelEvaluator {
@@ -29,19 +29,21 @@ private:
     computeYNew(gScalar                     deltaT,
                 gScalar                     deltaTChemMax,
                 const std::vector<gScalar>& deltaTChem,
-                const std::vector<gScalar>& Y);
+                const std::vector<gScalar>& Y) const;
+
 
 public:
+
+    GpuKernelEvaluator() = default;
+
     GpuKernelEvaluator(gLabel                         nEqns,
                        gLabel                         nSpecie,
                        const std::vector<gpuThermo>&  thermos,
                        const std::vector<gpuReaction>& reactions,
-                       gpuODESolverInputs          odeInputs)
-        : nEqns_(nEqns)
-        , nSpecie_(nSpecie)
-        , hThermos_(thermos)
-        , hReactions_(reactions)
-        , odeInputs_(odeInputs) {}
+                       gpuODESolverInputs          odeInputs);
+
+    ~GpuKernelEvaluator();
+    
 
     /// @brief Computes the reaction rate based on the input flow properties.
     /// @param deltaT Current flow time step.
@@ -56,14 +58,14 @@ public:
               gScalar                    deltaTChemMax,
               const std::vector<gScalar> rho,
               const std::vector<gScalar> deltaTChem,
-              const std::vector<gScalar> Yvf);
+              const std::vector<gScalar> Yvf) const;
 
 private:
     gLabel nEqns_, nSpecie_;
-
-    std::vector<gpuThermo>   hThermos_;
-    std::vector<gpuReaction> hReactions_;
-    gpuODESolverInputs    odeInputs_;
+    gpuThermo*               dThermos_;
+    gpuReaction*             dReactions_;
+    gpuODESystem             system_;
+    gpuODESolver             solver_;
 };
 
 } // namespace FoamGpu

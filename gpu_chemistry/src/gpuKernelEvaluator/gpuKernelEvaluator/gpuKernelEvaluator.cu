@@ -12,6 +12,42 @@
 
 namespace FoamGpu {
 
+template<class T>
+static inline T* allocateAndTransfer
+(
+    const std::vector<T>& t
+)
+{
+    T* ptr;
+    const auto size = t.size();
+    const auto bytesize = size * sizeof(T);
+    
+    CHECK_CUDA_ERROR(cudaMalloc((void**)&ptr, bytesize));
+    CHECK_CUDA_ERROR(cudaMemcpy(ptr, t.data(), bytesize, cudaMemcpyHostToDevice));
+    
+    return ptr;
+}
+
+GpuKernelEvaluator::GpuKernelEvaluator
+(gLabel                         nEqns,
+                       gLabel                         nSpecie,
+                       const std::vector<gpuThermo>&  thermos,
+                       const std::vector<gpuReaction>& reactions,
+                       gpuODESolverInputs          odeInputs)
+        : nEqns_(nEqns)
+        , nSpecie_(nSpecie)
+        , dThermos_(allocateAndTransfer(thermos))
+        , dReactions_(allocateAndTransfer(reactions))
+        , system_(nEqns_, gLabel(reactions.size()), dThermos_,dReactions_)
+        , solver_(make_gpuODESolver(system_, odeInputs))
+        {}
+
+GpuKernelEvaluator::~GpuKernelEvaluator()
+{
+    CHECK_CUDA_ERROR(cudaFree(dThermos_));
+    CHECK_CUDA_ERROR(cudaFree(dReactions_));   
+}
+
 
 template<class S1, class S2, class S3, class S4>
 struct singleCell{
@@ -63,35 +99,14 @@ struct singleCell{
 };
 
 
-template <class Op>
-__global__ void cuda_kernel(Op op, gLabel nCells) {
-
-    int celli = blockIdx.x * blockDim.x + threadIdx.x;
-    if (celli < nCells)
-    {
-        op(celli);
-    }
-}
-
-
 std::pair<std::vector<gScalar>, std::vector<gScalar>>
 GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
                                 gScalar                     deltaTChemMax,
                                 const std::vector<gScalar>& deltaTChem,
-                                const std::vector<gScalar>& Y) {
+                                const std::vector<gScalar>& Y) const {
 
     const gLabel nCells = deltaTChem.size();
 
-    // Convert thermos and reactions from host to device
-    const auto dThermos   = toDeviceVector(hThermos_);
-    const auto dReactions = toDeviceVector(hReactions_);
-
-    gpuODESystem odeSystem(nEqns_,
-                           dReactions.size(),
-                           thrust::raw_pointer_cast(dThermos.data()),
-                           thrust::raw_pointer_cast(dReactions.data()));
-
-    gpuODESolver ode = make_gpuODESolver(odeSystem, odeInputs_);
 
     // Convert fields from host to device
     auto ddeltaTChem_arr = toDeviceVector(deltaTChem);
@@ -108,7 +123,8 @@ GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
 
     auto buffer = make_mdspan(buffer_arr, extents<1>{nCells});
 
-    singleCell op(deltaT, nSpecie_, ddeltaTChem, dYvf, Jss, buffer, ode);
+    singleCell op(deltaT, nSpecie_, ddeltaTChem, dYvf, Jss, buffer, solver_);
+    
     thrust::for_each
     (
         thrust::device,
@@ -116,14 +132,6 @@ GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
         thrust::make_counting_iterator(nCells),
         op
     );
-
-
-    /*
-    singleCell op(deltaT, nSpecie_, ddeltaTChem, dYvf, Jss, buffer, ode);
-    gLabel NTHREADS = 32;
-    gLabel NBLOCKS  = (nCells + NTHREADS - 1) / NTHREADS;
-    cuda_kernel<<<NBLOCKS, NTHREADS>>>(op, nCells);
-    */
 
     return std::make_pair(toStdVector(dYvf_arr), toStdVector(ddeltaTChem_arr));
 }
@@ -133,7 +141,7 @@ GpuKernelEvaluator::computeRR(gScalar                    deltaT,
                               gScalar                    deltaTChemMax,
                               const std::vector<gScalar> rho,
                               const std::vector<gScalar> deltaTChem,
-                              const std::vector<gScalar> Y) {
+                              const std::vector<gScalar> Y) const {
 
     const gLabel nCells = rho.size();
 
