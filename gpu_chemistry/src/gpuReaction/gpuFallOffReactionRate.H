@@ -31,8 +31,6 @@ public:
         , F_(F)
         , thirdBodyEfficiencies_(tbes) {}
 
-
-
     //- Return the rate
     template <class Span>
     inline CUDA_HOSTDEV gScalar operator()(const gScalar p,
@@ -62,10 +60,7 @@ public:
 
         const gScalar dkInfdT = kInf_.ddT(p, T, c, li);
 
-
-
         return dkInfdT * (Pr / (1.0 + Pr)) * F;
-
     }
 
     //- Is the rate a function of concentration?

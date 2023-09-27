@@ -1,8 +1,8 @@
 #pragma once
 
 #include "cuda_host_dev.H"
-#include "gpu_constants.H"
 #include "gpuPerfectGas.H"
+#include "gpu_constants.H"
 #include <array> //std::array
 
 namespace FoamGpu {

@@ -3,10 +3,8 @@
 #include <map>
 #include <vector>
 
-#include "host_device_vectors.H"
 #include "gpuThermo.H"
-
-
+#include "host_device_vectors.H"
 
 #include "dictionary.H"
 
@@ -17,7 +15,7 @@ namespace FoamGpu {
 
 template <class ThermoType>
 static inline gpuThermo makeGpuThermo(const ThermoType&       cputhermo,
-                                        const Foam::dictionary& thermoDict) {
+                                      const Foam::dictionary& thermoDict) {
 
     gScalar W = cputhermo.W();
     gScalar Y = cputhermo.Y();
@@ -50,7 +48,7 @@ static inline gpuThermo makeGpuThermo(const ThermoType&       cputhermo,
 template <class ThermoType>
 static inline std::vector<gpuThermo>
 makeGpuThermos(const Foam::PtrList<ThermoType>& cpuThermos,
-                 const Foam::dictionary&          physicalProperties) {
+               const Foam::dictionary&          physicalProperties) {
     std::vector<gpuThermo> gpuThermos;
 
     for (const auto& t : cpuThermos) {
@@ -64,5 +62,4 @@ makeGpuThermos(const Foam::PtrList<ThermoType>& cpuThermos,
     return gpuThermos;
 }
 
-
-}
+} // namespace FoamGpu
