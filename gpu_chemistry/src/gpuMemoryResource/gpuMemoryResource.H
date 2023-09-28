@@ -3,6 +3,7 @@
 #include "gpuBuffer2.H"
 #include "gpuConstants.H"
 #include "mdspan.H"
+#include "raw_pointer_cast.hpp"
 #include <array>
 #include <vector>
 
@@ -22,11 +23,13 @@ struct gpuMemoryResource {
         , nEqns_(nSpecie + 2) {
 
         for (gLabel i = 0; i < N_LABEL_ARRAYS; ++i) {
-            labelData_[i] = lAllocator_.allocate(nEqns_ * nCells_);
+            labelData_[i] =
+                raw_pointer_cast(lAllocator_.allocate(nEqns_ * nCells_));
         }
 
         for (gLabel i = 0; i < N_SCALAR_ARRAYS; ++i) {
-            scalarData_[i] = sAllocator_.allocate(nEqns_ * nCells_);
+            scalarData_[i] =
+                raw_pointer_cast(sAllocator_.allocate(nEqns_ * nCells_));
         }
     }
 
