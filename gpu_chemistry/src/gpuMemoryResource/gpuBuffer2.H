@@ -3,20 +3,32 @@
 #include "mdspan.H"
 #include "arrays.H"
 #include "gpuConstants.H"
-
+#include "check_ptr.H"
 namespace FoamGpu {
 
 struct gpuBuffer2 {
 
+    CUDA_HOSTDEV
     gpuBuffer2() = default;
 
+    CUDA_HOSTDEV
     gpuBuffer2(std::array<gLabel*, N_LABEL_ARRAYS>   lData,
                std::array<gScalar*, N_SCALAR_ARRAYS> sData,
                gLabel                                nSpecie)
         : lData_(lData)
         , sData_(sData)
         , nSpecie_(nSpecie)
-        , nEqns_(nSpecie + 2) {}
+        , nEqns_(nSpecie + 2) {
+
+            for (size_t i = 0; i < lData_.size(); ++i)
+            {
+                check_ptr(lData[i], "label pointer");
+            }
+            for (size_t i = 0; i < sData_.size(); ++i)
+            {
+                check_ptr(sData[i], "scalar pointer");
+            }
+        }
 
 
     CUDA_HOSTDEV

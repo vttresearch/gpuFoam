@@ -25,7 +25,7 @@ struct gpuMemoryResource {
             labelData_[i] = lAllocator_.allocate(nEqns_ * nCells_);
         }
 
-        for (gLabel i = 0; i < N_LABEL_ARRAYS; ++i) {
+        for (gLabel i = 0; i < N_SCALAR_ARRAYS; ++i) {
             scalarData_[i] = sAllocator_.allocate(nEqns_ * nCells_);
         }
     }
@@ -93,8 +93,8 @@ static inline std::vector<gpuBuffer2> splitToBuffers(gpuMemoryResource<A1, A2>& 
         std::array<gScalar*, N_SCALAR_ARRAYS > scalarData{};
         for (gLabel i = 0; i < N_SCALAR_ARRAYS; ++i)
         {
-            gScalar* begin = sd[i];
-            scalarData[i] = begin + mr.nEqns() * j;
+            //gScalar* begin = sd[i];
+            scalarData[i] = sd[i] + mr.nEqns() * j;
 
         }
 

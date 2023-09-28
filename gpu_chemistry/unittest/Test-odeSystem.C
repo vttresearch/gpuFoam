@@ -4,6 +4,7 @@
 #include "mdspan.H"
 #include "test_utilities.H"
 #include "mock_of_odesystem.H"
+#include "gpuMemoryResource.H"
 #include "gpuODESystem.H"
 #include "create_inputs.H"
 
@@ -74,18 +75,23 @@ static inline void runMechanismTests(TestData::Mechanism mech)
 
         cpu.derivatives(0.0, y_cpu, li, dy_cpu);
 
-        auto buffer = toDeviceVector(host_vector<gpuBuffer>(1, gpuBuffer(nSpecie)));
+
+        memoryResource_t memory(nSpecie, 1);
+        auto buffers = toDeviceVector(splitToBuffers(memory));
+
+
+        //auto buffers = toDeviceVector(std::vector<gpuBuffer>(1, gpuBuffer(nSpecie)));
 
         auto f =
         [
             =,
-            buffer = make_mdspan(buffer, extents<1>{1}),
+            buffers = make_mdspan(buffers, extents<1>{1}),
             y = make_mdspan(y_gpu, extents<1>{nEqns}),
             dy = make_mdspan(dy_gpu, extents<1>{nEqns})
         ]
         ()
         {
-            gpu.derivatives(0.0, y, li, dy, buffer[0]);
+            gpu.derivatives(0.0, y, li, dy, buffers[0]);
             return 0;
         };
 

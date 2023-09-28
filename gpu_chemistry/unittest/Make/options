@@ -33,4 +33,4 @@ EXE_LIBS = \
     -lchemistryModel \
     -lblockMesh
 
-#include ../nvcpp
+include ../nvcpp
