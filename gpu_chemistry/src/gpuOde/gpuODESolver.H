@@ -21,7 +21,7 @@ namespace gpu{
 
 }
 
-template<class Span, class TwoDSpan>
+template<class Span, class TwoDSpan, class Buffer>
 struct ode_visitor
 {
     CUDA_HOSTDEV
@@ -32,9 +32,9 @@ struct ode_visitor
         Span&         y,
         gScalar&      dxTry,
         TwoDSpan&     a,
-        gpuBuffer&     buffer
+        Buffer&     buffer
     ) :
-    xStart_(xStart), 
+    xStart_(xStart),
     xEnd_(xEnd),
     y_(y),
     dxTry_(dxTry),
@@ -53,7 +53,7 @@ struct ode_visitor
     Span&         y_;
     gScalar&      dxTry_;
     TwoDSpan&     a_;
-    gpuBuffer&     buffer_;
+    Buffer&     buffer_;
 
 
 };
@@ -67,17 +67,17 @@ struct gpuODESolver{
     gpuODESolver(const gpu::solver& solver) : solver_(solver)
     {}
 
-    template<class Span, class TwoDSpan>
+    template<class Span, class TwoDSpan, class Buffer>
     CUDA_HOSTDEV void solve(const gScalar xStart,
                             const gScalar xEnd,
                             Span&         y,
                             const gLabel  li,
                             gScalar&      dxTry,
                             TwoDSpan&     a,
-                            gpuBuffer&     buffer) const
+                            Buffer&     buffer) const
     {
         (void) li;
-        ode_visitor<Span, TwoDSpan> v(xStart, xEnd, y, dxTry, a, buffer);
+        ode_visitor<Span, TwoDSpan, Buffer> v(xStart, xEnd, y, dxTry, a, buffer);
         variant::apply_visitor(v, solver_);
     }
 

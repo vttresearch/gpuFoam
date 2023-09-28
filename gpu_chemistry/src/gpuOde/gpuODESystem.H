@@ -218,9 +218,9 @@ private:
 
 public:
 
-    
+
     gpuODESystem() = default;
-        
+
     gpuODESystem(gLabel             nEqns,
                  gLabel             nReactions,
                  const gpuThermo*   thermos,
@@ -234,12 +234,12 @@ public:
 
     CUDA_HOSTDEV gLabel nReactions() const { return nReactions_; }
 
-    template <class Span1, class Span2>
+    template <class Span1, class Span2, class Buffer>
     CUDA_HOSTDEV void derivatives(const gScalar x,
                                   const Span1&  y,
                                   const gLabel  li,
                                   Span2&        dydx,
-                                  gpuBuffer&    buffer) const {
+                                  Buffer&    buffer) const {
 
         for (gLabel i = 0; i < nEqns(); ++i) { dydx[i] = 0; }
 
@@ -268,13 +268,13 @@ public:
         dpdt(dydx);
     }
 
-    template <class Span1, class Span2, class TwoDSpan>
+    template <class Span1, class Span2, class TwoDSpan, class Buffer>
     CUDA_HOSTDEV void jacobian(const gScalar x,
                                const Span1&  y,
                                const gLabel  li,
                                Span2&        dfdx,
                                TwoDSpan&     dfdy,
-                               gpuBuffer&    buffer) const {
+                               Buffer&    buffer) const {
         const gLabel nEqs    = nEqns();
         const gLabel nSpecie = nEqs - 2;
 

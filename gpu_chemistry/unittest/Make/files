@@ -1,6 +1,7 @@
 Test-eos.C
 Test-thermo.C
 Test-reaction.C
+Test-memoryResource.C
 Test-odeSystem.C
 Test-ode.C
 Test-evaluator.C
