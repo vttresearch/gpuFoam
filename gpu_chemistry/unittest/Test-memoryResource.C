@@ -16,5 +16,21 @@ TEST_CASE("gpuMemoryResource"){
     }
 
 
+    SECTION("splitToBuffers")
+    {
+
+        gLabel nCells = 3;
+        gLabel nSpecie = 6;
+
+        MR_t mr(nCells, nSpecie);
+
+        auto buffers = splitToBuffers(mr);
+
+
+
+
+
+    }
+
 
 }
