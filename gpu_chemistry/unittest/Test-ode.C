@@ -120,7 +120,9 @@ auto callGpuSolve
 
     auto y = toDeviceVector(y0);
     device_vector<gScalar> J (nEqns*nEqns);
-    auto buffer = toDeviceVector(host_vector<gpuBuffer>(1, gpuBuffer(nSpecie)));
+
+    memoryResource_t memory(1, nSpecie);
+    auto buffers = toDeviceVector(splitToBuffers(memory));
 
     auto f = [
         ode = ode,
@@ -130,11 +132,11 @@ auto callGpuSolve
         li = li,
         dxTry = dxTry,
         J = make_mdspan(J, extents<2>{nEqns, nEqns}),
-        buffer = make_mdspan(buffer, extents<1>{1})
+        buffers = make_mdspan(buffers, extents<1>{1})
     ]()
     {
         gScalar dxTry_temp = dxTry;
-        ode.solve(xStart, xEnd, y, li, dxTry_temp, J, buffer[0]);
+        ode.solve(xStart, xEnd, y, li, dxTry_temp, J, buffers[0]);
         return dxTry_temp;
     };
 
@@ -192,7 +194,7 @@ static inline void runMechanismTests(TestData::Mechanism mech)
     using namespace FoamGpu;
 
     Foam::MockOFSystem cpu_system(mech);
-    
+
     auto gpu_thermos = toDeviceVector(makeGpuThermos(mech));
     auto gpu_reactions = toDeviceVector(makeGpuReactions(mech));
 
@@ -201,8 +203,8 @@ static inline void runMechanismTests(TestData::Mechanism mech)
     (
         cpu_system.nEqns(),
         gLabel(gpu_reactions.size()),
-        get_raw_pointer(gpu_thermos),
-        get_raw_pointer(gpu_reactions)
+        make_raw_pointer(gpu_thermos.data()),
+        make_raw_pointer(gpu_reactions.data())
     );
 
     const Foam::scalarField y0 = [=](){

@@ -15,7 +15,6 @@ TEST_CASE("gpuMemoryResource"){
         REQUIRE_NOTHROW(MR_t(10, 1));
     }
 
-
     SECTION("splitToBuffers")
     {
 

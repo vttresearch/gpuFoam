@@ -48,8 +48,8 @@ static inline void runMechanismTests(TestData::Mechanism mech)
     (
         cpu.nEqns(),
         gLabel(gpu_reactions.size()),
-        get_raw_pointer(gpu_thermos),
-        get_raw_pointer(gpu_reactions)
+        make_raw_pointer(gpu_thermos.data()),
+        make_raw_pointer(gpu_reactions.data())
     );
 
     const gLabel nSpecie = TestData::speciesCount(mech);
@@ -75,12 +75,8 @@ static inline void runMechanismTests(TestData::Mechanism mech)
 
         cpu.derivatives(0.0, y_cpu, li, dy_cpu);
 
-
-        memoryResource_t memory(nSpecie, 1);
+        memoryResource_t memory(1, nSpecie);
         auto buffers = toDeviceVector(splitToBuffers(memory));
-
-
-        //auto buffers = toDeviceVector(std::vector<gpuBuffer>(1, gpuBuffer(nSpecie)));
 
         auto f =
         [
@@ -122,7 +118,8 @@ static inline void runMechanismTests(TestData::Mechanism mech)
         Foam::scalarSquareMatrix J_cpu(nEqns, 0.1);
         device_vector<gScalar> J_gpu(J_cpu.size(), 0.2);
 
-        auto buffer = toDeviceVector(host_vector<gpuBuffer>(1, gpuBuffer(nSpecie)));
+        memoryResource_t memory(1, nSpecie);
+        auto buffers = toDeviceVector(splitToBuffers(memory));
 
         cpu.jacobian(time, y_cpu, li, dy_cpu, J_cpu);
 
@@ -130,14 +127,14 @@ static inline void runMechanismTests(TestData::Mechanism mech)
         auto f =
         [
             =,
-            buffer = make_mdspan(buffer, extents<1>{1}),
+            buffers = make_mdspan(buffers, extents<1>{1}),
             y = make_mdspan(y_gpu, extents<1>{nEqns}),
             dy = make_mdspan(dy_gpu, extents<1>{nEqns}),
             J = make_mdspan(J_gpu, extents<2>{nEqns, nEqns})
         ]
         ()
         {
-            gpu.jacobian(time, y, li, dy, J, buffer[0]);
+            gpu.jacobian(time, y, li, dy, J, buffers[0]);
             return 0;
         };
 
