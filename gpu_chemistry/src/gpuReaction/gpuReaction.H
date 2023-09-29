@@ -4,9 +4,9 @@
 
 #include "cuda_host_dev.H"
 #include "cuda_math.H"
-#include "gpu_constants.H"
 #include "gpuReactionRate.H"
 #include "gpuThermo.H"
+#include "gpu_constants.H"
 #include "mdspan.H"
 
 namespace FoamGpu {
@@ -144,18 +144,17 @@ public:
     /// @param T Temperature.
     /// @param c A span of concentrations in a cell.
     /// @return The net reaction rate of this reaction.
-    template <class Span>
-    inline CUDA_HOSTDEV gScalar omega(const gScalar p,
-                                      const gScalar T,
-                                      const Span&   c) const;
+    inline CUDA_HOSTDEV gScalar omega(const gScalar                   p,
+                                      const gScalar                   T,
+                                      const mdspan<const gScalar, 1> c) const;
 
     /// @brief Assigns the precomputed net reaction rate for each specie
     /// involved to the input dNdtByV span.
     /// @param omega Precomputed net reaction rate of this reaction.
     /// @param dNdtByV The span of net reaction rates which are modified by this
     /// function.
-    template <class Span>
-    inline CUDA_HOSTDEV void dNdtByV(const gScalar omega, Span& dNdtByV) const;
+    inline CUDA_HOSTDEV void dNdtByV(const gScalar       omega,
+                                     mdspan<gScalar, 1> dNdtByV) const;
 
     /// @brief Computes and assigns the net reaction rate for each specie
     /// involved to the input dNdtByV span.
@@ -164,11 +163,10 @@ public:
     /// @param c A span of concentrations in a cell.
     /// @param dNdtByV The span of net reaction rates which are modified by this
     /// function.
-    template <class Span1, class Span2>
-    inline CUDA_HOSTDEV void dNdtByV(const gScalar p,
-                                     const gScalar T,
-                                     const Span1&  c,
-                                     Span2&        dNdtByV) const;
+    inline CUDA_HOSTDEV void dNdtByV(const gScalar                   p,
+                                     const gScalar                   T,
+                                     const mdspan<const gScalar, 1> c,
+                                     mdspan<gScalar, 1> dNdtByV) const;
 
     /// @brief Computes the forward reaction rate constant of this reaction.
     /// @param p Pressure.
@@ -176,9 +174,10 @@ public:
     /// @param c A span of concentrations in a cell
     /// @param li Arbitrary integer TODO: remove.
     /// @return The forward reaction rate constant of this reaction.
-    template <class Span>
-    inline CUDA_HOSTDEV gScalar
-    kf(const gScalar p, const gScalar T, const Span& c, const gLabel li) const;
+    inline CUDA_HOSTDEV gScalar kf(const gScalar                   p,
+                                   const gScalar                   T,
+                                   const mdspan<const gScalar, 1> c,
+                                   const gLabel                    li) const;
 
     /// @brief Computes the reverse reaction rate constant of this reaction.
     /// @param kfwd Forward reaction rate contant.
@@ -187,12 +186,11 @@ public:
     /// @param c A span of concentrations in a cell
     /// @param li Arbitrary integer TODO: remove.
     /// @return The reverse reaction rate constant of this reaction.
-    template <class Span>
-    inline CUDA_HOSTDEV gScalar kr(const gScalar kfwd,
-                                   const gScalar p,
-                                   const gScalar T,
-                                   const Span&   c,
-                                   const gLabel  li) const;
+    inline CUDA_HOSTDEV gScalar kr(const gScalar                   kfwd,
+                                   const gScalar                   p,
+                                   const gScalar                   T,
+                                   const mdspan<const gScalar, 1> c,
+                                   const gLabel                    li) const;
 
     /// @brief Computes the reverse reaction rate constant of this reaction.
     /// @param p Pressure.
@@ -200,9 +198,10 @@ public:
     /// @param c A span of concentrations in a cell
     /// @param li Arbitrary integer TODO: remove.
     /// @return The reverse reaction rate constant of this reaction.
-    template <class Span>
-    inline CUDA_HOSTDEV gScalar
-    kr(const gScalar p, const gScalar T, const Span& c, const gLabel li) const;
+    inline CUDA_HOSTDEV gScalar kr(const gScalar                   p,
+                                   const gScalar                   T,
+                                   const mdspan<const gScalar, 1> c,
+                                   const gLabel                    li) const;
 
     /// @brief Computes the temperature derivative of the forward rate.
     /// @param p Pressure.
@@ -210,11 +209,10 @@ public:
     /// @param c A span of concentrations in a cell
     /// @param li Arbitrary integer TODO: remove.
     /// @return The temperature derivative of the forward rate.
-    template <class Span>
-    inline CUDA_HOSTDEV gScalar dkfdT(const gScalar p,
-                                      const gScalar T,
-                                      const Span&   c,
-                                      const gLabel  li) const;
+    inline CUDA_HOSTDEV gScalar dkfdT(const gScalar                   p,
+                                      const gScalar                   T,
+                                      const mdspan<const gScalar, 1> c,
+                                      const gLabel                    li) const;
 
     /// @brief Computes the temperature derivative of the reverse rate.
     /// @param p Pressure.
@@ -224,13 +222,12 @@ public:
     /// @param dkfdT Temperature derivative of the forward rate.
     /// @param kr The reverse rate constant.
     /// @return The temperature derivative of the reverse rate.
-    template <class Span>
-    inline CUDA_HOSTDEV gScalar dkrdT(const gScalar p,
-                                      const gScalar T,
-                                      const Span&   c,
-                                      const gLabel  li,
-                                      const gScalar dkfdT,
-                                      const gScalar kr) const;
+    inline CUDA_HOSTDEV gScalar dkrdT(const gScalar                   p,
+                                      const gScalar                   T,
+                                      const mdspan<const gScalar, 1> c,
+                                      const gLabel                    li,
+                                      const gScalar                   dkfdT,
+                                      const gScalar                   kr) const;
 
     /// @brief Computes the concentration derivative of the forward rate.
     /// @param p Pressure
@@ -238,12 +235,11 @@ public:
     /// @param c A span of concentrations in a cell
     /// @param li Arbitrary integer TODO: remove.
     /// @param dkfdc A span of concentation derivatives to be modified.
-    template <class Span1, class Span2>
-    inline CUDA_HOSTDEV void dkfdc(const gScalar p,
-                                   const gScalar T,
-                                   const Span1&  c,
-                                   const gLabel  li,
-                                   Span2&        dkfdc) const;
+    inline CUDA_HOSTDEV void dkfdc(const gScalar                   p,
+                                   const gScalar                   T,
+                                   const mdspan<const gScalar, 1> c,
+                                   const gLabel                    li,
+                                   mdspan<gScalar, 1>             dkfdc) const;
 
     /// @brief Computes the concentration derivative of the reverse rate.
     /// @param p Pressure
@@ -253,14 +249,13 @@ public:
     /// @param dkfdc Concentration derivatives of the forward rate.
     /// @param kr The reverse rate constant.
     /// @param dkrdc A span of concentation derivatives to be modified.
-    template <class Span1, class Span2, class Span3>
-    inline CUDA_HOSTDEV void dkrdc(const gScalar p,
-                                   const gScalar T,
-                                   const Span1&  c,
-                                   const gLabel  li,
-                                   const Span2&  dkfdc,
-                                   const gScalar kr,
-                                   Span3&        dkrdc) const;
+    inline CUDA_HOSTDEV void dkrdc(const gScalar                   p,
+                                   const gScalar                   T,
+                                   const mdspan<const gScalar, 1> c,
+                                   const gLabel                    li,
+                                   const mdspan<const gScalar, 1> dkfdc,
+                                   const gScalar                   kr,
+                                   mdspan<gScalar, 1>             dkrdc) const;
 
     /// @brief Computes and assigns the jacobian contributions from the
     /// derivative of the rate constants w.r.t concentration and temperature.
@@ -281,21 +276,16 @@ public:
     /// temporary.
     /// @param cTpWork1 A a span of at least size nSpecie + 2 used as a
     /// temporary.
-    template <class Span1,
-              class Span2,
-              class TwoDSpan,
-              class Span3,
-              class Span4>
-    inline CUDA_HOSTDEV void ddNdtByVdcTp(const gScalar p,
-                                          const gScalar T,
-                                          const Span1&  c,
-                                          const gLabel  li,
-                                          Span2&        dNdtByV,
-                                          TwoDSpan&     ddNdtByVdcTp,
-                                          const gLabel  Nsi0,
-                                          const gLabel  Tsi,
-                                          Span3&        cTpWork0,
-                                          Span4&        cTpWork1) const;
+    inline CUDA_HOSTDEV void ddNdtByVdcTp(const gScalar                   p,
+                                          const gScalar                   T,
+                                          const mdspan<const gScalar, 1> c,
+                                          const gLabel                    li,
+                                          mdspan<gScalar, 1> dNdtByV,
+                                          mdspan<gScalar, 2> ddNdtByVdcTp,
+                                          const gLabel        Nsi0,
+                                          const gLabel        Tsi,
+                                          mdspan<gScalar, 1> cTpWork0,
+                                          mdspan<gScalar, 1> cTpWork1) const;
 
 private:
     /// @brief Checks if the LHS specie coefficients contain small (< 1)
@@ -315,46 +305,44 @@ private:
     /// @param c A span of concentrations in a cell.
     /// @return True if any of the concentrations on the LHS of this reaction
     /// have small values. False otherwise.
-    template <class Span>
-    inline CUDA_HOSTDEV bool lhsSmallConcentration(const Span& c) const;
+    inline CUDA_HOSTDEV bool
+    lhsSmallConcentration(const mdspan<const gScalar, 1> c) const;
 
     /// @brief Checks if any of the species involved in the LHS of this reaction
     /// has small (< gpuSmall) concentrations.
     /// @param c A span of concentrations in a cell.
     /// @return True if any of the concentrations on the LHS of this reaction
     /// have small values. False otherwise.
-    template <class Span>
-    inline CUDA_HOSTDEV bool rhsSmallConcentration(const Span& c) const;
+    inline CUDA_HOSTDEV bool
+    rhsSmallConcentration(const mdspan<const gScalar, 1> c) const;
 
     /// @brief Computes the powers pow(c_i, e_i) of the LHS specie
     /// concentrations.
     /// @param c A span of concentrations in a cell.
     /// @return An array of powers of the LHS species.
-    template <class Span>
     inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-                        lhsPowers(const Span& c) const;
+                        lhsPowers(const mdspan<const gScalar, 1> c) const;
 
     /// @brief Computes the powers pow(c_i, e_i) of the RHS specie
     /// concentrations.
     /// @param c A span of concentrations in a cell.
     /// @return An array of powers of the RHS species.
-    template <class Span>
     inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-                        rhsPowers(const Span& c) const;
+                        rhsPowers(const mdspan<const gScalar, 1> c) const;
 
     /// @brief Given an array of LHS concentration powers, computes the product
     /// of them all.
     /// @param lhsPow The input LHS powers to compute the product for.
     /// @return The product of the input powers.
     inline CUDA_HOSTDEV gScalar
-    calcCf(const std::array<gScalar, MAX_REACTION_WIDTH>& lhsPow) const;
+    calcCf(const std::array<gScalar, MAX_REACTION_WIDTH> lhsPow) const;
 
     /// @brief Given an array of RHS concentration powers, computes the product
     /// of them all.
     /// @param lhsPow The input RHS powers to compute the product for.
     /// @return The product of the input powers.
     inline CUDA_HOSTDEV gScalar
-    calcCr(const std::array<gScalar, MAX_REACTION_WIDTH>& rhsPow) const;
+    calcCr(const std::array<gScalar, MAX_REACTION_WIDTH> rhsPow) const;
 
     /// @brief Given precomputed LHS powers, computes the derivatives of the
     /// product of the powers w.r.t all concentrations on the LHS. This
@@ -363,10 +351,9 @@ private:
     /// @param c A span of concentrations in a cell.
     /// @return The derivative of the product of concentration powers w.r.t to
     /// all concentrations on the LHS.
-    template <class Span>
     inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-    calcdCfdcj(const std::array<gScalar, MAX_REACTION_WIDTH>& lhsPow,
-               const Span&                                    c) const;
+    calcdCfdcj(const std::array<gScalar, MAX_REACTION_WIDTH> lhsPow,
+               const mdspan<const gScalar, 1>                c) const;
 
     /// @brief Given precomputed RHS powers, computes the derivatives of the
     /// product of the powers w.r.t all concentrations on the RHS. This
@@ -375,10 +362,9 @@ private:
     /// @param c A span of concentrations in a cell.
     /// @return The derivative of the product of concentration powers w.r.t to
     /// all concentrations on the RHS.
-    template <class Span>
     inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-    calcdCrdcj(const std::array<gScalar, MAX_REACTION_WIDTH>& rhsPow,
-               const Span&                                    c) const;
+    calcdCrdcj(const std::array<gScalar, MAX_REACTION_WIDTH> rhsPow,
+               const mdspan<const gScalar, 1>                c) const;
 
     /// @brief Given precomputed product of the LHS powers, computes the
     /// derivatives of the product w.r.t all concentrations on the LHS. This
@@ -387,9 +373,8 @@ private:
     /// @param Cf Precomputed product of LHS powers.
     /// @param c A span of concentrations in a cell.
     /// @return The derivative of Cf w.r.t all concentrations on the LHS.
-    template <class Span>
     inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-                        calcdCfdcjLargeC(const gScalar Cf, const Span& c) const;
+    calcdCfdcjLargeC(const gScalar Cf, const mdspan<const gScalar, 1> c) const;
 
     /// @brief Given precomputed product of the RHS powers, computes the
     /// derivatives of the product w.r.t all concentrations on the RHS. This
@@ -398,9 +383,8 @@ private:
     /// @param Cr Precomputed product of RHS powers.
     /// @param c A span of concentrations in a cell.
     /// @return The derivative of Cr w.r.t all concentrations on the RHS.
-    template <class Span>
     inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-                        calcdCrdcjLargeC(const gScalar Cr, const Span& c) const;
+    calcdCrdcjLargeC(const gScalar Cr, const mdspan<const gScalar, 1> c) const;
 
     /// @brief Computes and assigns the jacobian contributions from the
     /// derivative of the LHS concentration products.
@@ -409,13 +393,12 @@ private:
     /// @param lhsPow The LHS concentration powers.
     /// @param c A span of concentrations in a cell.
     /// @param ddNdtByVdcTp A two dimensional span where the result is assigned.
-    template <class Span, class TwoDSpan>
     inline CUDA_HOSTDEV void jac_dCfdcj_contribution(
         const gScalar                                  kf,
         const gScalar                                  Cf,
-        const std::array<gScalar, MAX_REACTION_WIDTH>& lhsPow,
-        const Span&                                    c,
-        TwoDSpan&                                      ddNdtByVdcTp) const;
+        const std::array<gScalar, MAX_REACTION_WIDTH> lhsPow,
+        const mdspan<const gScalar, 1>                c,
+        mdspan<gScalar, 2>                            ddNdtByVdcTp) const;
 
     /// @brief Computes and assigns the jacobian contributions from the
     /// derivative of the RHS concentration products.
@@ -424,13 +407,12 @@ private:
     /// @param rhsPow The RHS concentration powers.
     /// @param c A span of concentrations in a cell.
     /// @param ddNdtByVdcTp A two dimensional span where the result is assigned.
-    template <class Span, class TwoDSpan>
     inline CUDA_HOSTDEV void jac_dCrdcj_contribution(
         const gScalar                                  kr,
         const gScalar                                  Cr,
-        const std::array<gScalar, MAX_REACTION_WIDTH>& rhsPow,
-        const Span&                                    c,
-        TwoDSpan&                                      ddNdtByVdcTp) const;
+        const std::array<gScalar, MAX_REACTION_WIDTH> rhsPow,
+        const mdspan<const gScalar, 1>                c,
+        mdspan<gScalar, 2>                            ddNdtByVdcTp) const;
 
     /// @brief Computes and assigns the jacobian contributions from the
     /// derivative of the rate constants w.r.t temperature.
@@ -442,16 +424,15 @@ private:
     /// @param Tsi Starting index of temperature in the solution array (nSpecie)
     /// @param c A span of concentrations in a cell.
     /// @param ddNdtByVdcTp A two dimensional span where the result is assigned.
-    template <class Span, class TwoDSpan>
     inline CUDA_HOSTDEV void
-    jac_dCdT_contribution(const gScalar   p,
-                          const gScalar   T,
-                          const gScalar   Cf,
-                          const gScalar   Cr,
-                          const gScalar   kr,
-                          const gLabel    Tsi,
-                          const Span&     c,
-                          const TwoDSpan& ddNdtByVdcTp) const;
+    jac_dCdT_contribution(const gScalar                   p,
+                          const gScalar                   T,
+                          const gScalar                   Cf,
+                          const gScalar                   Cr,
+                          const gScalar                   kr,
+                          const gLabel                    Tsi,
+                          const mdspan<const gScalar, 1> c,
+                          mdspan<gScalar, 2>             ddNdtByVdcTp) const;
 
     /// @brief Computes and assigns the jacobian contributions from the
     /// derivative of the rate constants w.r.t concentration.
@@ -464,24 +445,22 @@ private:
     /// @param cTpWork0 A a span of at least size nSpecie used as a temporary.
     /// @param cTpWork1 A a span of at least size nSpecie used as a temporary.
     /// @param ddNdtByVdcTp A two dimensional span where the result is assigned.
-    template <class Span1, class Span2, class Span3, class TwoDSpan>
     inline CUDA_HOSTDEV void
-    jac_dCdC_contribution(const gScalar p,
-                          const gScalar T,
-                          const gScalar Cf,
-                          const gScalar Cr,
-                          const gScalar kr,
-                          const Span1&  c,
-                          Span2&        cTpWork0,
-                          Span3&        cTpWork1,
-                          TwoDSpan&     ddNdtByVdcTp) const;
+    jac_dCdC_contribution(const gScalar                   p,
+                          const gScalar                   T,
+                          const gScalar                   Cf,
+                          const gScalar                   Cr,
+                          const gScalar                   kr,
+                          const mdspan<const gScalar, 1> c,
+                          mdspan<gScalar, 1>             cTpWork0,
+                          mdspan<gScalar, 1>             cTpWork1,
+                          mdspan<gScalar, 2>             ddNdtByVdcTp) const;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-template <class Span>
 inline CUDA_HOSTDEV bool
-gpuReaction::lhsSmallConcentration(const Span& c) const {
+gpuReaction::lhsSmallConcentration(const mdspan<const gScalar, 1> c) const {
     const auto llhs = lhs();
     for (size_t i = 0; i < llhs.size(); ++i) {
         const auto& si = llhs[i].index;
@@ -490,9 +469,8 @@ gpuReaction::lhsSmallConcentration(const Span& c) const {
     return false;
 }
 
-template <class Span>
 inline CUDA_HOSTDEV bool
-gpuReaction::rhsSmallConcentration(const Span& c) const {
+gpuReaction::rhsSmallConcentration(const mdspan<const gScalar, 1> c) const {
     const auto rrhs = rhs();
     for (size_t i = 0; i < rrhs.size(); ++i) {
         const auto& si = rrhs[i].index;
@@ -501,9 +479,8 @@ gpuReaction::rhsSmallConcentration(const Span& c) const {
     return false;
 }
 
-template <class Span>
 inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-                    gpuReaction::lhsPowers(const Span& c) const {
+gpuReaction::lhsPowers(const mdspan<const gScalar, 1> c) const {
 
     const auto                              llhs = lhs();
     std::array<gScalar, MAX_REACTION_WIDTH> ret{};
@@ -517,9 +494,8 @@ inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
     return ret;
 }
 
-template <class Span>
 inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-                    gpuReaction::rhsPowers(const Span& c) const {
+gpuReaction::rhsPowers(const mdspan<const gScalar, 1> c) const {
 
     const auto                              rrhs = rhs();
     std::array<gScalar, MAX_REACTION_WIDTH> ret{};
@@ -534,23 +510,22 @@ inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
 }
 
 inline CUDA_HOSTDEV gScalar gpuReaction::calcCf(
-    const std::array<gScalar, MAX_REACTION_WIDTH>& lhsPow) const {
+    const std::array<gScalar, MAX_REACTION_WIDTH> lhsPow) const {
     gScalar Cf = 1.0;
     for (gLabel i = 0; i < lhs_size_; ++i) { Cf *= lhsPow[i]; }
     return Cf;
 }
 
 inline CUDA_HOSTDEV gScalar gpuReaction::calcCr(
-    const std::array<gScalar, MAX_REACTION_WIDTH>& rhsPow) const {
+    const std::array<gScalar, MAX_REACTION_WIDTH> rhsPow) const {
     gScalar Cr = 1.0;
     for (gLabel i = 0; i < rhs_size_; ++i) { Cr *= rhsPow[i]; }
     return Cr;
 }
 
-template <class Span>
 inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-gpuReaction::calcdCfdcj(const std::array<gScalar, MAX_REACTION_WIDTH>& lhsPow,
-                        const Span& c) const {
+gpuReaction::calcdCfdcj(const std::array<gScalar, MAX_REACTION_WIDTH> lhsPow,
+                        const mdspan<const gScalar, 1> c) const {
 
     std::array<gScalar, MAX_REACTION_WIDTH> ret{};
 
@@ -573,10 +548,9 @@ gpuReaction::calcdCfdcj(const std::array<gScalar, MAX_REACTION_WIDTH>& lhsPow,
     return ret;
 }
 
-template <class Span>
 inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-gpuReaction::calcdCrdcj(const std::array<gScalar, MAX_REACTION_WIDTH>& rhsPow,
-                        const Span& c) const {
+gpuReaction::calcdCrdcj(const std::array<gScalar, MAX_REACTION_WIDTH> rhsPow,
+                        const mdspan<const gScalar, 1> c) const {
     std::array<gScalar, MAX_REACTION_WIDTH> ret{};
 
     const auto rrhs = rhs();
@@ -598,9 +572,9 @@ gpuReaction::calcdCrdcj(const std::array<gScalar, MAX_REACTION_WIDTH>& rhsPow,
     return ret;
 }
 
-template <class Span>
 inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-gpuReaction::calcdCfdcjLargeC(const gScalar Cf, const Span& c) const {
+                    gpuReaction::calcdCfdcjLargeC(const gScalar                   Cf,
+                              const mdspan<const gScalar, 1> c) const {
 
     std::array<gScalar, MAX_REACTION_WIDTH> ret{};
 
@@ -616,9 +590,9 @@ gpuReaction::calcdCfdcjLargeC(const gScalar Cf, const Span& c) const {
     return ret;
 }
 
-template <class Span>
 inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-gpuReaction::calcdCrdcjLargeC(const gScalar Cr, const Span& c) const {
+                    gpuReaction::calcdCrdcjLargeC(const gScalar                   Cr,
+                              const mdspan<const gScalar, 1> c) const {
 
     std::array<gScalar, MAX_REACTION_WIDTH> ret{};
 
@@ -633,10 +607,8 @@ gpuReaction::calcdCrdcjLargeC(const gScalar Cr, const Span& c) const {
     return ret;
 }
 
-template <class Span>
-inline CUDA_HOSTDEV gScalar gpuReaction::omega(const gScalar p,
-                                               const gScalar T,
-                                               const Span&   c) const {
+inline CUDA_HOSTDEV gScalar gpuReaction::omega(
+    const gScalar p, const gScalar T, const mdspan<const gScalar, 1> c) const {
 
     const gScalar clippedT = min(max(T, this->Tlow()), this->Thigh());
 
@@ -651,9 +623,8 @@ inline CUDA_HOSTDEV gScalar gpuReaction::omega(const gScalar p,
     return kf * Cf - kr * Cr;
 }
 
-template <class Span>
-inline CUDA_HOSTDEV void gpuReaction::dNdtByV(const gScalar omega,
-                                              Span&         dNdtByV) const {
+inline CUDA_HOSTDEV void
+gpuReaction::dNdtByV(const gScalar omega, mdspan<gScalar, 1> dNdtByV) const {
     const auto llhs = lhs();
 
     for (size_t i = 0; i < llhs.size(); ++i) {
@@ -671,32 +642,30 @@ inline CUDA_HOSTDEV void gpuReaction::dNdtByV(const gScalar omega,
     }
 }
 
-template <class Span1, class Span2>
-inline CUDA_HOSTDEV void gpuReaction::dNdtByV(const gScalar p,
-                                              const gScalar T,
-                                              const Span1&  c,
-                                              Span2&        dNdtByV) const {
+inline CUDA_HOSTDEV void
+gpuReaction::dNdtByV(const gScalar                   p,
+                     const gScalar                   T,
+                     const mdspan<const gScalar, 1> c,
+                     mdspan<gScalar, 1>             dNdtByV) const {
     const gScalar omega = this->omega(p, T, c);
 
     this->dNdtByV(omega, dNdtByV);
 }
 
-template <class Span>
-inline CUDA_HOSTDEV gScalar gpuReaction::kf(const gScalar p,
-                                            const gScalar T,
-                                            const Span&   c,
-                                            const gLabel  li) const {
+inline CUDA_HOSTDEV gScalar gpuReaction::kf(const gScalar                   p,
+                                            const gScalar                   T,
+                                            const mdspan<const gScalar, 1> c,
+                                            const gLabel li) const {
     // return 43.0;
     (void)li;
     return k_(p, T, c, li);
 }
 
-template <class Span>
 inline CUDA_HOSTDEV gScalar gpuReaction::kr(const gScalar kfwd,
                                             const gScalar p,
                                             const gScalar T,
-                                            const Span&   c,
-                                            const gLabel  li) const {
+                                            const mdspan<const gScalar, 1> c,
+                                            const gLabel li) const {
 
     (void)li;
     if (isIrreversible()) { return 0.0; }
@@ -704,32 +673,31 @@ inline CUDA_HOSTDEV gScalar gpuReaction::kr(const gScalar kfwd,
     return kfwd / max(this->Kc(p, T), rSmall);
 }
 
-template <class Span>
-inline CUDA_HOSTDEV gScalar gpuReaction::kr(const gScalar p,
-                                            const gScalar T,
-                                            const Span&   c,
-                                            const gLabel  li) const {
+inline CUDA_HOSTDEV gScalar gpuReaction::kr(const gScalar                   p,
+                                            const gScalar                   T,
+                                            const mdspan<const gScalar, 1> c,
+                                            const gLabel li) const {
     (void)li;
     if (isIrreversible()) { return 0.0; }
     return kr(kf(p, T, c, li), p, T, c, li);
 }
 
-template <class Span>
-inline CUDA_HOSTDEV gScalar gpuReaction::dkfdT(const gScalar p,
-                                               const gScalar T,
-                                               const Span&   c,
-                                               const gLabel  li) const {
+inline CUDA_HOSTDEV gScalar
+gpuReaction::dkfdT(const gScalar                   p,
+                   const gScalar                   T,
+                   const mdspan<const gScalar, 1> c,
+                   const gLabel                    li) const {
     (void)li;
     return k_.ddT(p, T, c, li);
 }
 
-template <class Span>
-inline CUDA_HOSTDEV gScalar gpuReaction::dkrdT(const gScalar p,
-                                               const gScalar T,
-                                               const Span&   c,
-                                               const gLabel  li,
-                                               const gScalar dkfdT,
-                                               const gScalar kr) const {
+inline CUDA_HOSTDEV gScalar
+gpuReaction::dkrdT(const gScalar                   p,
+                   const gScalar                   T,
+                   const mdspan<const gScalar, 1> c,
+                   const gLabel                    li,
+                   const gScalar                   dkfdT,
+                   const gScalar                   kr) const {
 
     (void)li;
     if (isIrreversible()) { return 0.0; }
@@ -739,31 +707,28 @@ inline CUDA_HOSTDEV gScalar gpuReaction::dkrdT(const gScalar p,
     return dkfdT / Kc - (Kc > rSmall ? kr * this->dKcdTbyKc(p, T) : 0.0);
 }
 
-template <class Span1, class Span2>
-inline CUDA_HOSTDEV void gpuReaction::dkfdc(const gScalar p,
-                                            const gScalar T,
-                                            const Span1&  c,
-                                            const gLabel  li,
-                                            Span2&        dkfdc) const {
+inline CUDA_HOSTDEV void gpuReaction::dkfdc(const gScalar                   p,
+                                            const gScalar                   T,
+                                            const mdspan<const gScalar, 1> c,
+                                            const gLabel                    li,
+                                            mdspan<gScalar, 1> dkfdc) const {
     (void)li;
     k_.ddc(p, T, c, li, dkfdc);
 }
 
-template <class Span1, class Span2, class Span3>
-inline CUDA_HOSTDEV void gpuReaction::dkrdc(const gScalar p,
-                                            const gScalar T,
-                                            const Span1&  c,
-                                            const gLabel  li,
-                                            const Span2&  dkfdc,
-                                            const gScalar kr,
-                                            Span3&        dkrdc) const {
+inline CUDA_HOSTDEV void
+gpuReaction::dkrdc(const gScalar                   p,
+                   const gScalar                   T,
+                   const mdspan<const gScalar, 1> c,
+                   const gLabel                    li,
+                   const mdspan<const gScalar, 1> dkfdc,
+                   const gScalar                   kr,
+                   mdspan<gScalar, 1>             dkrdc) const {
 
     (void)li;
     if (isIrreversible()) {
 
-        for (gLabel i = 0; i < gLabel(dkrdc.size()); ++i) {
-            dkrdc[i] = 0.0;
-        }
+        for (gLabel i = 0; i < gLabel(dkrdc.size()); ++i) { dkrdc[i] = 0.0; }
     } else {
         const gScalar rSmall = sqrt(gpuSmall);
         const gScalar Kc     = max(this->Kc(p, T), rSmall);
@@ -774,13 +739,12 @@ inline CUDA_HOSTDEV void gpuReaction::dkrdc(const gScalar p,
     }
 }
 
-template <class Span, class TwoDSpan>
 inline CUDA_HOSTDEV void gpuReaction::jac_dCfdcj_contribution(
     const gScalar                                  kf,
     const gScalar                                  Cf,
-    const std::array<gScalar, MAX_REACTION_WIDTH>& lhsPow,
-    const Span&                                    c,
-    TwoDSpan&                                      ddNdtByVdcTp) const {
+    const std::array<gScalar, MAX_REACTION_WIDTH> lhsPow,
+    const mdspan<const gScalar, 1>                c,
+    mdspan<gScalar, 2>                            ddNdtByVdcTp) const {
 
     std::array<gScalar, MAX_REACTION_WIDTH> dCfdjs;
     if (!lhsSmallConcentration(c)) {
@@ -809,13 +773,12 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCfdcj_contribution(
     }
 }
 
-template <class Span, class TwoDSpan>
 inline CUDA_HOSTDEV void gpuReaction::jac_dCrdcj_contribution(
     const gScalar                                  kr,
     const gScalar                                  Cr,
-    const std::array<gScalar, MAX_REACTION_WIDTH>& rhsPow,
-    const Span&                                    c,
-    TwoDSpan&                                      ddNdtByVdcTp) const {
+    const std::array<gScalar, MAX_REACTION_WIDTH> rhsPow,
+    const mdspan<const gScalar, 1>                c,
+    mdspan<gScalar, 2>                            ddNdtByVdcTp) const {
 
     std::array<gScalar, MAX_REACTION_WIDTH> dCrdjs;
     if (!rhsSmallConcentration(c)) {
@@ -844,16 +807,15 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCrdcj_contribution(
     }
 }
 
-template <class Span, class TwoDSpan>
 inline CUDA_HOSTDEV void
-gpuReaction::jac_dCdT_contribution(const gScalar   p,
-                                   const gScalar   T,
-                                   const gScalar   Cf,
-                                   const gScalar   Cr,
-                                   const gScalar   kr,
-                                   const gLabel    Tsi,
-                                   const Span&     c,
-                                   const TwoDSpan& ddNdtByVdcTp) const {
+gpuReaction::jac_dCdT_contribution(const gScalar                   p,
+                                   const gScalar                   T,
+                                   const gScalar                   Cf,
+                                   const gScalar                   Cr,
+                                   const gScalar                   kr,
+                                   const gLabel                    Tsi,
+                                   const mdspan<const gScalar, 1> c,
+                                   mdspan<gScalar, 2> ddNdtByVdcTp) const {
 
     const gScalar dkfdT = this->dkfdT(p, T, c, 0);
     const gScalar dkrdT = this->dkrdT(p, T, c, 0, dkfdT, kr);
@@ -874,17 +836,16 @@ gpuReaction::jac_dCdT_contribution(const gScalar   p,
     }
 }
 
-template <class Span1, class Span2, class Span3, class TwoDSpan>
 inline CUDA_HOSTDEV void
-gpuReaction::jac_dCdC_contribution(const gScalar p,
-                                   const gScalar T,
-                                   const gScalar Cf,
-                                   const gScalar Cr,
-                                   const gScalar kr,
-                                   const Span1&  c,
-                                   Span2&        cTpWork0,
-                                   Span3&        cTpWork1,
-                                   TwoDSpan&     ddNdtByVdcTp) const {
+gpuReaction::jac_dCdC_contribution(const gScalar                   p,
+                                   const gScalar                   T,
+                                   const gScalar                   Cf,
+                                   const gScalar                   Cr,
+                                   const gScalar                   kr,
+                                   const mdspan<const gScalar, 1> c,
+                                   mdspan<gScalar, 1>             cTpWork0,
+                                   mdspan<gScalar, 1>             cTpWork1,
+                                   mdspan<gScalar, 2> ddNdtByVdcTp) const {
     if (hasDkdc()) {
         auto& dkfdc = cTpWork0;
         auto& dkrdc = cTpWork1;
@@ -919,17 +880,17 @@ gpuReaction::jac_dCdC_contribution(const gScalar p,
     }
 }
 
-template <class Span1, class Span2, class TwoDSpan, class Span3, class Span4>
-inline CUDA_HOSTDEV void gpuReaction::ddNdtByVdcTp(const gScalar p,
-                                                   const gScalar T,
-                                                   const Span1&  c,
-                                                   const gLabel  li,
-                                                   Span2&        dNdtByV,
-                                                   TwoDSpan&     ddNdtByVdcTp,
-                                                   const gLabel  Nsi0,
-                                                   const gLabel  Tsi,
-                                                   Span3&        cTpWork0,
-                                                   Span4& cTpWork1) const {
+inline CUDA_HOSTDEV void
+gpuReaction::ddNdtByVdcTp(const gScalar                   p,
+                          const gScalar                   T,
+                          const mdspan<const gScalar, 1> c,
+                          const gLabel                    li,
+                          mdspan<gScalar, 1>             dNdtByV,
+                          mdspan<gScalar, 2>             ddNdtByVdcTp,
+                          const gLabel                    Nsi0,
+                          const gLabel                    Tsi,
+                          mdspan<gScalar, 1>             cTpWork0,
+                          mdspan<gScalar, 1>             cTpWork1) const {
 
     (void)li;
 
