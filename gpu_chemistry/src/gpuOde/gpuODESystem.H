@@ -3,11 +3,11 @@
 #include "check_ptr.H"
 #include "cuda_host_dev.H"
 #include "cuda_math.H"
-#include "gpu_constants.H"
+#include "gpuBuffer.H"
 #include "gpuReaction.H"
 #include "gpuThermo.H"
+#include "gpu_constants.H"
 #include "mdspan.H"
-#include "gpuBuffer.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -16,7 +16,6 @@ namespace FoamGpu {
 struct gpuODESystem {
 
 private:
-
     gLabel             nEqns_;
     gLabel             nReactions_;
     const gpuThermo*   thermos_;
@@ -26,10 +25,9 @@ private:
 
     CUDA_HOSTDEV const gpuReaction* reactions() const { return reactions_; }
 
-    template <class Span>
-    CUDA_HOSTDEV gScalar rhoMixture(const Span&   y,
-                                    const gScalar p,
-                                    const gScalar T) const {
+    CUDA_HOSTDEV gScalar rhoMixture(const mdspan<const gScalar, 1> y,
+                                    const gScalar                  p,
+                                    const gScalar                  T) const {
         const gLabel nSpecie = nEqns() - 2;
         gScalar      rhoM    = 0.0;
         for (gLabel i = 0; i < nSpecie; i++) {
@@ -38,10 +36,9 @@ private:
         return gScalar(1) / rhoM;
     }
 
-    template <class Span>
-    CUDA_HOSTDEV gScalar CpMixture(const Span&   y,
-                                   const gScalar p,
-                                   const gScalar T) const {
+    CUDA_HOSTDEV gScalar CpMixture(const mdspan<const gScalar, 1> y,
+                                   const gScalar                  p,
+                                   const gScalar                  T) const {
         const gLabel nSpecie = nEqns() - 2;
         gScalar      CpM     = 0.0;
         for (gLabel i = 0; i < nSpecie; i++) {
@@ -50,10 +47,9 @@ private:
         return CpM;
     }
 
-    template <class Span>
-    CUDA_HOSTDEV gScalar dCpMdTMixture(const Span&   y,
-                                       const gScalar p,
-                                       const gScalar T) const {
+    CUDA_HOSTDEV gScalar dCpMdTMixture(const mdspan<const gScalar, 1> y,
+                                       const gScalar                  p,
+                                       const gScalar                  T) const {
         const gLabel nSpecie = nEqns() - 2;
         gScalar      dCpMdT  = 0.0;
         for (gLabel i = 0; i < nSpecie; i++) {
@@ -63,10 +59,9 @@ private:
     }
 
     // Mixture thermal expansion coefficient
-    template <class Span>
-    CUDA_HOSTDEV gScalar alphavMixture(const Span&   y,
-                                       const gScalar p,
-                                       const gScalar T,
+    CUDA_HOSTDEV gScalar alphavMixture(const mdspan<const gScalar, 1> y,
+                                       const gScalar                  p,
+                                       const gScalar                  T,
                                        const gScalar rhoM) const {
         const gLabel nSpecie = nEqns() - 2;
 
@@ -80,9 +75,9 @@ private:
         return alphavM;
     }
 
-    template <class Span1, class Span2>
-    CUDA_HOSTDEV void
-    concentration(const Span1& y, Span2& c, const gScalar rhoM) const {
+    CUDA_HOSTDEV void concentration(const mdspan<const gScalar, 1> y,
+                                    mdspan<gScalar, 1>             c,
+                                    const gScalar                  rhoM) const {
         const gLabel nSpecie = nEqns() - 2;
         // Evaluate the concentrations
         for (gLabel i = 0; i < nSpecie; i++) {
@@ -90,25 +85,24 @@ private:
         }
     }
 
-    template <class Span>
-    CUDA_HOSTDEV void
-    absoluteEnthalpy(Span& Ha, const gScalar p, const gScalar T) const {
+    CUDA_HOSTDEV void absoluteEnthalpy(mdspan<gScalar, 1> Ha,
+                                       const gScalar      p,
+                                       const gScalar      T) const {
         const gLabel nSpecie = nEqns() - 2;
         for (gLabel i = 0; i < nSpecie; i++) {
             Ha[i] = specieThermos()[i].Ha(p, T);
         }
     }
-    template <class Span>
-    CUDA_HOSTDEV void
-    heatCapacity(Span& Cp, const gScalar p, const gScalar T) const {
+    CUDA_HOSTDEV void heatCapacity(mdspan<gScalar, 1> Cp,
+                                   const gScalar      p,
+                                   const gScalar      T) const {
         const gLabel nSpecie = nEqns() - 2;
         for (gLabel i = 0; i < nSpecie; i++) {
             Cp[i] = specieThermos()[i].Cp(p, T);
         }
     }
 
-    template <class Span>
-    CUDA_HOSTDEV void dYdt(Span& dydx, const gScalar rhoM) const {
+    CUDA_HOSTDEV void dYdt(mdspan<gScalar, 1> dydx, const gScalar rhoM) const {
         const gLabel nSpecie = nEqns() - 2;
         // Reactions return dNdtByV, so we need to convert the result to dYdt
         for (gLabel i = 0; i < nSpecie; i++) {
@@ -118,9 +112,9 @@ private:
 
     // Temperature derivative, notes assumes dydx[0 ... nSpecie] has been
     // computed
-    template <class Span1, class Span2>
-    CUDA_HOSTDEV void
-    dTdt(Span1& dydx, const Span2& Ha, const gScalar CpM) const {
+    CUDA_HOSTDEV void dTdt(mdspan<gScalar, 1>             dydx,
+                           const mdspan<const gScalar, 1> Ha,
+                           const gScalar                  CpM) const {
 
         const gLabel nSpecie = nEqns() - 2;
         for (gLabel i = 0; i < nSpecie; i++) {
@@ -129,21 +123,20 @@ private:
         dydx[nSpecie] /= CpM;
     }
 
-    template <class Span> CUDA_HOSTDEV void dpdt(Span& dydx) const {
+    CUDA_HOSTDEV void dpdt(mdspan<gScalar, 1> dydx) const {
         const gLabel nSpecie = nEqns() - 2;
         // dp/dt = 0 (pressure is assumed constant)
         dydx[nSpecie + 1] = gScalar(0);
     }
 
-    template <class TwoDSpan, class Span1, class Span2, class Span3>
-    CUDA_HOSTDEV void ddY_dcdY(TwoDSpan&     dfdy,
-                               const Span1&  dydx,
-                               const Span2&  c,
-                               Span3&        temp,
-                               const gScalar rhoM,
-                               const gScalar alphavM,
-                               const gScalar p,
-                               const gScalar T) const {
+    CUDA_HOSTDEV void ddY_dcdY(mdspan<gScalar, 2>             dfdy,
+                               const mdspan<const gScalar, 1> dydx,
+                               const mdspan<const gScalar, 1> c,
+                               mdspan<gScalar, 1>             temp,
+                               const gScalar                  rhoM,
+                               const gScalar                  alphavM,
+                               const gScalar                  p,
+                               const gScalar                  T) const {
         const gLabel nSpecie = nEqns() - 2;
 
         for (gLabel i = 0; i < nSpecie; i++) {
@@ -174,12 +167,11 @@ private:
     // Assumes dfdy(0...nSpecie, 0...nSpecie) and dydx(0 ... nSpecie +1 ) have
     // been computed
     //  d(dTdt)/dY
-    template <class TwoDSpan, class Span1, class Span2, class Span3>
-    CUDA_HOSTDEV void ddT_dtdY(TwoDSpan&     dfdy,
-                               const Span1&  dydx,
-                               const Span2&  Cp,
-                               const Span3&  Ha,
-                               const gScalar CpM) const {
+    CUDA_HOSTDEV void ddT_dtdY(mdspan<gScalar, 2>             dfdy,
+                               const mdspan<const gScalar, 1> dydx,
+                               const mdspan<const gScalar, 1> Cp,
+                               const mdspan<const gScalar, 1> Ha,
+                               const gScalar                  CpM) const {
 
         const gLabel nSpecie = nEqns() - 2;
 
@@ -196,13 +188,12 @@ private:
     }
 
     // d(dTdt)/dT
-    template <class TwoDSpan, class Span1, class Span2, class Span3>
-    CUDA_HOSTDEV void ddT_dtdT(TwoDSpan&     dfdy,
-                               const Span1&  dydx,
-                               const Span2&  Cp,
-                               const Span3&  Ha,
-                               const gScalar CpM,
-                               const gScalar dCpMdT) const {
+    CUDA_HOSTDEV void ddT_dtdT(mdspan<gScalar, 2>             dfdy,
+                               const mdspan<const gScalar, 1> dydx,
+                               const mdspan<const gScalar, 1> Cp,
+                               const mdspan<const gScalar, 1> Ha,
+                               const gScalar                  CpM,
+                               const gScalar                  dCpMdT) const {
 
         const gLabel nSpecie = nEqns() - 2;
 
@@ -217,8 +208,6 @@ private:
     }
 
 public:
-
-
     gpuODESystem() = default;
 
     gpuODESystem(gLabel             nEqns,
@@ -234,12 +223,11 @@ public:
 
     CUDA_HOSTDEV gLabel nReactions() const { return nReactions_; }
 
-    template <class Span1, class Span2>
-    CUDA_HOSTDEV void derivatives(const gScalar x,
-                                  const Span1&  y,
-                                  const gLabel  li,
-                                  Span2&        dydx,
-                                  gpuBuffer&    buffer) const {
+    CUDA_HOSTDEV void derivatives(const gScalar                  x,
+                                  const mdspan<const gScalar, 1> y,
+                                  const gLabel                   li,
+                                  mdspan<gScalar, 1>             dydx,
+                                  gpuBuffer&                     buffer) const {
 
         for (gLabel i = 0; i < nEqns(); ++i) { dydx[i] = 0; }
 
@@ -268,13 +256,12 @@ public:
         dpdt(dydx);
     }
 
-    template <class Span1, class Span2, class TwoDSpan>
-    CUDA_HOSTDEV void jacobian(const gScalar x,
-                               const Span1&  y,
-                               const gLabel  li,
-                               Span2&        dfdx,
-                               TwoDSpan&     dfdy,
-                               gpuBuffer&    buffer) const {
+    CUDA_HOSTDEV void jacobian(const gScalar                  x,
+                               const mdspan<const gScalar, 1> y,
+                               const gLabel                   li,
+                               mdspan<gScalar, 1>             dfdx,
+                               mdspan<gScalar, 2>             dfdy,
+                               gpuBuffer&                     buffer) const {
         const gLabel nEqs    = nEqns();
         const gLabel nSpecie = nEqs - 2;
 
@@ -296,9 +283,7 @@ public:
 
         // Evaluate contributions from reactions
         // dfdx = Zero;
-        for (gLabel i = 0; i < gLabel(y.size()); ++i) {
-            dfdx[i] = gScalar(0);
-        }
+        for (gLabel i = 0; i < gLabel(y.size()); ++i) { dfdx[i] = gScalar(0); }
 
         for (int i = 0; i < nEqs; ++i) {
             for (int j = 0; j < nEqs; ++j) { dfdy(i, j) = gScalar(0.0); }
