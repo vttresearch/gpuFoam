@@ -32,11 +32,10 @@ public:
         , thirdBodyEfficiencies_(tbes) {}
 
     //- Return the rate
-    template <class Span>
-    inline CUDA_HOSTDEV gScalar operator()(const gScalar p,
-                                           const gScalar T,
-                                           const Span    c,
-                                           const gLabel  li) const {
+    inline CUDA_HOSTDEV gScalar operator()(const gScalar                  p,
+                                           const gScalar                  T,
+                                           const mdspan<const gScalar, 1> c,
+                                           const gLabel li) const {
         const gScalar k0   = k0_(p, T, c, li);
         const gScalar kInf = kInf_(p, T, c, li);
         const gScalar M    = thirdBodyEfficiencies_.M(c);
@@ -47,11 +46,10 @@ public:
     }
 
     //- The derivative of the rate w.r.t. temperature
-    template <class Span>
-    inline CUDA_HOSTDEV gScalar ddT(const gScalar p,
-                                    const gScalar T,
-                                    const Span&   c,
-                                    const gLabel  li) const {
+    inline CUDA_HOSTDEV gScalar ddT(const gScalar                  p,
+                                    const gScalar                  T,
+                                    const mdspan<const gScalar, 1> c,
+                                    const gLabel                   li) const {
         const gScalar k0   = k0_(p, T, c, li);
         const gScalar kInf = kInf_(p, T, c, li);
         const gScalar M    = thirdBodyEfficiencies_.M(c);
@@ -67,12 +65,11 @@ public:
     inline CUDA_HOSTDEV bool hasDdc() const { return true; }
 
     //- The derivative of the rate w.r.t. concentration
-    template <class Span1, class Span2>
-    inline CUDA_HOSTDEV void ddc(const gScalar p,
-                                 const gScalar T,
-                                 const Span1&  c,
-                                 const gLabel  li,
-                                 Span2&        ddc) const {
+    inline CUDA_HOSTDEV void ddc(const gScalar                  p,
+                                 const gScalar                  T,
+                                 const mdspan<const gScalar, 1> c,
+                                 const gLabel                   li,
+                                 mdspan<gScalar, 1>             ddc) const {
 
         const gScalar k0   = k0_(p, T, c, li);
         const gScalar kInf = kInf_(p, T, c, li);

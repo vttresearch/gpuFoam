@@ -4,8 +4,8 @@
 
 #include "cuda_host_dev.H"
 #include "gpuBuffer.H"
-#include "host_device_vectors.H"
 #include "gpuMemoryResource.H"
+#include "host_device_vectors.H"
 
 #include <thrust/execution_policy.h>
 #include <thrust/extrema.h> //min_element
@@ -14,13 +14,12 @@
 #include "variant.hpp"
 #include <thrust/device_malloc_allocator.h>
 
-
-
 namespace FoamGpu {
 
-using labelAllocator = thrust::device_malloc_allocator<gLabel>;
+using labelAllocator  = thrust::device_malloc_allocator<gLabel>;
 using scalarAllocator = thrust::device_malloc_allocator<gScalar>;
-using memoryResource_t = FoamGpu::gpuMemoryResource<labelAllocator, scalarAllocator>;
+using memoryResource_t =
+    FoamGpu::gpuMemoryResource<labelAllocator, scalarAllocator>;
 
 GpuKernelEvaluator::GpuKernelEvaluator(
     gLabel                          nEqns,
@@ -37,18 +36,17 @@ GpuKernelEvaluator::GpuKernelEvaluator(
               thermosReactions_.thermos(),
               thermosReactions_.reactions())
     , solver_(make_gpuODESolver(system_, odeInputs))
-    , inputs_(odeInputs)
-     {}
+    , inputs_(odeInputs) {}
 
-template <class S1, class S2, class S3, class S4, class ODE> struct singleCell {
+template <class ODE> struct singleCell {
 
-    singleCell(gScalar      deltaT,
-               gLabel       nSpecie,
-               S1           deltaTChem,
-               S2           Yvf,
-               S3           Jss,
-               S4           buffer,
-               ODE ode)
+    singleCell(gScalar              deltaT,
+               gLabel               nSpecie,
+               mdspan<gScalar, 1>   deltaTChem,
+               mdspan<gScalar, 2>   Yvf,
+               mdspan<gScalar, 3>   Jss,
+               mdspan<gpuBuffer, 1> buffer,
+               ODE                  ode)
         : deltaT_(deltaT)
         , nSpecie_(nSpecie)
         , deltaTChem_(deltaTChem)
@@ -79,13 +77,13 @@ template <class S1, class S2, class S3, class S4, class ODE> struct singleCell {
         }
     }
 
-    gScalar      deltaT_;
-    gLabel       nSpecie_;
-    S1           deltaTChem_;
-    S2           Yvf_;
-    S3           Jss_;
-    S4           buffer_;
-    ODE ode_;
+    gScalar              deltaT_;
+    gLabel               nSpecie_;
+    mdspan<gScalar, 1>   deltaTChem_;
+    mdspan<gScalar, 2>   Yvf_;
+    mdspan<gScalar, 3>   Jss_;
+    mdspan<gpuBuffer, 1> buffer_;
+    ODE                  ode_;
 };
 
 std::pair<std::vector<gScalar>, std::vector<gScalar>>
@@ -107,33 +105,32 @@ GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
     auto Jss = make_mdspan(Js, extents<3>{nCells, nEqns_, nEqns_});
 
     memoryResource_t mr(nCells, nSpecie_);
-    auto buffers = toDeviceVector(splitToBuffers(mr));
-    auto buffer_span = make_mdspan(buffers, extents<1>{nCells});
+    auto             buffers     = toDeviceVector(splitToBuffers(mr));
+    auto             buffer_span = make_mdspan(buffers, extents<1>{nCells});
 
-
-    if (inputs_.name == "Rosenbrock23"){
+    /*
+    if (inputs_.name == "Rosenbrock23") {
 
         gpuRosenbrock23<gpuODESystem> ode(system_, inputs_);
-        singleCell op(deltaT, nSpecie_, ddeltaTChem, dYvf, Jss, buffer_span, ode);
+        singleCell                    op(
+            deltaT, nSpecie_, ddeltaTChem, dYvf, Jss, buffer_span, ode);
         thrust::for_each(thrust::device,
-                     thrust::make_counting_iterator(0),
-                     thrust::make_counting_iterator(nCells),
-                     op);
-    }
-    else
-    {
+                         thrust::make_counting_iterator(0),
+                         thrust::make_counting_iterator(nCells),
+                         op);
+    } else {
         gpuRosenbrock34<gpuODESystem> ode(system_, inputs_);
-        singleCell op(deltaT, nSpecie_, ddeltaTChem, dYvf, Jss, buffer_span, ode);
+        singleCell                    op(
+            deltaT, nSpecie_, ddeltaTChem, dYvf, Jss, buffer_span, ode);
         thrust::for_each(thrust::device,
-                     thrust::make_counting_iterator(0),
-                     thrust::make_counting_iterator(nCells),
-                     op);
+                         thrust::make_counting_iterator(0),
+                         thrust::make_counting_iterator(nCells),
+                         op);
     }
+    */
 
 
 
-        //= std::get<1>>(solver_.solver_);
-    /*
     singleCell op(deltaT, nSpecie_, ddeltaTChem, dYvf, Jss, buffer_span, solver_);
 
 
@@ -141,7 +138,7 @@ GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
                      thrust::make_counting_iterator(0),
                      thrust::make_counting_iterator(nCells),
                      op);
-    */
+
     return std::make_pair(toStdVector(dYvf_arr), toStdVector(ddeltaTChem_arr));
 }
 

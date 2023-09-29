@@ -6,9 +6,9 @@
 
 namespace FoamGpu {
 
-template <class TwoDSpan, class OneDSpan1, class OneDSpan2>
-static inline CUDA_HOSTDEV void
-LUDecompose(TwoDSpan& matrix, OneDSpan1& pivotIndices, OneDSpan2& vv) {
+static inline CUDA_HOSTDEV void LUDecompose(mdspan<gScalar, 2> matrix,
+                                            mdspan<gLabel, 1>  pivotIndices,
+                                            mdspan<gScalar, 1> vv) {
 
     const gLabel m = static_cast<gLabel>(matrix.extents().extent(1));
 
@@ -78,10 +78,10 @@ LUDecompose(TwoDSpan& matrix, OneDSpan1& pivotIndices, OneDSpan2& vv) {
     }
 }
 
-template <class TwoDSpan, class OneDSpan1, class OneDSpan2>
-static inline CUDA_HOSTDEV void LUBacksubstitute(TwoDSpan&        luMatrix,
-                                                 const OneDSpan1& pivotIndices,
-                                                 OneDSpan2&       sourceSol) {
+static inline CUDA_HOSTDEV void
+LUBacksubstitute(mdspan<gScalar, 2>            luMatrix,
+                 const mdspan<const gLabel, 1> pivotIndices,
+                 mdspan<gScalar, 1>            sourceSol) {
 
     const gLabel m  = static_cast<gLabel>(luMatrix.extents().extent(1));
     gLabel       ii = 0;

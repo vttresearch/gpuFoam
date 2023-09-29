@@ -31,6 +31,12 @@ struct gpuMemoryResource {
             scalarData_[i] =
                 make_raw_pointer(sAllocator_.allocate(nEqns_ * nCells_));
         }
+
+        for (gLabel i = 0; i < N_TWOD_SCALAR_ARRAYS; ++i) {
+            twodScalarData_[i] =
+                make_raw_pointer(sAllocator_.allocate(nEqns_ * nEqns_ * nCells_));
+        }
+
     }
 
     ~gpuMemoryResource() { this->deallocate(); }
@@ -45,6 +51,10 @@ struct gpuMemoryResource {
         return scalarData_;
     }
 
+    std::array<gScalar*, N_TWOD_SCALAR_ARRAYS> getTwodScalarData() {
+        return twodScalarData_;
+    }
+
 private:
     gLabel nCells_;
     gLabel nSpecie_;
@@ -52,6 +62,7 @@ private:
 
     std::array<gLabel*, N_LABEL_ARRAYS>   labelData_{};
     std::array<gScalar*, N_SCALAR_ARRAYS> scalarData_{};
+    std::array<gScalar*, N_TWOD_SCALAR_ARRAYS> twodScalarData_{};
 
     void deallocate() {
 
@@ -62,10 +73,16 @@ private:
             lAllocator_.deallocate(ptr, nEqns_ * nCells_);
         }
 
-        for (gLabel i = 0; i < N_LABEL_ARRAYS; ++i) {
+        for (gLabel i = 0; i < N_SCALAR_ARRAYS; ++i) {
             auto ptr = make_device_pointer(scalarData_[i]);
             sAllocator_.deallocate(ptr, nEqns_ * nCells_);
         }
+
+        for (gLabel i = 0; i < N_TWOD_SCALAR_ARRAYS; ++i) {
+            auto ptr = make_device_pointer(twodScalarData_[i]);
+            sAllocator_.deallocate(ptr, nEqns_* nEqns_ * nCells_);
+        }
+
     }
 };
 
@@ -77,6 +94,7 @@ splitToBuffers(gpuMemoryResource<A1, A2>& mr) {
 
     auto ld = mr.getLabelData();
     auto sd = mr.getScalarData();
+    auto twod_sd = mr.getTwodScalarData();
 
     for (gLabel j = 0; j < mr.nCells(); ++j) {
         std::array<gLabel*, N_LABEL_ARRAYS> labelData{};
@@ -91,7 +109,13 @@ splitToBuffers(gpuMemoryResource<A1, A2>& mr) {
             scalarData[i] = sd[i] + mr.nEqns() * j;
         }
 
-        ret[j] = gpuBuffer(labelData, scalarData, mr.nSpecie());
+        std::array<gScalar*, N_TWOD_SCALAR_ARRAYS> twodScalarData{};
+        for (gLabel i = 0; i < N_TWOD_SCALAR_ARRAYS; ++i) {
+            // gScalar* begin = sd[i];
+            twodScalarData[i] = twod_sd[i] + mr.nEqns() * mr.nEqns() * j;
+        }
+
+        ret[j] = gpuBuffer(labelData, scalarData, twodScalarData, mr.nSpecie());
     }
 
     return ret;

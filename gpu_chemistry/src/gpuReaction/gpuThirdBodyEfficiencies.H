@@ -20,7 +20,7 @@ public:
         , efficiencies_(efficiencies) {}
 
     //- Calculate and return M, the concentration of the third-bodies
-    template <class Span> inline CUDA_HOSTDEV gScalar M(const Span c) const {
+    inline CUDA_HOSTDEV gScalar M(const mdspan<const gScalar, 1> c) const {
         gScalar M = 0;
         for (gLabel i = 0; i < nSpecie_; ++i) { M += efficiencies_[i] * c[i]; }
         return M;
@@ -28,8 +28,8 @@ public:
 
     //- Calculate and return the derivative of M, w.r.t. the species
     //  concentrations
-    template <class Span>
-    inline CUDA_HOSTDEV const effArray& dMdc(const Span c) const {
+    inline CUDA_HOSTDEV const effArray&
+    dMdc(const mdspan<const gScalar, 1> c) const {
         (void)c;
         return efficiencies_;
     }

@@ -13,9 +13,11 @@ struct gpuBuffer {
     CUDA_HOSTDEV
     gpuBuffer(std::array<gLabel*, N_LABEL_ARRAYS>   lData,
                std::array<gScalar*, N_SCALAR_ARRAYS> sData,
+               std::array<gScalar*, N_TWOD_SCALAR_ARRAYS> twodSData,
                gLabel                                nSpecie)
         : lData_(lData)
         , sData_(sData)
+        , twodSData_(twodSData)
         , nSpecie_(nSpecie)
         , nEqns_(nSpecie + 2) {
 
@@ -26,6 +28,10 @@ struct gpuBuffer {
             for (size_t i = 0; i < sData_.size(); ++i)
             {
                 check_ptr(sData[i], "scalar pointer");
+            }
+            for (size_t i = 0; i < twodSData_.size(); ++i)
+            {
+                check_ptr(twodSData[i], "twod scalar pointer");
             }
         }
 
@@ -39,6 +45,12 @@ struct gpuBuffer {
     auto getScalarData(scalarArrays a, gLabel size) {
         return mdspan<gScalar, 1>(sData_[a], extents<1>{size});
     }
+
+    CUDA_HOSTDEV
+    auto getTwodScalarData(twoDScalarArrays a, gLabel size1, gLabel size2) {
+        return mdspan<gScalar, 2>(twodSData_[a], extents<2>{size1, size2});
+    }
+
 
     CUDA_HOSTDEV auto pivotIndices() {
         return getLabelData(labelArrays::pivotIndices, nEqns_);
@@ -97,13 +109,17 @@ struct gpuBuffer {
         return getScalarData(scalarArrays::tempField2, nEqns_);
     }
 
+    CUDA_HOSTDEV auto J() {
+        return getTwodScalarData(twoDScalarArrays::J, nEqns_, nEqns_);
+    }
+
 
 private:
 
 
     std::array<gLabel*, N_LABEL_ARRAYS>   lData_;
     std::array<gScalar*, N_SCALAR_ARRAYS> sData_;
-
+    std::array<gScalar*, N_TWOD_SCALAR_ARRAYS> twodSData_;
     gLabel nSpecie_;
     gLabel nEqns_;
 };

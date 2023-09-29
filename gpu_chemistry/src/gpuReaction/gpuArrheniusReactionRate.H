@@ -24,7 +24,6 @@ class gpuArrheniusReactionRate {
     }
 
 public:
-
     gpuArrheniusReactionRate() = default;
 
     inline gpuArrheniusReactionRate(const gScalar A,
@@ -34,22 +33,19 @@ public:
         , beta_(beta)
         , Ta_(Ta) {}
 
-
-    template <class Span>
-    inline CUDA_HOSTDEV gScalar operator()(const gScalar p,
-                                           const gScalar T,
-                                           const Span&   c,
-                                           const gLabel  li) const {
+    inline CUDA_HOSTDEV gScalar operator()(const gScalar                  p,
+                                           const gScalar                  T,
+                                           const mdspan<const gScalar, 1> c,
+                                           const gLabel li) const {
         (void)c;
         (void)li;
         return computeAk(p, T);
     }
 
-    template <class Span>
-    inline CUDA_HOSTDEV gScalar ddT(const gScalar p,
-                                    const gScalar T,
-                                    const Span&   c,
-                                    const gLabel  li) const {
+    inline CUDA_HOSTDEV gScalar ddT(const gScalar                  p,
+                                    const gScalar                  T,
+                                    const mdspan<const gScalar, 1> c,
+                                    const gLabel                   li) const {
         (void)c;
         (void)li;
         return computeAk(p, T) * (beta_ + Ta_ / T) / T;
@@ -57,12 +53,11 @@ public:
 
     inline CUDA_HOSTDEV bool hasDdc() const { return false; }
 
-    template <class Span1, class Span2>
-    inline CUDA_HOSTDEV void ddc(const gScalar p,
-                                 const gScalar T,
-                                 const Span1&  c,
-                                 const gLabel  li,
-                                 Span2&        ddc) const {
+    inline CUDA_HOSTDEV void ddc(const gScalar                  p,
+                                 const gScalar                  T,
+                                 const mdspan<const gScalar, 1> c,
+                                 const gLabel                   li,
+                                 mdspan<gScalar, 1>             ddc) const {
         for (gLabel i = 0; i < gLabel(ddc.size()); ++i) { ddc[i] = 0; }
     }
 };
