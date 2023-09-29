@@ -66,6 +66,7 @@ private:
     thermosAndReactions thermosReactions_;
     gpuODESystem        system_;
     gpuODESolver        solver_;
+    gpuODESolverInputs  inputs_;
 
     void allocate();
     void deallocate();

@@ -6,13 +6,12 @@
 #include "check_ptr.H"
 namespace FoamGpu {
 
-struct gpuBuffer2 {
+struct gpuBuffer {
+
+    gpuBuffer() = default;
 
     CUDA_HOSTDEV
-    gpuBuffer2() = default;
-
-    CUDA_HOSTDEV
-    gpuBuffer2(std::array<gLabel*, N_LABEL_ARRAYS>   lData,
+    gpuBuffer(std::array<gLabel*, N_LABEL_ARRAYS>   lData,
                std::array<gScalar*, N_SCALAR_ARRAYS> sData,
                gLabel                                nSpecie)
         : lData_(lData)

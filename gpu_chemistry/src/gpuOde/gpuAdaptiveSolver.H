@@ -29,7 +29,7 @@ template <class Derived> struct gpuAdaptiveSolver {
 private:
 
     //- Solve a single step dx and return the error
-    template <class Span1, class Span2, class Span3, class TwoDSpan, class Buffer>
+    template <class Span1, class Span2, class Span3, class TwoDSpan>
     CUDA_HOSTDEV gScalar interface(const gScalar x0,
                                const Span1&  y0,
                                const gLabel  li,
@@ -37,7 +37,7 @@ private:
                                const gScalar dx,
                                Span3&        y,
                                TwoDSpan&     a,
-                               Buffer&    buffer) const {
+                               gpuBuffer&    buffer) const {
 
         return static_cast<const Derived*>(this)->solve
         (
@@ -49,14 +49,14 @@ private:
 public:
 
     //- Solve the ODE system and the update the state
-    template <class System, class Span, class TwoDSpan, class Buffer>
+    template <class System, class Span, class TwoDSpan>
     CUDA_HOSTDEV void adaptiveSolve(const System& odes,
                                      gScalar&      x,
                                      Span&         y,
                                      const gLabel  li,
                                      gScalar&      dxTry,
                                      TwoDSpan&     a,
-                                     Buffer&    buffer) const {
+                                     gpuBuffer&    buffer) const {
 
         auto dydx0 = buffer.dydx0();
         auto yTemp = buffer.yTemp();

@@ -8,29 +8,7 @@
 #include "gpuODESystem.H"
 #include "create_inputs.H"
 
-TEST_CASE("Test gpuBuffer")
-{
-    using namespace FoamGpu;
 
-    //No idea why this cant be created directly on device...
-    //auto buffer_temp = host_vector<gpuBuffer>(1, gpuBuffer(43));
-    auto buffer = toDeviceVector(host_vector<gpuBuffer>(1, gpuBuffer(43)));
-
-
-    auto f =
-    [
-        bspan = make_mdspan(buffer, extents<1>{1})
-    ]()
-    {
-        auto c = bspan[0].c();
-        return c[32];
-    };
-
-    //This is here just to ensure that compiler doesnt optimize away
-    //the return value
-    CHECK(eval(f) != Approx(gScalar(3)).epsilon(errorTol));
-
-}
 
 static inline void runMechanismTests(TestData::Mechanism mech)
 {

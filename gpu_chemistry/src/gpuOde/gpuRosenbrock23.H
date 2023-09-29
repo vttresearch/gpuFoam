@@ -72,20 +72,20 @@ public:
     using gpuODESolverBase<myType>::solve;
 
 
-    template <class Span, class TwoDSpan, class Buffer>
+    template <class Span, class TwoDSpan>
     CUDA_HOSTDEV void solve(gScalar&     x,
                             Span&        y,
                             const gLabel li,
                             stepState&   step,
                             TwoDSpan&    a,
-                            Buffer&   buffer) const {
+                            gpuBuffer&   buffer) const {
         gScalar x0 = x;
         this->adaptiveSolve(odes_, x, y, li, step.dxTry, a, buffer);
         step.dxDid = x - x0;
     }
 
     //- Solve a single step dx and return the error
-    template <class Span1, class Span2, class Span3, class TwoDSpan, class Buffer>
+    template <class Span1, class Span2, class Span3, class TwoDSpan>
     CUDA_HOSTDEV gScalar solve(const gScalar x0,
                                const Span1&  y0,
                                const gLabel  li,
@@ -93,7 +93,7 @@ public:
                                const gScalar dx,
                                Span3&        y,
                                TwoDSpan&     a,
-                               Buffer&    buffer) const {
+                               gpuBuffer&    buffer) const {
 
         using namespace Rosenbrock23Coeffs;
 

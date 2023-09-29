@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gpuBuffer2.H"
+#include "gpuBuffer.H"
 #include "gpuConstants.H"
 #include "mdspan.H"
 #include "pointer_casts.hpp"
@@ -70,10 +70,10 @@ private:
 };
 
 template <class A1, class A2>
-static inline std::vector<gpuBuffer2>
+static inline std::vector<gpuBuffer>
 splitToBuffers(gpuMemoryResource<A1, A2>& mr) {
 
-    std::vector<gpuBuffer2> ret(mr.nCells());
+    std::vector<gpuBuffer> ret(mr.nCells());
 
     auto ld = mr.getLabelData();
     auto sd = mr.getScalarData();
@@ -91,7 +91,7 @@ splitToBuffers(gpuMemoryResource<A1, A2>& mr) {
             scalarData[i] = sd[i] + mr.nEqns() * j;
         }
 
-        ret[j] = gpuBuffer2(labelData, scalarData, mr.nSpecie());
+        ret[j] = gpuBuffer(labelData, scalarData, mr.nSpecie());
     }
 
     return ret;

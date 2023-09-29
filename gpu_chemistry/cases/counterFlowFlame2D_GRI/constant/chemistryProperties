@@ -30,7 +30,7 @@ initialChemicalTimeStep 1e-07;
 
 odeCoeffs
 {
-    solver          seulex;
+    solver          Rosenbrock34;
     absTol          1e-8;
     relTol          0.1;
 }

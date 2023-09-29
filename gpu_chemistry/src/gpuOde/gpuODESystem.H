@@ -3,11 +3,11 @@
 #include "check_ptr.H"
 #include "cuda_host_dev.H"
 #include "cuda_math.H"
-#include "gpuBuffer.H"
 #include "gpu_constants.H"
 #include "gpuReaction.H"
 #include "gpuThermo.H"
 #include "mdspan.H"
+#include "gpuBuffer.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -234,12 +234,12 @@ public:
 
     CUDA_HOSTDEV gLabel nReactions() const { return nReactions_; }
 
-    template <class Span1, class Span2, class Buffer>
+    template <class Span1, class Span2>
     CUDA_HOSTDEV void derivatives(const gScalar x,
                                   const Span1&  y,
                                   const gLabel  li,
                                   Span2&        dydx,
-                                  Buffer&    buffer) const {
+                                  gpuBuffer&    buffer) const {
 
         for (gLabel i = 0; i < nEqns(); ++i) { dydx[i] = 0; }
 
@@ -268,13 +268,13 @@ public:
         dpdt(dydx);
     }
 
-    template <class Span1, class Span2, class TwoDSpan, class Buffer>
+    template <class Span1, class Span2, class TwoDSpan>
     CUDA_HOSTDEV void jacobian(const gScalar x,
                                const Span1&  y,
                                const gLabel  li,
                                Span2&        dfdx,
                                TwoDSpan&     dfdy,
-                               Buffer&    buffer) const {
+                               gpuBuffer&    buffer) const {
         const gLabel nEqs    = nEqns();
         const gLabel nSpecie = nEqs - 2;
 

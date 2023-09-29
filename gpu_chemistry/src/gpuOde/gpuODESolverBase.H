@@ -74,13 +74,13 @@ protected:
 private:
 
     //CRTP interface for Derived::solve
-    template <class Span, class TwoDSpan, class Buffer>
+    template <class Span, class TwoDSpan>
     CUDA_HOSTDEV void interface(gScalar&     x,
                             Span&        y,
                             const gLabel li,
                             stepState&   step,
                             TwoDSpan&    a,
-                            Buffer&   buffer) const {
+                            gpuBuffer&   buffer) const {
 
         static_cast<const Derived*>(this)->solve(x, y, li, step, a, buffer);
     }
@@ -101,14 +101,14 @@ public:
     //- Solve the ODE system from the current state xStart, y
     //  and the optional index into the list of systems to solve li
     //  to xEnd and return an estimate for the next step in dxTry
-    template <class Span, class TwoDSpan, class Buffer>
+    template <class Span, class TwoDSpan>
     CUDA_HOSTDEV void solve(const gScalar xStart,
                             const gScalar xEnd,
                             Span&         y,
                             const gLabel  li,
                             gScalar&      dxTry,
                             TwoDSpan&     a,
-                            Buffer&     buffer) const {
+                            gpuBuffer&     buffer) const {
 
         stepState step(dxTry);
         gScalar   x = xStart;

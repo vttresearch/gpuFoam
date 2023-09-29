@@ -11,17 +11,17 @@ namespace FoamGpu{
 
 namespace gpu{
 
-    using system = gpuODESystem;
+    //using system = gpuODESystem;
 
     using solver = variant::variant
     <
-        gpuRosenbrock23<system>,
-        gpuRosenbrock34<system>
+        gpuRosenbrock23<gpuODESystem>,
+        gpuRosenbrock34<gpuODESystem>
     >;
 
 }
 
-template<class Span, class TwoDSpan, class Buffer>
+template<class Span, class TwoDSpan>
 struct ode_visitor
 {
     CUDA_HOSTDEV
@@ -32,7 +32,7 @@ struct ode_visitor
         Span&         y,
         gScalar&      dxTry,
         TwoDSpan&     a,
-        Buffer&     buffer
+        gpuBuffer&     buffer
     ) :
     xStart_(xStart),
     xEnd_(xEnd),
@@ -53,7 +53,7 @@ struct ode_visitor
     Span&         y_;
     gScalar&      dxTry_;
     TwoDSpan&     a_;
-    Buffer&     buffer_;
+    gpuBuffer&     buffer_;
 
 
 };
@@ -67,17 +67,17 @@ struct gpuODESolver{
     gpuODESolver(const gpu::solver& solver) : solver_(solver)
     {}
 
-    template<class Span, class TwoDSpan, class Buffer>
+    template<class Span, class TwoDSpan>
     CUDA_HOSTDEV void solve(const gScalar xStart,
                             const gScalar xEnd,
                             Span&         y,
                             const gLabel  li,
                             gScalar&      dxTry,
                             TwoDSpan&     a,
-                            Buffer&     buffer) const
+                            gpuBuffer&     buffer) const
     {
         (void) li;
-        ode_visitor<Span, TwoDSpan, Buffer> v(xStart, xEnd, y, dxTry, a, buffer);
+        ode_visitor<Span, TwoDSpan> v(xStart, xEnd, y, dxTry, a, buffer);
         variant::apply_visitor(v, solver_);
     }
 
