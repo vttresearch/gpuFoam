@@ -1,17 +1,15 @@
 #pragma once
 
-#include <string>
 #include "cuda_host_dev.H"
 #include "double_intrinsics.H"
 #include "gpuODESystem.H"
+#include <string>
 
 namespace FoamGpu {
 
-template<class Derived>
-class gpuODESolverBase {
+template <class Derived> class gpuODESolverBase {
 
 protected:
-
     class stepState {
     public:
         const bool forward;
@@ -32,9 +30,6 @@ protected:
             , prevReject(false) {}
     };
 
-
-
-
     // Protected data
 
     //- Absolute convergence tolerance per step
@@ -54,11 +49,9 @@ protected:
         return ret;
     }
 
-
-    template <class Span1, class Span2, class Span3>
-    CUDA_HOSTDEV gScalar normaliseError(const Span1& y0,
-                                        const Span2& y,
-                                        const Span3& err) const {
+    CUDA_HOSTDEV gScalar normaliseError(const mdspan<gScalar, 1>& y0,
+                                        const mdspan<gScalar, 1>& y,
+                                        const mdspan<gScalar, 1>& err) const {
         // Calculate the maximum error
         gScalar maxErr = 0.0;
 
@@ -72,23 +65,19 @@ protected:
     }
 
 private:
+    // CRTP interface for Derived::solve
 
-    //CRTP interface for Derived::solve
-    template <class Span, class TwoDSpan>
-    CUDA_HOSTDEV void interface(gScalar&     x,
-                            Span&        y,
-                            const gLabel li,
-                            stepState&   step,
-                            TwoDSpan&    a,
-                            gpuBuffer&   buffer) const {
+    CUDA_HOSTDEV void interface(gScalar&            x,
+                                mdspan<gScalar, 1>& y,
+                                const gLabel        li,
+                                stepState&          step,
+                                mdspan<gScalar, 2>& a,
+                                gpuBuffer&          buffer) const {
 
         static_cast<const Derived*>(this)->solve(x, y, li, step, a, buffer);
     }
 
-
 public:
-
-
     // Constructors
     gpuODESolverBase() = default;
 
@@ -101,14 +90,14 @@ public:
     //- Solve the ODE system from the current state xStart, y
     //  and the optional index into the list of systems to solve li
     //  to xEnd and return an estimate for the next step in dxTry
-    template <class Span, class TwoDSpan>
-    CUDA_HOSTDEV void solve(const gScalar xStart,
-                            const gScalar xEnd,
-                            Span&         y,
-                            const gLabel  li,
-                            gScalar&      dxTry,
-                            TwoDSpan&     a,
-                            gpuBuffer&     buffer) const {
+
+    CUDA_HOSTDEV void solve(const gScalar       xStart,
+                            const gScalar       xEnd,
+                            mdspan<gScalar, 1>& y,
+                            const gLabel        li,
+                            gScalar&            dxTry,
+                            mdspan<gScalar, 2>& a,
+                            gpuBuffer&          buffer) const {
 
         stepState step(dxTry);
         gScalar   x = xStart;
@@ -147,8 +136,6 @@ public:
             if (step.reject) { step.prevReject = true; }
         }
     }
-
-
 
     //- Return access to the absolute tolerance field
     inline CUDA_HOSTDEV gScalar& absTol() { return absTol_; }

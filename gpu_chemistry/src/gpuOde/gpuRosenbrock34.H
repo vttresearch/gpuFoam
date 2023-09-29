@@ -3,8 +3,8 @@
 #include "check_ptr.H"
 #include "gpuAdaptiveSolver.H"
 #include "gpuBuffer.H"
-#include "gpu_constants.H"
 #include "gpuODESolverBase.H"
+#include "gpu_constants.H"
 #include "ludecompose.H"
 
 namespace FoamGpu {
@@ -44,23 +44,16 @@ constexpr gScalar d1 = 1.0 / 2.0;
 constexpr gScalar d2 = -3.0 / 2.0;
 constexpr gScalar d3 = 605.0 / 250.0;
 constexpr gScalar d4 = 29.0 / 250.0;
-} // namespace RosenbrockCoeffs
-
-
+} // namespace Rosenbrock34Coeffs
 
 template <class System>
 class gpuRosenbrock34 : public gpuODESolverBase<gpuRosenbrock34<System>>,
-public gpuAdaptiveSolver<gpuRosenbrock34<System>> {
+                        public gpuAdaptiveSolver<gpuRosenbrock34<System>> {
     // Private Data
 
-    CUDA_HOSTDEV gLabel nEqns() const
-    {
-        return odes_.nEqns();
-    }
-
+    CUDA_HOSTDEV gLabel nEqns() const { return odes_.nEqns(); }
 
 public:
-
     using myType = gpuRosenbrock34<System>;
     using typename gpuODESolverBase<myType>::stepState;
 
@@ -71,38 +64,30 @@ public:
     gpuRosenbrock34(const System& ode, const gpuODESolverInputs& i)
         : gpuODESolverBase<gpuRosenbrock34<System>>(i)
         , gpuAdaptiveSolver<gpuRosenbrock34<System>>(i)
-        , odes_(ode)
-        {}
-
-
-
-
+        , odes_(ode) {}
 
     using gpuODESolverBase<myType>::solve;
 
-
-    template <class Span, class TwoDSpan, class Buffer>
-    CUDA_HOSTDEV void solve(gScalar&     x,
-                            Span&        y,
-                            const gLabel li,
-                            stepState&   step,
-                            TwoDSpan&    a,
-                            Buffer&   buffer) const {
+    CUDA_HOSTDEV void solve(gScalar&            x,
+                            mdspan<gScalar, 1>& y,
+                            const gLabel        li,
+                            stepState&          step,
+                            mdspan<gScalar, 2>& a,
+                            gpuBuffer&          buffer) const {
         gScalar x0 = x;
         this->adaptiveSolve(odes_, x, y, li, step.dxTry, a, buffer);
         step.dxDid = x - x0;
     }
 
     //- Solve a single step dx and return the error
-    template <class Span1, class Span2, class Span3, class TwoDSpan, class Buffer>
-    CUDA_HOSTDEV gScalar solve(const gScalar x0,
-                               const Span1&  y0,
-                               const gLabel  li,
-                               const Span2&  dydx0,
-                               const gScalar dx,
-                               Span3&        y,
-                               TwoDSpan&     a,
-                               Buffer&    buffer) const {
+    CUDA_HOSTDEV gScalar solve(const gScalar             x0,
+                               const mdspan<gScalar, 1>& y0,
+                               const gLabel              li,
+                               const mdspan<gScalar, 1>& dydx0,
+                               const gScalar             dx,
+                               mdspan<gScalar, 1>&       y,
+                               mdspan<gScalar, 2>&       a,
+                               gpuBuffer&                buffer) const {
 
         using namespace Rosenbrock34Coeffs;
 

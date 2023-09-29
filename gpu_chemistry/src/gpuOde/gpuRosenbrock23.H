@@ -3,55 +3,47 @@
 #include "check_ptr.H"
 #include "gpuAdaptiveSolver.H"
 #include "gpuBuffer.H"
-#include "gpu_constants.H"
 #include "gpuODESolverBase.H"
+#include "gpu_constants.H"
 #include "ludecompose.H"
 
 namespace FoamGpu {
 
 namespace Rosenbrock23Coeffs {
 
-    constexpr gScalar a21 = 1;
-    constexpr gScalar a31 = 1;
-    constexpr gScalar a32 = 0;
+constexpr gScalar a21 = 1;
+constexpr gScalar a31 = 1;
+constexpr gScalar a32 = 0;
 
-    constexpr gScalar c21 = -1.0156171083877702091975600115545;
-    constexpr gScalar c31 = 4.0759956452537699824805835358067;
-    constexpr gScalar c32 = 9.2076794298330791242156818474003;
+constexpr gScalar c21 = -1.0156171083877702091975600115545;
+constexpr gScalar c31 = 4.0759956452537699824805835358067;
+constexpr gScalar c32 = 9.2076794298330791242156818474003;
 
-    constexpr gScalar b1 = 1;
-    constexpr gScalar b2 = 6.1697947043828245592553615689730;
-    constexpr gScalar b3 = -0.4277225654321857332623837380651;
+constexpr gScalar b1 = 1;
+constexpr gScalar b2 = 6.1697947043828245592553615689730;
+constexpr gScalar b3 = -0.4277225654321857332623837380651;
 
-    constexpr gScalar e1 = 0.5;
-    constexpr gScalar e2 = -2.9079558716805469821718236208017;
-    constexpr gScalar e3 = 0.2235406989781156962736090927619;
+constexpr gScalar e1 = 0.5;
+constexpr gScalar e2 = -2.9079558716805469821718236208017;
+constexpr gScalar e3 = 0.2235406989781156962736090927619;
 
-    constexpr gScalar gamma = 0.43586652150845899941601945119356;
-    constexpr gScalar c2 = 0.43586652150845899941601945119356;
+constexpr gScalar gamma = 0.43586652150845899941601945119356;
+constexpr gScalar c2    = 0.43586652150845899941601945119356;
 
-    constexpr gScalar d1 = 0.43586652150845899941601945119356;
-    constexpr gScalar d2 = 0.24291996454816804366592249683314;
-    constexpr gScalar d3 = 2.1851380027664058511513169485832;
+constexpr gScalar d1 = 0.43586652150845899941601945119356;
+constexpr gScalar d2 = 0.24291996454816804366592249683314;
+constexpr gScalar d3 = 2.1851380027664058511513169485832;
 
-
-} // namespace RosenbrockCoeffs
-
-
+} // namespace Rosenbrock23Coeffs
 
 template <class System>
 class gpuRosenbrock23 : public gpuODESolverBase<gpuRosenbrock23<System>>,
-public gpuAdaptiveSolver<gpuRosenbrock23<System>> {
+                        public gpuAdaptiveSolver<gpuRosenbrock23<System>> {
     // Private Data
 
-    CUDA_HOSTDEV gLabel nEqns() const
-    {
-        return odes_.nEqns();
-    }
-
+    CUDA_HOSTDEV gLabel nEqns() const { return odes_.nEqns(); }
 
 public:
-
     using myType = gpuRosenbrock23<System>;
     using typename gpuODESolverBase<myType>::stepState;
 
@@ -62,41 +54,32 @@ public:
     gpuRosenbrock23(const System& ode, const gpuODESolverInputs& i)
         : gpuODESolverBase<gpuRosenbrock23<System>>(i)
         , gpuAdaptiveSolver<gpuRosenbrock23<System>>(i)
-        , odes_(ode)
-        {}
-
-
-
-
+        , odes_(ode) {}
 
     using gpuODESolverBase<myType>::solve;
 
-
-    template <class Span, class TwoDSpan>
-    CUDA_HOSTDEV void solve(gScalar&     x,
-                            Span&        y,
-                            const gLabel li,
-                            stepState&   step,
-                            TwoDSpan&    a,
-                            gpuBuffer&   buffer) const {
+    CUDA_HOSTDEV void solve(gScalar&            x,
+                            mdspan<gScalar, 1>& y,
+                            const gLabel        li,
+                            stepState&          step,
+                            mdspan<gScalar, 2>& a,
+                            gpuBuffer&          buffer) const {
         gScalar x0 = x;
         this->adaptiveSolve(odes_, x, y, li, step.dxTry, a, buffer);
         step.dxDid = x - x0;
     }
 
     //- Solve a single step dx and return the error
-    template <class Span1, class Span2, class Span3, class TwoDSpan>
-    CUDA_HOSTDEV gScalar solve(const gScalar x0,
-                               const Span1&  y0,
-                               const gLabel  li,
-                               const Span2&  dydx0,
-                               const gScalar dx,
-                               Span3&        y,
-                               TwoDSpan&     a,
-                               gpuBuffer&    buffer) const {
+    CUDA_HOSTDEV gScalar solve(const gScalar             x0,
+                               const mdspan<gScalar, 1>& y0,
+                               const gLabel              li,
+                               const mdspan<gScalar, 1>& dydx0,
+                               const gScalar             dx,
+                               mdspan<gScalar, 1>&       y,
+                               mdspan<gScalar, 2>&       a,
+                               gpuBuffer&                buffer) const {
 
         using namespace Rosenbrock23Coeffs;
-
 
         auto dydx         = buffer.dydx();
         auto dfdx         = buffer.dfdx();
@@ -112,10 +95,7 @@ public:
         const gScalar temp = gScalar(1.0) / (gamma * dx);
         // Negate the jacobian and add 1/(gamma*dx) to diagonal
         for (gLabel i = 0; i < nEqns(); i++) {
-            for (gLabel j = 0; j < nEqns(); j++)
-            {
-                a(i, j) = -a(i, j);
-            }
+            for (gLabel j = 0; j < nEqns(); j++) { a(i, j) = -a(i, j); }
 
             a(i, i) += temp; // gScalar(1.0)/(gamma*dx);
         }
@@ -140,7 +120,7 @@ public:
 
         FoamGpu::LUBacksubstitute(a, pivotIndices, k2);
 
-        //Calculate k3:
+        // Calculate k3:
         for (gLabel i = 0; i < nEqns(); ++i) {
             k3[i] =
                 dydx[i] + dx * d3 * dfdx[i] + (c31 * k1[i] + c32 * k2[i]) / dx;
@@ -148,17 +128,13 @@ public:
 
         FoamGpu::LUBacksubstitute(a, pivotIndices, k3);
 
-
-
         // Calculate error and update state:
         for (gLabel i = 0; i < nEqns(); ++i) {
-            y[i] = y0[i] + b1*k1[i] + b2*k2[i] + b3*k3[i];
-            err[i] = e1*k1[i] + e2*k2[i] + e3*k3[i];
-
+            y[i]   = y0[i] + b1 * k1[i] + b2 * k2[i] + b3 * k3[i];
+            err[i] = e1 * k1[i] + e2 * k2[i] + e3 * k3[i];
         }
 
         return gpuODESolverBase<myType>::normaliseError(y0, y, err);
-
     }
 };
 

@@ -1,15 +1,11 @@
 #pragma once
 
 #include "cuda_host_dev.H"
-#include "gpu_constants.H"
-#include "gpuODESystem.H"
 #include "gpuODESolverInputs.H"
-
-
+#include "gpuODESystem.H"
+#include "gpu_constants.H"
 
 namespace FoamGpu {
-
-
 
 template <class Derived> struct gpuAdaptiveSolver {
 
@@ -25,38 +21,34 @@ template <class Derived> struct gpuAdaptiveSolver {
         , minScale_(i.minScale)
         , maxScale_(i.maxScale) {}
 
-
 private:
-
     //- Solve a single step dx and return the error
-    template <class Span1, class Span2, class Span3, class TwoDSpan>
-    CUDA_HOSTDEV gScalar interface(const gScalar x0,
-                               const Span1&  y0,
-                               const gLabel  li,
-                               const Span2&  dydx0,
-                               const gScalar dx,
-                               Span3&        y,
-                               TwoDSpan&     a,
-                               gpuBuffer&    buffer) const {
 
-        return static_cast<const Derived*>(this)->solve
-        (
-            x0, y0, li, dydx0, dx, y, a, buffer
-        );
+    CUDA_HOSTDEV gScalar interface(const gScalar             x0,
+                                   const mdspan<gScalar, 1>& y0,
+                                   const gLabel              li,
+                                   const mdspan<gScalar, 1>& dydx0,
+                                   const gScalar             dx,
+                                   mdspan<gScalar, 1>&       y,
+                                   mdspan<gScalar, 2>&       a,
+                                   gpuBuffer&                buffer) const {
 
+        return static_cast<const Derived*>(this)->solve(
+            x0, y0, li, dydx0, dx, y, a, buffer);
     }
 
-public:
 
+public:
     //- Solve the ODE system and the update the state
-    template <class System, class Span, class TwoDSpan>
-    CUDA_HOSTDEV void adaptiveSolve(const System& odes,
-                                     gScalar&      x,
-                                     Span&         y,
-                                     const gLabel  li,
-                                     gScalar&      dxTry,
-                                     TwoDSpan&     a,
-                                     gpuBuffer&    buffer) const {
+    // template <class System, class Span, class TwoDSpan>
+    template <class System>
+    CUDA_HOSTDEV void adaptiveSolve(const System&       odes,
+                                    gScalar&            x,
+                                    mdspan<gScalar, 1>& y,
+                                    const gLabel        li,
+                                    gScalar&            dxTry,
+                                    mdspan<gScalar, 2>& a,
+                                    gpuBuffer&          buffer) const {
 
         auto dydx0 = buffer.dydx0();
         auto yTemp = buffer.yTemp();

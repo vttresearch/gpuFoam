@@ -124,6 +124,7 @@ auto callGpuSolve
     memoryResource_t memory(1, nSpecie);
     auto buffers = toDeviceVector(splitToBuffers(memory));
 
+
     auto f = [
         ode = ode,
         xStart = xStart,
