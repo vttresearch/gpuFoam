@@ -15,8 +15,8 @@ cd ${0%/*} || exit 1    # run from this directory
 #export CUDA_LIBS=$CUDA_ROOT/lib64
 
 wmakeLnInclude src
-#wmake src/gpuKernelEvaluator
-#wmake src/gpuChemistryModels
+wmake src/gpuKernelEvaluator
+wmake src/gpuChemistryModels
 wmake catchMain
 wmake unittest
 wmake benchmark
