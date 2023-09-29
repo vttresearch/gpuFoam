@@ -49,9 +49,9 @@ protected:
         return ret;
     }
 
-    CUDA_HOSTDEV gScalar normaliseError(const mdspan<gScalar, 1>& y0,
-                                        const mdspan<gScalar, 1>& y,
-                                        const mdspan<gScalar, 1>& err) const {
+    CUDA_HOSTDEV gScalar normaliseError(const mdspan<const gScalar, 1> y0,
+                                        const mdspan<const gScalar, 1> y,
+                                        const mdspan<const gScalar, 1> err) const {
         // Calculate the maximum error
         gScalar maxErr = 0.0;
 
@@ -68,13 +68,12 @@ private:
     // CRTP interface for Derived::solve
 
     CUDA_HOSTDEV void interface(gScalar&            x,
-                                mdspan<gScalar, 1>& y,
+                                mdspan<gScalar, 1> y,
                                 const gLabel        li,
                                 stepState&          step,
-                                mdspan<gScalar, 2>& a,
                                 gpuBuffer&          buffer) const {
 
-        static_cast<const Derived*>(this)->solve(x, y, li, step, a, buffer);
+        static_cast<const Derived*>(this)->solve(x, y, li, step, buffer);
     }
 
 public:
@@ -93,10 +92,9 @@ public:
 
     CUDA_HOSTDEV void solve(const gScalar       xStart,
                             const gScalar       xEnd,
-                            mdspan<gScalar, 1>& y,
+                            mdspan<gScalar, 1> y,
                             const gLabel        li,
                             gScalar&            dxTry,
-                            mdspan<gScalar, 2>& a,
                             gpuBuffer&          buffer) const {
 
         stepState step(dxTry);
@@ -119,7 +117,7 @@ public:
             }
 
             // Integrate as far as possible up to step.dxTry
-            interface(x, y, li, step, a, buffer);
+            interface(x, y, li, step, buffer);
 
             // Check if reached xEnd
             if ((x - xEnd) * (xEnd - xStart) >= 0) {

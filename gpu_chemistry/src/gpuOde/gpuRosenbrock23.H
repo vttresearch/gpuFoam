@@ -59,24 +59,22 @@ public:
     using gpuODESolverBase<myType>::solve;
 
     CUDA_HOSTDEV void solve(gScalar&            x,
-                            mdspan<gScalar, 1>& y,
+                            mdspan<gScalar, 1> y,
                             const gLabel        li,
                             stepState&          step,
-                            mdspan<gScalar, 2>& a,
                             gpuBuffer&          buffer) const {
         gScalar x0 = x;
-        this->adaptiveSolve(odes_, x, y, li, step.dxTry, a, buffer);
+        this->adaptiveSolve(odes_, x, y, li, step.dxTry, buffer);
         step.dxDid = x - x0;
     }
 
     //- Solve a single step dx and return the error
     CUDA_HOSTDEV gScalar solve(const gScalar             x0,
-                               const mdspan<gScalar, 1>& y0,
+                               const mdspan<const gScalar, 1> y0,
                                const gLabel              li,
-                               const mdspan<gScalar, 1>& dydx0,
+                               const mdspan<const gScalar, 1> dydx0,
                                const gScalar             dx,
-                               mdspan<gScalar, 1>&       y,
-                               mdspan<gScalar, 2>&       a,
+                               mdspan<gScalar, 1>       y,
                                gpuBuffer&                buffer) const {
 
         using namespace Rosenbrock23Coeffs;
@@ -89,6 +87,7 @@ public:
         auto k3           = buffer.k3();
         auto err          = buffer.err();
         auto lubuffer     = buffer.lubuffer();
+        auto a = buffer.J();
 
         odes_.jacobian(x0, y0, li, dfdx, a, buffer);
 

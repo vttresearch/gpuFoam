@@ -44,21 +44,17 @@ template <class ODE> struct singleCell {
                gLabel               nSpecie,
                mdspan<gScalar, 1>   deltaTChem,
                mdspan<gScalar, 2>   Yvf,
-               mdspan<gScalar, 3>   Jss,
                mdspan<gpuBuffer, 1> buffer,
                ODE                  ode)
         : deltaT_(deltaT)
         , nSpecie_(nSpecie)
         , deltaTChem_(deltaTChem)
         , Yvf_(Yvf)
-        , Jss_(Jss)
         , buffer_(buffer)
         , ode_(ode) {}
 
     CUDA_HOSTDEV void operator()(gLabel celli) const {
         auto Y = mdspan<gScalar, 1>(&Yvf_(celli, 0), extents<1>{nSpecie_ + 2});
-        auto J = mdspan<gScalar, 2>(&Jss_(celli, 0, 0),
-                                    extents<2>{nSpecie_ + 2, nSpecie_ + 2});
 
         // Initialise time progress
         gScalar timeLeft = deltaT_;
@@ -69,7 +65,7 @@ template <class ODE> struct singleCell {
         while (timeLeft > gpuSmall) {
             gScalar dt = timeLeft;
 
-            ode_.solve(0, dt, Y, li, deltaTChem_[celli], J, buffer_[celli]);
+            ode_.solve(0, dt, Y, li, deltaTChem_[celli], buffer_[celli]);
 
             for (int i = 0; i < nSpecie_; i++) { Y[i] = std::max(0.0, Y[i]); }
 
@@ -81,7 +77,6 @@ template <class ODE> struct singleCell {
     gLabel               nSpecie_;
     mdspan<gScalar, 1>   deltaTChem_;
     mdspan<gScalar, 2>   Yvf_;
-    mdspan<gScalar, 3>   Jss_;
     mdspan<gpuBuffer, 1> buffer_;
     ODE                  ode_;
 };
@@ -100,9 +95,9 @@ GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
     auto ddeltaTChem     = make_mdspan(ddeltaTChem_arr, extents<1>{nCells});
     auto dYvf            = make_mdspan(dYvf_arr, extents<2>{nCells, nEqns_});
 
-    device_vector<gScalar> Js(nCells * nEqns_ * nEqns_, 0.0);
+    //device_vector<gScalar> Js(nCells * nEqns_ * nEqns_, 0.0);
 
-    auto Jss = make_mdspan(Js, extents<3>{nCells, nEqns_, nEqns_});
+    //auto Jss = make_mdspan(Js, extents<3>{nCells, nEqns_, nEqns_});
 
     memoryResource_t mr(nCells, nSpecie_);
     auto             buffers     = toDeviceVector(splitToBuffers(mr));
@@ -131,7 +126,7 @@ GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
 
 
 
-    singleCell op(deltaT, nSpecie_, ddeltaTChem, dYvf, Jss, buffer_span, solver_);
+    singleCell op(deltaT, nSpecie_, ddeltaTChem, dYvf, buffer_span, solver_);
 
 
     thrust::for_each(thrust::device,

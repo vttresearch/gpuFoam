@@ -25,16 +25,15 @@ private:
     //- Solve a single step dx and return the error
 
     CUDA_HOSTDEV gScalar interface(const gScalar             x0,
-                                   const mdspan<gScalar, 1>& y0,
+                                   const mdspan<const gScalar, 1> y0,
                                    const gLabel              li,
-                                   const mdspan<gScalar, 1>& dydx0,
+                                   const mdspan<const gScalar, 1> dydx0,
                                    const gScalar             dx,
-                                   mdspan<gScalar, 1>&       y,
-                                   mdspan<gScalar, 2>&       a,
+                                   mdspan<gScalar, 1>       y,
                                    gpuBuffer&                buffer) const {
 
         return static_cast<const Derived*>(this)->solve(
-            x0, y0, li, dydx0, dx, y, a, buffer);
+            x0, y0, li, dydx0, dx, y, buffer);
     }
 
 
@@ -44,10 +43,9 @@ public:
     template <class System>
     CUDA_HOSTDEV void adaptiveSolve(const System&       odes,
                                     gScalar&            x,
-                                    mdspan<gScalar, 1>& y,
+                                    mdspan<gScalar, 1> y,
                                     const gLabel        li,
                                     gScalar&            dxTry,
-                                    mdspan<gScalar, 2>& a,
                                     gpuBuffer&          buffer) const {
 
         auto dydx0 = buffer.dydx0();
@@ -62,7 +60,7 @@ public:
         // to achieve desired error
         do {
             // Solve step and provide error estimate
-            err = interface(x, y, li, dydx0, dx, yTemp, a, buffer);
+            err = interface(x, y, li, dydx0, dx, yTemp, buffer);
 
             // If error is large reduce dx
             if (err > 1) {
