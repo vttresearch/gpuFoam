@@ -4,7 +4,7 @@
 
 #include "cuda_host_dev.H"
 #include "gpuBuffer.H"
-#include "gpuMemoryResource.H"
+#include "gpuMemoryResource2.H"
 #include "host_device_vectors.H"
 
 #include <thrust/execution_policy.h>
@@ -16,12 +16,10 @@
 
 namespace FoamGpu {
 
-using labelAllocator  = thrust::device_malloc_allocator<gLabel>;
-using scalarAllocator = thrust::device_malloc_allocator<gScalar>;
-using memoryResource_t =
-    FoamGpu::gpuMemoryResource<labelAllocator, scalarAllocator>;
+
 
 GpuKernelEvaluator::GpuKernelEvaluator(
+    gLabel                          nCells,
     gLabel                          nEqns,
     gLabel                          nSpecie,
     const std::vector<gpuThermo>&   thermos,
@@ -36,7 +34,9 @@ GpuKernelEvaluator::GpuKernelEvaluator(
               thermosReactions_.thermos(),
               thermosReactions_.reactions())
     , solver_(make_gpuODESolver(system_, odeInputs))
-    , inputs_(odeInputs) {}
+    , inputs_(odeInputs)
+    , memory_(nCells, nSpecie)
+     {}
 
 template <class ODE> struct singleCell {
 
@@ -85,7 +85,7 @@ std::pair<std::vector<gScalar>, std::vector<gScalar>>
 GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
                                 gScalar                     deltaTChemMax,
                                 const std::vector<gScalar>& deltaTChem,
-                                const std::vector<gScalar>& Y) const {
+                                const std::vector<gScalar>& Y) {
 
     const gLabel nCells = deltaTChem.size();
 
@@ -95,35 +95,9 @@ GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
     auto ddeltaTChem     = make_mdspan(ddeltaTChem_arr, extents<1>{nCells});
     auto dYvf            = make_mdspan(dYvf_arr, extents<2>{nCells, nEqns_});
 
-    //device_vector<gScalar> Js(nCells * nEqns_ * nEqns_, 0.0);
 
-    //auto Jss = make_mdspan(Js, extents<3>{nCells, nEqns_, nEqns_});
-
-    memoryResource_t mr(nCells, nSpecie_);
-    auto             buffers     = toDeviceVector(splitToBuffers(mr));
+    auto             buffers     = toDeviceVector(splitToBuffers(memory_));
     auto             buffer_span = make_mdspan(buffers, extents<1>{nCells});
-
-    /*
-    if (inputs_.name == "Rosenbrock23") {
-
-        gpuRosenbrock23<gpuODESystem> ode(system_, inputs_);
-        singleCell                    op(
-            deltaT, nSpecie_, ddeltaTChem, dYvf, Jss, buffer_span, ode);
-        thrust::for_each(thrust::device,
-                         thrust::make_counting_iterator(0),
-                         thrust::make_counting_iterator(nCells),
-                         op);
-    } else {
-        gpuRosenbrock34<gpuODESystem> ode(system_, inputs_);
-        singleCell                    op(
-            deltaT, nSpecie_, ddeltaTChem, dYvf, Jss, buffer_span, ode);
-        thrust::for_each(thrust::device,
-                         thrust::make_counting_iterator(0),
-                         thrust::make_counting_iterator(nCells),
-                         op);
-    }
-    */
-
 
 
     singleCell op(deltaT, nSpecie_, ddeltaTChem, dYvf, buffer_span, solver_);
@@ -142,7 +116,7 @@ GpuKernelEvaluator::computeRR(gScalar                    deltaT,
                               gScalar                    deltaTChemMax,
                               const std::vector<gScalar> rho,
                               const std::vector<gScalar> deltaTChem,
-                              const std::vector<gScalar> Y) const {
+                              const std::vector<gScalar> Y) {
 
     const gLabel nCells = rho.size();
 

@@ -39,7 +39,7 @@ static inline Foam::dictionary make_dict(std::string solverName)
 
 FoamGpu::GpuKernelEvaluator make_evaluator
 (
-    const Foam::dictionary& odeDict, TestData::Mechanism m)
+    gLabel nCells, const Foam::dictionary& odeDict, TestData::Mechanism m)
 {
     using namespace FoamGpu;
     auto thermos = TestData::makeGpuThermos(m);
@@ -51,6 +51,7 @@ FoamGpu::GpuKernelEvaluator make_evaluator
 
     return GpuKernelEvaluator
     (
+        nCells,
         nEqns,
         nSpecie,
         thermos,
@@ -71,11 +72,11 @@ static inline void warmup()
     const auto deltaTChem = make_random_deltaTChem(nCells);
     const auto Yvf = make_tutorial_y0s(nCells, mech);
     //const auto Yvf = make_random_y0s(nCells, TestData::equationCount(mech));
-    
+
     //No idea why this is necessary, but without it, the first benchmark results are way off
     BENCHMARK_ADVANCED("WARMUP")(Catch::Benchmark::Chronometer meter) {
         auto dict = make_dict("Rosenbrock23");
-        auto eval = make_evaluator(dict, mech);
+        auto eval = make_evaluator(nCells, dict, mech);
         meter.measure([&] { return callGpuSolve(deltaT, deltaTChemMax, rho, deltaTChem, Yvf, eval);});
     };
 }
@@ -90,26 +91,18 @@ void runBenchmarks(TestData::Mechanism mech)
     const auto rho = make_random_rhos(nCells);
     const auto deltaTChem = make_random_deltaTChem(nCells);
     const auto Yvf = make_tutorial_y0s(nCells, mech);
-    //const auto Yvf = make_random_y0s(nCells, TestData::equationCount(mech));
-    /*
-    //No idea why this is necessary, but without it, the first benchmark results are way off
-    BENCHMARK_ADVANCED("WARMUP")(Catch::Benchmark::Chronometer meter) {
-        auto dict = make_dict("Rosenbrock23");
-        auto eval = make_evaluator(dict, mech);
-        meter.measure([&] { return callGpuSolve(deltaT, deltaTChemMax, rho, deltaTChem, Yvf, eval);});
-    };
-    */
+
 
     BENCHMARK_ADVANCED("Rosenbrock23")(Catch::Benchmark::Chronometer meter) {
         auto dict = make_dict("Rosenbrock23");
-        auto eval = make_evaluator(dict, mech);
+        auto eval = make_evaluator(nCells, dict, mech);
         meter.measure([&] { return callGpuSolve(deltaT, deltaTChemMax, rho, deltaTChem, Yvf, eval);});
     };
 
 
     BENCHMARK_ADVANCED("Rosenbrock34")(Catch::Benchmark::Chronometer meter) {
         auto dict = make_dict("Rosenbrock34");
-        auto eval = make_evaluator(dict, mech);
+        auto eval = make_evaluator(nCells, dict, mech);
         meter.measure([&] { return callGpuSolve(deltaT, deltaTChemMax, rho, deltaTChem, Yvf, eval);});
     };
 }

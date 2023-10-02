@@ -7,6 +7,7 @@
 #include "gpuThermo.H"
 
 #include "error_handling.H"
+#include "gpuMemoryResource2.H"
 #include "gpuODESolverInputs.H"
 #include "gpuODESystem.H"
 #include "gpuReaction.H"
@@ -31,12 +32,13 @@ private:
     computeYNew(gScalar                     deltaT,
                 gScalar                     deltaTChemMax,
                 const std::vector<gScalar>& deltaTChem,
-                const std::vector<gScalar>& Y) const;
+                const std::vector<gScalar>& Y);
 
 public:
     GpuKernelEvaluator() = default;
 
-    GpuKernelEvaluator(gLabel                          nEqns,
+    GpuKernelEvaluator(gLabel                          nCells,
+                       gLabel                          nEqns,
                        gLabel                          nSpecie,
                        const std::vector<gpuThermo>&   thermos,
                        const std::vector<gpuReaction>& reactions,
@@ -59,7 +61,7 @@ public:
               gScalar                    deltaTChemMax,
               const std::vector<gScalar> rho,
               const std::vector<gScalar> deltaTChem,
-              const std::vector<gScalar> Yvf) const;
+              const std::vector<gScalar> Yvf);
 
 private:
     gLabel              nEqns_, nSpecie_, nReactions_;
@@ -67,9 +69,7 @@ private:
     gpuODESystem        system_;
     gpuODESolver        solver_;
     gpuODESolverInputs  inputs_;
-
-    void allocate();
-    void deallocate();
+    gpuMemoryResource2  memory_;
 };
 
 } // namespace FoamGpu

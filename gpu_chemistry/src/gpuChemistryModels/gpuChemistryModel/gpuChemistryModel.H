@@ -2,16 +2,15 @@
 
 #include <vector>
 
-
 #include "basicChemistryModel.H"
 
 #include "gpuODESystem.H"
 #include "gpuReaction.H"
 #include "gpuRosenbrock34.H"
-#include "readGpuOdeInputs.H"
-#include "makeGpuThermo.H"
-#include "makeGpuReactions.H"
 #include "gpuThermo.H"
+#include "makeGpuReactions.H"
+#include "makeGpuThermo.H"
+#include "readGpuOdeInputs.H"
 
 #include "DynamicField.H"
 #include "ODESystem.H"
@@ -19,25 +18,20 @@
 #include "chemistryReductionMethod.H"
 #include "chemistryTabulationMethod.H"
 
-
-#include "multicomponentMixture.H"
 #include "gpuKernelEvaluator.H"
+#include "multicomponentMixture.H"
 #include "validThermoType.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam {
 
-
 class gpuChemistryModel : public basicChemistryModel {
 
 public:
-
     using cpuThermoType = FoamGpu::validThermoType;
 
-
 private:
-
     //- Reference to the multi component mixture
     const multicomponentMixture<cpuThermoType>& mixture_;
 
@@ -53,10 +47,7 @@ private:
     //- The gpu kernel
     FoamGpu::GpuKernelEvaluator evaluator_;
 
-
-
 private:
-
     /// @brief Get a vector of density values at old time.
     /// @return Vector of density values.
     std::vector<gScalar> getRho0() const;
@@ -92,12 +83,13 @@ private:
     /// @return A gpu kernel evaluator object which can be called to compute the
     /// reaction rate on gpu.
     static FoamGpu::GpuKernelEvaluator
-    makeEvaluator(label                                    nEqns,
-                   label                                    nSpecie,
-                   const ReactionList<cpuThermoType>&          reactions,
-                   const dictionary&                        physicalProperties,
-                   const dictionary&                        chemistryProperties,
-                   const multicomponentMixture<cpuThermoType>& mixture);
+    makeEvaluator(label                              nCells,
+                  label                              nEqns,
+                  label                              nSpecie,
+                  const ReactionList<cpuThermoType>& reactions,
+                  const dictionary&                  physicalProperties,
+                  const dictionary&                  chemistryProperties,
+                  const multicomponentMixture<cpuThermoType>& mixture);
 
     /// @brief Computes and updates the reaction rates (RR_) as well as
     /// chemistry time steps (chemDeltaT_).
@@ -152,24 +144,23 @@ public:
     /// calls are required.
     void calculate() override;
 
-
     /// @brief Solve the reaction system for the input scalar (flow) time step.
     /// @param deltaT The current flow time step.
     /// @return The minimum chemistry time step.
     scalar solve(const scalar deltaT) override;
 
-    /// @brief Solve the reaction system for the input scalarField (flow) time steps.
+    /// @brief Solve the reaction system for the input scalarField (flow) time
+    /// steps.
     /// @param deltaT The current cell-specific flow time steps.
     /// @return The minimum chemistry time step.
     scalar solve(const scalarField& deltaT) override;
-
 
     /// @brief Get the current cell-specific chemical time scales.
     /// @return Field of cell-specific chemical time scales.
     tmp<volScalarField> tc() const override;
 
-
-    /// @brief Return the current heat release rates corresponding to the reaction rates (RR_).
+    /// @brief Return the current heat release rates corresponding to the
+    /// reaction rates (RR_).
     /// @return The heat release rate [kg/m/s^3].
     tmp<volScalarField> Qdot() const override;
 
@@ -178,6 +169,5 @@ public:
     //- Disallow default bitwise assignment
     void operator=(const gpuChemistryModel&) = delete;
 };
-
 
 } // End namespace Foam

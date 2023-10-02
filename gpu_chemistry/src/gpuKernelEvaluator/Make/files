@@ -1,4 +1,5 @@
 gpuKernelEvaluator/gpuKernelEvaluator.cu
 gpuKernelEvaluator/thermosAndReactions.cu
+gpuKernelEvaluator/gpuMemoryResource2.cu
 
 LIB = $(FOAM_USER_LIBBIN)/libGpuKernelEvaluator

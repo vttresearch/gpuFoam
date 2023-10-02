@@ -68,11 +68,12 @@ std::vector<gScalar> gpuChemistryModel::getY0() const {
 }
 
 FoamGpu::GpuKernelEvaluator gpuChemistryModel::makeEvaluator(
-    label                                    nEqns,
-    label                                    nSpecie,
+    label                                       nCells,
+    label                                       nEqns,
+    label                                       nSpecie,
     const ReactionList<cpuThermoType>&          reactions,
-    const dictionary&                        physicalProperties,
-    const dictionary&                        chemistryProperties,
+    const dictionary&                           physicalProperties,
+    const dictionary&                           chemistryProperties,
     const multicomponentMixture<cpuThermoType>& mixture) {
 
     auto gpu_thermos =
@@ -81,6 +82,7 @@ FoamGpu::GpuKernelEvaluator gpuChemistryModel::makeEvaluator(
         mixture.specieNames(), chemistryProperties, gpu_thermos, reactions);
 
     return FoamGpu::GpuKernelEvaluator(
+        nCells,
         nEqns,
         nSpecie,
         gpu_thermos,
@@ -91,12 +93,13 @@ FoamGpu::GpuKernelEvaluator gpuChemistryModel::makeEvaluator(
 
 gpuChemistryModel::gpuChemistryModel(const fluidMulticomponentThermo& thermo)
     : basicChemistryModel(thermo)
-    , mixture_(
-          dynamicCast<const multicomponentMixture<cpuThermoType>>(this->thermo()))
+    , mixture_(dynamicCast<const multicomponentMixture<cpuThermoType>>(
+          this->thermo()))
     , specieThermos_(mixture_.specieThermos())
     , reactions_(mixture_.specieNames(), specieThermos_, this->mesh(), *this)
     , RR_(this->thermo().Y().size())
     , evaluator_(makeEvaluator(
+          nCells(),
           nEqns(),
           nSpecie(),
           reactions_,
@@ -318,7 +321,7 @@ tmp<volScalarField> gpuChemistryModel::tc() const {
         scalar sumW = 0, sumWRateByCTot = 0;
         forAll(reactions_, i) {
             const Reaction<cpuThermoType>& R = reactions_[i];
-            scalar                      omegaf, omegar;
+            scalar                         omegaf, omegar;
             R.omega(p, T, c, celli, omegaf, omegar);
 
             scalar wf = 0;

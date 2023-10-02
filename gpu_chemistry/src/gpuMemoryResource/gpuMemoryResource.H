@@ -99,19 +99,16 @@ splitToBuffers(gpuMemoryResource<A1, A2>& mr) {
     for (gLabel j = 0; j < mr.nCells(); ++j) {
         std::array<gLabel*, N_LABEL_ARRAYS> labelData{};
         for (gLabel i = 0; i < N_LABEL_ARRAYS; ++i) {
-            //gLabel* begin = ld[i];
             labelData[i]  = ld[i] + mr.nEqns() * j;
         }
 
         std::array<gScalar*, N_SCALAR_ARRAYS> scalarData{};
         for (gLabel i = 0; i < N_SCALAR_ARRAYS; ++i) {
-            // gScalar* begin = sd[i];
             scalarData[i] = sd[i] + mr.nEqns() * j;
         }
 
         std::array<gScalar*, N_TWOD_SCALAR_ARRAYS> twodScalarData{};
         for (gLabel i = 0; i < N_TWOD_SCALAR_ARRAYS; ++i) {
-            // gScalar* begin = sd[i];
             twodScalarData[i] = twod_sd[i] + mr.nEqns() * mr.nEqns() * j;
         }
 
@@ -121,25 +118,6 @@ splitToBuffers(gpuMemoryResource<A1, A2>& mr) {
     return ret;
 }
 
-/*
-template <class A1, class A2>
-static inline gpuMemoryResource<std::allocator<gLabel>, std::allocator<gScalar>>
-toHost(gpuMemoryResource<A1, A2>& mr) {
 
-
-    using return_type = gpuMemoryResource<std::allocator<gLabel>, std::allocator<gScalar>>;
-    return_type ret(mr.nCells(), nSpecie());
-    auto ld = mr.getLabelData();
-    for (gLabel i = 0; i < N_LABEL_ARRAYS; ++i) {
-
-
-
-            gLabel* begin = ld[i];
-            labelData[i]  = begin + mr.nEqns() * j;
-
-    }
-
-}
-*/
 
 } // namespace FoamGpu

@@ -18,12 +18,12 @@ TEST_CASE("Test GpuKernelEvaluator")
         auto reactions = TestData::makeGpuReactions(m);
         gLabel nSpecie = TestData::speciesCount(m);
         gLabel nEqns = TestData::equationCount(m);
-
+        gLabel nCells = 10;
         gpuODESolverInputs inputs;
         inputs.name = "Rosenbrock34";
 
-        REQUIRE_NOTHROW(GpuKernelEvaluator(nEqns, nSpecie, thermos, reactions, inputs));
-        
+        REQUIRE_NOTHROW(GpuKernelEvaluator(nCells, nEqns, nSpecie, thermos, reactions, inputs));
+
 
 
 
