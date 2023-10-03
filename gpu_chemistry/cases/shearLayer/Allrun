@@ -5,7 +5,7 @@ cd ${0%/*} || exit 1    # Run from this directory
 # Source tutorial run functions
 . $WM_PROJECT_DIR/bin/tools/RunFunctions
 
-NSTEPS=1000
+NSTEPS=2000
 
 for ODE in "Rosenbrock23" "Rosenbrock34"
 do
@@ -13,7 +13,7 @@ do
     do
         for MODEL in "gpu" "cpu"
         do
-            for CORES in 1
+            for CORES in 1 10 20 40 80
             do
                 BASE=$MECH
                 CASE="$MODEL-$MECH-$ODE-$CORES"

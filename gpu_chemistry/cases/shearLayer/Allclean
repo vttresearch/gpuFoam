@@ -5,5 +5,6 @@ rm -rf cpu-*
 rm -rf gpu-*
 rm -rf runLog.out
 rm -rf runLog.err
+rm -rf mps.log
 #------------------------------------------------------------------------------
 

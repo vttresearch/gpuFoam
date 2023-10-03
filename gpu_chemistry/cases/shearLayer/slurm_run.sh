@@ -2,12 +2,13 @@
 #SBATCH -J chemBench 
 #SBATCH --output=runLog.out 
 #SBATCH --error=runLog.err 
-#SBATCH --time=00-12:30:00 
+#SBATCH --time=00-24:30:00 
 #SBATCH --mem-per-cpu=4096 
 #SBATCH --partition=cuda
 #SBATCH --nodes=1
 #SBATCH --ntasks=80
 
+## #SBATCH --gres=mps:2
 
 #Partitions
 #medium20
@@ -20,7 +21,11 @@
 
 module load openfoam/owngpu
 
+nvidia-cuda-mps-control -f > mps.log&
 
 ./Allrun
+
+#Kill mps
+kill %1
 
 
