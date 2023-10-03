@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Run from this directory
+cd "${0%/*}" || exit 1
+
+
+
+echo "#ncores    t-cpu   t-gpu      mechanism       ode"
+
+for d in cpu-*; do
+    arr=(${d//-/ })
+    MODEL=${arr[0]}
+    MECH=${arr[1]}
+    ODE=${arr[2]}
+    CORES=${arr[3]}
+
+    LOG_CPU="cpu-$MECH-$ODE-$CORES/log.foamRun"
+    LOG_GPU="gpu-$MECH-$ODE-$CORES/log.foamRun"
+    RUNTIME_CPU=$(sed -n -e '/^ExecutionTime/p' $LOG_CPU | tail -1 | sed -e 's/[^0-9. ]*//g' -e  's/ \+/ /g' | awk '{print $1;}')
+    RUNTIME_GPU=$(sed -n -e '/^ExecutionTime/p' $LOG_GPU | tail -1 | sed -e 's/[^0-9. ]*//g' -e  's/ \+/ /g' | awk '{print $1;}')
+
+    echo "$NCORES   $RUNTIME_CPU    $RUNTIME_GPU    $MECH   $ODE"
+
+done
+
+

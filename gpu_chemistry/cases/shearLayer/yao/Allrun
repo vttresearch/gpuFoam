@@ -1,0 +1,64 @@
+#!/bin/sh
+cd ${0%/*} || exit 1    # Run from this directory
+
+# Source tutorial run functions
+. $WM_PROJECT_DIR/bin/tools/RunFunctions
+
+DEFAULT_RESOLUTION="hex (0 1 2 3 4 5 6 7) (50 50 5) simpleGrading (1 1 1)"
+
+CHEM_MODEL=${1:-"cpu"}
+DECOMP_NUMBER=${2:-"1"}
+NSTEPS=${3:-"2000"}
+ODE_SOLVER=${4:-"Rosenbrock34"}
+RESOLUTION=$DEFAULT_RESOLUTION
+
+
+
+ODE_STR="{solver $ODE_SOLVER; absTol 1E-08; relTol 0.1;}"
+
+
+if [ "$CHEM_MODEL" = "cpu" ]; then
+    MODEL_STR="{solver ode;}"
+else
+    MODEL_STR="{solver none; method gpuChemistryModel;}"
+fi
+
+
+runApplication -a foamDictionary \
+        -entry writeInterval \
+        -set "$NSTEPS" \
+        system/controlDict
+
+runApplication -a foamDictionary \
+        -entry blocks \
+        -set "($RESOLUTION)" \
+        system/blockMeshDict
+
+runApplication -a foamDictionary \
+        -entry chemistryType \
+        -set "$MODEL_STR" \
+        constant/chemistryProperties
+
+
+runApplication -a foamDictionary \
+        -entry numberOfSubdomains \
+        -set "$DECOMP_NUMBER" \
+        system/decomposeParDict
+
+runApplication -a foamDictionary \
+        -entry odeCoeffs \
+        -set "$ODE_STR" \
+        constant/chemistryProperties
+
+
+
+runApplication blockMesh
+
+
+if [ "$DECOMP_NUMBER" = "1" ]; then
+    runApplication $(getApplication)
+else
+    runApplication decomposePar
+    runParallel $(getApplication)
+fi
+

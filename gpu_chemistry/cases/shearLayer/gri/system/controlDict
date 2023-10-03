@@ -1,0 +1,61 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  owngpu
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version         2;
+    format          ascii;
+    class           dictionary;
+    location        "system";
+    object          controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     foamRun;
+
+solver          multicomponentFluid;
+
+startFrom       latestTime;
+
+startTime       0;
+
+stopAt          nextWrite;
+
+endTime         1;
+
+deltaT          1e-07;
+
+writeControl    timeStep;
+
+writeInterval   2000;
+
+purgeWrite      0;
+
+writeFormat     binary;
+
+writePrecision  9;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   9;
+
+runTimeModifiable true;
+
+adjustTimeStep  yes;
+
+maxCo           0.7;
+
+functions
+{
+}
+
+libs            ( "libGpuChemistryModel.so" );
+
+
+// ************************************************************************* //

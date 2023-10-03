@@ -1,0 +1,12 @@
+ 
+GNU Compilers v11.2.0 loaded
+ 
+ 
+GNU Compilers v11.2.0 loaded
+ 
+ 
+OpenMPI 4.1.1  environment loaded 
+Using GNU Compilers v11.2.0
+ 
+OpenFOAM-owngpu loaded
+slurmstepd: error: *** JOB 722030 ON ampere-01 CANCELLED AT 2023-10-03T14:39:50 ***
