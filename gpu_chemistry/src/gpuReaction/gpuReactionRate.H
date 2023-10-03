@@ -130,7 +130,9 @@ struct gpuReactionRate {
         using namespace gpu;
 
         my_visitor1 v(p, T, c, li);
-        // return std::visit(v, rate_);
+
+        //auto v = [=] CUDA_HOSTDEV (const auto& i){return i.operator()(p, T, c, li);}; 
+
         return variant::apply_visitor(v, rate_);
     }
 

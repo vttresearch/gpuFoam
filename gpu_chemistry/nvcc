@@ -6,6 +6,7 @@ c++WARN     =
 NVCC_FLAGS = -std=c++17
 NVCC_FLAGS += --expt-relaxed-constexpr
 NVCC_FLAGS += --expt-extended-lambda
+NVCC_FLAGS += --use_fast_math
 #NVCC_FLAGS += -fmad=false
 NVCC_FLAGS += --gpu-architecture=compute_80 --gpu-code=sm_80
 #NVCC_FLAGS += --gpu-architecture=compute_86 --gpu-code=sm_86

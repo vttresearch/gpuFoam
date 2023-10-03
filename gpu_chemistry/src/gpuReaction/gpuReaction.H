@@ -64,6 +64,9 @@ private:
     //- Temperature limits of applicability of gpuReaction rates
     gScalar Tlow_, Thigh_;
 
+    const gScalar RSMALL{sqrt(gpuSmall)};
+
+
 public:
     gpuReaction() = default;
 
@@ -669,8 +672,7 @@ inline CUDA_HOSTDEV gScalar gpuReaction::kr(const gScalar                  kfwd,
 
     (void)li;
     if (isIrreversible()) { return 0.0; }
-    const double rSmall = sqrt(gpuSmall);
-    return kfwd / max(this->Kc(p, T), rSmall);
+    return kfwd / max(this->Kc(p, T), RSMALL);
 }
 
 inline CUDA_HOSTDEV gScalar gpuReaction::kr(const gScalar                  p,
@@ -699,10 +701,9 @@ inline CUDA_HOSTDEV gScalar gpuReaction::dkrdT(const gScalar                  p,
 
     (void)li;
     if (isIrreversible()) { return 0.0; }
-    const double  rSmall = sqrt(gpuSmall);
-    const gScalar Kc     = max(this->Kc(p, T), rSmall);
+    const gScalar Kc     = max(this->Kc(p, T), RSMALL);
 
-    return dkfdT / Kc - (Kc > rSmall ? kr * this->dKcdTbyKc(p, T) : 0.0);
+    return dkfdT / Kc - (Kc > RSMALL ? kr * this->dKcdTbyKc(p, T) : 0.0);
 }
 
 inline CUDA_HOSTDEV void gpuReaction::dkfdc(const gScalar                  p,
@@ -728,8 +729,7 @@ gpuReaction::dkrdc(const gScalar                  p,
 
         for (gLabel i = 0; i < gLabel(dkrdc.size()); ++i) { dkrdc[i] = 0.0; }
     } else {
-        const gScalar rSmall = sqrt(gpuSmall);
-        const gScalar Kc     = max(this->Kc(p, T), rSmall);
+        const gScalar Kc     = max(this->Kc(p, T), RSMALL);
 
         for (gLabel i = 0; i < gLabel(dkrdc.size()); ++i) {
             dkrdc[i] = dkfdc[i] / Kc;

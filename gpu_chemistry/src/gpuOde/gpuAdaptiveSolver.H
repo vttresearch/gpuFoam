@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cuda_host_dev.H"
+#include "cuda_math.H"
 #include "gpuODESolverInputs.H"
 #include "gpuODESystem.H"
 #include "gpu_constants.H"
@@ -24,29 +25,28 @@ template <class Derived> struct gpuAdaptiveSolver {
 private:
     //- Solve a single step dx and return the error
 
-    CUDA_HOSTDEV gScalar interface(const gScalar             x0,
+    CUDA_HOSTDEV gScalar interface(const gScalar                  x0,
                                    const mdspan<const gScalar, 1> y0,
-                                   const gLabel              li,
+                                   const gLabel                   li,
                                    const mdspan<const gScalar, 1> dydx0,
-                                   const gScalar             dx,
-                                   mdspan<gScalar, 1>       y,
-                                   gpuBuffer&                buffer) const {
+                                   const gScalar                  dx,
+                                   mdspan<gScalar, 1>             y,
+                                   gpuBuffer& buffer) const {
 
         return static_cast<const Derived*>(this)->solve(
             x0, y0, li, dydx0, dx, y, buffer);
     }
 
-
 public:
     //- Solve the ODE system and the update the state
     // template <class System, class Span, class TwoDSpan>
     template <class System>
-    CUDA_HOSTDEV void adaptiveSolve(const System&       odes,
-                                    gScalar&            x,
+    CUDA_HOSTDEV void adaptiveSolve(const System&      odes,
+                                    gScalar&           x,
                                     mdspan<gScalar, 1> y,
-                                    const gLabel        li,
-                                    gScalar&            dxTry,
-                                    gpuBuffer&          buffer) const {
+                                    const gLabel       li,
+                                    gScalar&           dxTry,
+                                    gpuBuffer&         buffer) const {
 
         auto dydx0 = buffer.dydx0();
         auto yTemp = buffer.yTemp();
@@ -65,7 +65,7 @@ public:
             // If error is large reduce dx
             if (err > 1) {
                 gScalar scale =
-                    std::max(safeScale_ * std::pow(err, -alphaDec_), minScale_);
+                    max(safeScale_ * pow(err, -alphaDec_), minScale_);
                 dx *= scale;
 
                 if (dx < gpuVSmall) {
@@ -82,11 +82,9 @@ public:
         for (gLabel i = 0; i < gLabel(y.size()); ++i) { y[i] = yTemp[i]; }
 
         // If the error is small increase the step-size
-        if (err > std::pow(maxScale_ / safeScale_, -1.0 / alphaInc_)) {
-            dxTry = std::min(std::max(safeScale_ * std::pow(err, -alphaInc_),
-                                      minScale_),
-                             maxScale_) *
-                    dx;
+        if (err > pow(maxScale_ / safeScale_, -1.0 / alphaInc_)) {
+            dxTry = min(max(safeScale_ * pow(err, -alphaInc_), minScale_),
+                        maxScale_) * dx;
         } else {
             dxTry = safeScale_ * maxScale_ * dx;
         }

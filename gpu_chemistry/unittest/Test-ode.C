@@ -251,7 +251,7 @@ static inline void runMechanismTests(TestData::Mechanism mech)
 }
 
 
-TEST_CASE("Temp")
+TEST_CASE("Test ODE")
 {
     runMechanismTests(TestData::GRI);
     runMechanismTests(TestData::H2);

@@ -1,6 +1,9 @@
 #pragma once
 
+
 #include "cuda_host_dev.H"
+#include "cuda_math.H"
+#include "cuda_math.H"
 #include "double_intrinsics.H"
 #include "gpuODESystem.H"
 #include <string>
