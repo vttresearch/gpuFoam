@@ -19,7 +19,7 @@ for d in cpu-*; do
     RUNTIME_CPU=$(sed -n -e '/^ExecutionTime/p' $LOG_CPU | tail -1 | sed -e 's/[^0-9. ]*//g' -e  's/ \+/ /g' | awk '{print $1;}')
     RUNTIME_GPU=$(sed -n -e '/^ExecutionTime/p' $LOG_GPU | tail -1 | sed -e 's/[^0-9. ]*//g' -e  's/ \+/ /g' | awk '{print $1;}')
 
-    echo "$NCORES   $RUNTIME_CPU    $RUNTIME_GPU    $MECH   $ODE"
+    echo "$CORES   $RUNTIME_CPU    $RUNTIME_GPU    $MECH   $ODE"
 
 done
 

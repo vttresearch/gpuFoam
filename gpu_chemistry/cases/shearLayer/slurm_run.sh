@@ -6,9 +6,10 @@
 #SBATCH --mem-per-cpu=4096 
 #SBATCH --partition=cuda
 #SBATCH --nodes=1
-#SBATCH --ntasks=80
-
-## #SBATCH --gres=mps:2
+#SBATCH --ntasks=100
+## #SBATCH --gres-flags=disable-binding
+## #SBATCH --gres=gpu:2
+## #SBATCH --gres=mps:100
 
 #Partitions
 #medium20
@@ -20,6 +21,8 @@
 #cd ${0%/*} || exit 1    # Run from this directory
 
 module load openfoam/owngpu
+
+export CUDA_VISIBLE_DEVICES=0,1
 
 nvidia-cuda-mps-control -f > mps.log&
 
