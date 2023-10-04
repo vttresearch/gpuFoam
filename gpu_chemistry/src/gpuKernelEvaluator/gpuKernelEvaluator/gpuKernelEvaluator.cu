@@ -38,9 +38,9 @@ GpuKernelEvaluator::GpuKernelEvaluator(
     int num;
     CHECK_CUDA_ERROR(cudaGetDeviceCount(&num)); // number of CUDA devices
 
-    int dev;
-    cudaDeviceProp prop;
-    CHECK_CUDA_ERROR(cudaChooseDevice(&dev, &prop));
+    int dev = (nCells % num);
+    //cudaDeviceProp::canMapHostMemory prop;
+    //CHECK_CUDA_ERROR(cudaChooseDevice(&dev, &prop));
 
 
     CHECK_CUDA_ERROR(cudaSetDevice(dev));
