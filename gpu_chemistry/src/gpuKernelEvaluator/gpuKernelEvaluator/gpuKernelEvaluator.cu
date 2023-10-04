@@ -16,8 +16,6 @@
 
 namespace FoamGpu {
 
-
-
 GpuKernelEvaluator::GpuKernelEvaluator(
     gLabel                          nCells,
     gLabel                          nEqns,
@@ -35,8 +33,18 @@ GpuKernelEvaluator::GpuKernelEvaluator(
               thermosReactions_.reactions())
     , solver_(make_gpuODESolver(system_, odeInputs))
     , inputs_(odeInputs)
-    , memory_(nCells, nSpecie)
-     {}
+    , memory_(nCells, nSpecie) {
+
+    int num;
+    cudaGetDeviceCount(&num); // number of CUDA devices
+    for (int i = 0; i < num; i++) {
+        // Query the device properties.
+        cudaDeviceProp prop;
+        cudaGetDeviceProperties(&prop, i);
+        std::cout << "Device id: " << i << std::endl;
+        std::cout << "Device name: " << prop.name << std::endl;
+    }
+}
 
 template <class ODE> struct singleCell {
 
@@ -95,13 +103,10 @@ GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
     auto ddeltaTChem     = make_mdspan(ddeltaTChem_arr, extents<1>{nCells});
     auto dYvf            = make_mdspan(dYvf_arr, extents<2>{nCells, nEqns_});
 
-
-    auto             buffers     = toDeviceVector(splitToBuffers(memory_));
-    auto             buffer_span = make_mdspan(buffers, extents<1>{nCells});
-
+    auto buffers     = toDeviceVector(splitToBuffers(memory_));
+    auto buffer_span = make_mdspan(buffers, extents<1>{nCells});
 
     singleCell op(deltaT, nSpecie_, ddeltaTChem, dYvf, buffer_span, solver_);
-
 
     thrust::for_each(thrust::device,
                      thrust::make_counting_iterator(0),
