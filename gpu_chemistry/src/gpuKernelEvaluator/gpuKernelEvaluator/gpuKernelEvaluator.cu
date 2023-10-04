@@ -6,7 +6,7 @@
 #include "gpuBuffer.H"
 #include "gpuMemoryResource2.H"
 #include "host_device_vectors.H"
-
+#include "error_handling.H"
 #include <thrust/execution_policy.h>
 #include <thrust/extrema.h> //min_element
 #include <thrust/host_vector.h>
@@ -36,7 +36,18 @@ GpuKernelEvaluator::GpuKernelEvaluator(
     , memory_(nCells, nSpecie) {
 
     int num;
-    cudaGetDeviceCount(&num); // number of CUDA devices
+    CHECK_CUDA_ERROR(cudaGetDeviceCount(&num)); // number of CUDA devices
+
+    int dev;
+    cudaDeviceProp prop;
+    CHECK_CUDA_ERROR(cudaChooseDevice(&dev, &prop));
+
+
+    CHECK_CUDA_ERROR(cudaSetDevice(dev));
+    std::cout << "Using device: " << dev << std::endl;
+
+
+    /*
     for (int i = 0; i < num; i++) {
         // Query the device properties.
         cudaDeviceProp prop;
@@ -44,6 +55,7 @@ GpuKernelEvaluator::GpuKernelEvaluator(
         std::cout << "Device id: " << i << std::endl;
         std::cout << "Device name: " << prop.name << std::endl;
     }
+    */
 }
 
 template <class ODE> struct singleCell {
