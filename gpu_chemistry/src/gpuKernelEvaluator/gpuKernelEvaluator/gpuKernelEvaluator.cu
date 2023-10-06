@@ -34,7 +34,7 @@ GpuKernelEvaluator::GpuKernelEvaluator(
     , solver_(make_gpuODESolver(system_, odeInputs))
     , inputs_(odeInputs)
     , memory_(nCells, nSpecie) {
-
+    /*
     int num;
     CHECK_CUDA_ERROR(cudaGetDeviceCount(&num)); // number of CUDA devices
 
@@ -45,7 +45,7 @@ GpuKernelEvaluator::GpuKernelEvaluator(
 
     CHECK_CUDA_ERROR(cudaSetDevice(dev));
     std::cout << "Using device: " << dev << std::endl;
-
+    */
 
     /*
     for (int i = 0; i < num; i++) {

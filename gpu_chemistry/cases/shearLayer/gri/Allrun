@@ -59,6 +59,8 @@ if [ "$DECOMP_NUMBER" = "1" ]; then
     runApplication $(getApplication)
 else
     runApplication decomposePar
+    #mpirun -np $DECOMP_NUMBER ./multigpu_run.sh > log.foamRun&
+    #wait
     runParallel $(getApplication)
 fi
 
