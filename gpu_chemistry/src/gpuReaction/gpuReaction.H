@@ -64,7 +64,7 @@ private:
     //- Temperature limits of applicability of gpuReaction rates
     gScalar Tlow_, Thigh_;
 
-    const gScalar RSMALL{sqrt(gpuSmall)};
+    gScalar RSMALL{sqrt(gpuSmall)};
 
 
 public:

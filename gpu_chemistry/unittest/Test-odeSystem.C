@@ -4,7 +4,6 @@
 #include "mdspan.H"
 #include "test_utilities.H"
 #include "mock_of_odesystem.H"
-#include "gpuMemoryResource.H"
 #include "gpuODESystem.H"
 #include "create_inputs.H"
 

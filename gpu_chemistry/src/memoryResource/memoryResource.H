@@ -18,7 +18,6 @@ struct memoryResource {
         , nSpecie_(nSpecie)
         , nEqns_(nSpecie + 2) {}
 
-
     virtual ~memoryResource() {}
 
     gLabel nCells() const { return nCells_; }
@@ -31,16 +30,33 @@ struct memoryResource {
 
     virtual std::array<gScalar*, N_TWOD_SCALAR_ARRAYS>& getTwodScalarData() = 0;
 
-private:
+    virtual void resize(gLabel nCells, gLabel nSpecie) = 0;
+
+protected:
+    gLabel labelArrayLength() const { return nEqns() * nCells(); }
+
+    gLabel scalarArrayLength() const { return nEqns() * nCells(); }
+
+    gLabel twodScalarArrayLength() const {
+        return nEqns() * nEqns() * nCells();
+    }
+
+    bool shouldReallocate(gLabel nCells, gLabel nSpecie) const {
+
+        if ((nCells != this->nCells()) || (nSpecie != this->nSpecie()) ||
+            (nCells + 2 != this->nEqns())) {
+            return true;
+        }
+        return false;
+    }
+
+
     gLabel nCells_;
     gLabel nSpecie_;
     gLabel nEqns_;
-
-
 };
 
-static inline std::vector<gpuBuffer>
-splitToBuffers(memoryResource& mr) {
+static inline std::vector<gpuBuffer> splitToBuffers(memoryResource& mr) {
 
     std::vector<gpuBuffer> ret(mr.nCells());
 

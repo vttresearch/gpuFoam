@@ -7,7 +7,7 @@
 #include "gpuThermo.H"
 
 #include "error_handling.H"
-#include "gpuMemoryResource2.H"
+#include "gpuMemoryResource.H"
 #include "gpuODESolverInputs.H"
 #include "gpuODESystem.H"
 #include "gpuReaction.H"
@@ -15,6 +15,8 @@
 #include "host_device_vectors.H"
 #include "makeGpuOdeSolver.H"
 #include "thermosAndReactions.H"
+#include "singleCellSolver.H"
+
 
 namespace FoamGpu {
 
@@ -69,7 +71,7 @@ private:
     gpuODESystem        system_;
     gpuODESolver        solver_;
     gpuODESolverInputs  inputs_;
-    gpuMemoryResource2  memory_;
+    gpuMemoryResource  memory_;
 };
 
 } // namespace FoamGpu

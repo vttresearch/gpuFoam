@@ -3,16 +3,27 @@
 #include "test_utilities.H"
 
 
-TEST_CASE("gpuMemoryResource"){
+TEST_CASE("memoryResource"){
     using namespace FoamGpu;
 
-    using MR_t = gpuMemoryResource<labelAllocator, scalarAllocator>;
+    using MR_t = memoryResource_t;
 
     SECTION("Constructors")
     {
         REQUIRE_NOTHROW(MR_t());
 
         REQUIRE_NOTHROW(MR_t(10, 1));
+    }
+
+    SECTION("resize"){
+
+        MR_t m(10, 3);
+        REQUIRE_NOTHROW(m.resize(12, 1));
+        REQUIRE_NOTHROW(m.resize(0, 0));
+        REQUIRE_NOTHROW(m.resize(3, 5));
+        CHECK(m.nCells() == 3);
+        CHECK(m.nEqns() == 7);
+        CHECK(m.nSpecie() == 5);
     }
 
     SECTION("splitToBuffers")
@@ -59,18 +70,8 @@ TEST_CASE("gpuMemoryResource"){
             return buffers[0].pivotIndices()[2];
         };
 
-
         CHECK(eval(f) == 0);
 
-
-
-
-
-
-
-
-
     }
-
 
 }

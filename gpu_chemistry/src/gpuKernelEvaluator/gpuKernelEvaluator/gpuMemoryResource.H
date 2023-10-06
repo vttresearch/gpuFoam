@@ -10,13 +10,13 @@
 
 namespace FoamGpu {
 
-struct gpuMemoryResource2 : public memoryResource {
+struct gpuMemoryResource : public memoryResource {
 
-    gpuMemoryResource2() = default;
+    gpuMemoryResource() = default;
 
-    gpuMemoryResource2(gLabel nCells, gLabel nSpecie);
+    gpuMemoryResource(gLabel nCells, gLabel nSpecie);
 
-    ~gpuMemoryResource2();
+    ~gpuMemoryResource();
 
     std::array<gLabel*, N_LABEL_ARRAYS>& getLabelData() override {
         return labelData_;
@@ -26,10 +26,13 @@ struct gpuMemoryResource2 : public memoryResource {
         return scalarData_;
     }
 
-    virtual std::array<gScalar*, N_TWOD_SCALAR_ARRAYS>&
+    std::array<gScalar*, N_TWOD_SCALAR_ARRAYS>&
     getTwodScalarData() override {
         return twodScalarData_;
     }
+
+    void resize(gLabel nCells, gLabel nSpecie) override;
+
 
 private:
     void allocate();

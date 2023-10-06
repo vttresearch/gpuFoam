@@ -6,20 +6,18 @@
 
 #include "host_device_vectors.H"
 
-#include "gpuMemoryResource.H"
 #include "gpuThermo.H"
 #include "FixedList.H"
-
+#include "gpuMemoryResource.H"
+#include "cpuMemoryResource.H"
 
 #ifdef __NVIDIA_COMPILER__
-#include <thrust/device_malloc_allocator.h>
-using labelAllocator = thrust::device_malloc_allocator<gLabel>;
-using scalarAllocator = thrust::device_malloc_allocator<gScalar>;
+
+using memoryResource_t = FoamGpu::gpuMemoryResource;
 
 #else
 
-using labelAllocator = std::allocator<gLabel>;
-using scalarAllocator = std::allocator<gScalar>;
+using memoryResource_t = FoamGpu::cpuMemoryResource;
 
 #endif
 
@@ -76,7 +74,7 @@ static inline Foam::scalar eval(T t)
 #endif
 
 
-using memoryResource_t = FoamGpu::gpuMemoryResource<labelAllocator, scalarAllocator>;
+
 
 
 template<class T, unsigned N>

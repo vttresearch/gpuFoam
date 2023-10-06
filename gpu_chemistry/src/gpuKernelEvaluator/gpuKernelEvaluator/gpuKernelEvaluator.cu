@@ -3,16 +3,16 @@
 #include <iostream>
 
 #include "cuda_host_dev.H"
-#include "gpuBuffer.H"
-#include "gpuMemoryResource2.H"
+
 #include "host_device_vectors.H"
 #include "error_handling.H"
 #include <thrust/execution_policy.h>
 #include <thrust/extrema.h> //min_element
 #include <thrust/host_vector.h>
 
-#include "variant.hpp"
-#include <thrust/device_malloc_allocator.h>
+
+
+
 
 namespace FoamGpu {
 
@@ -58,48 +58,7 @@ GpuKernelEvaluator::GpuKernelEvaluator(
     */
 }
 
-template <class ODE> struct singleCell {
 
-    singleCell(gScalar              deltaT,
-               gLabel               nSpecie,
-               mdspan<gScalar, 1>   deltaTChem,
-               mdspan<gScalar, 2>   Yvf,
-               mdspan<gpuBuffer, 1> buffer,
-               ODE                  ode)
-        : deltaT_(deltaT)
-        , nSpecie_(nSpecie)
-        , deltaTChem_(deltaTChem)
-        , Yvf_(Yvf)
-        , buffer_(buffer)
-        , ode_(ode) {}
-
-    CUDA_HOSTDEV void operator()(gLabel celli) const {
-        auto Y = mdspan<gScalar, 1>(&Yvf_(celli, 0), extents<1>{nSpecie_ + 2});
-
-        // Initialise time progress
-        gScalar timeLeft = deltaT_;
-
-        constexpr gLabel li = 0;
-
-        // Calculate the chemical source terms
-        while (timeLeft > gpuSmall) {
-            gScalar dt = timeLeft;
-
-            ode_.solve(0, dt, Y, li, deltaTChem_[celli], buffer_[celli]);
-
-            for (int i = 0; i < nSpecie_; i++) { Y[i] = std::max(0.0, Y[i]); }
-
-            timeLeft -= dt;
-        }
-    }
-
-    gScalar              deltaT_;
-    gLabel               nSpecie_;
-    mdspan<gScalar, 1>   deltaTChem_;
-    mdspan<gScalar, 2>   Yvf_;
-    mdspan<gpuBuffer, 1> buffer_;
-    ODE                  ode_;
-};
 
 std::pair<std::vector<gScalar>, std::vector<gScalar>>
 GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
@@ -108,6 +67,8 @@ GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
                                 const std::vector<gScalar>& Y) {
 
     const gLabel nCells = deltaTChem.size();
+
+    memory_.resize(nCells, nSpecie_);
 
     // Convert fields from host to device
     auto ddeltaTChem_arr = toDeviceVector(deltaTChem);
@@ -118,7 +79,7 @@ GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
     auto buffers     = toDeviceVector(splitToBuffers(memory_));
     auto buffer_span = make_mdspan(buffers, extents<1>{nCells});
 
-    singleCell op(deltaT, nSpecie_, ddeltaTChem, dYvf, buffer_span, solver_);
+    singleCellSolver op(deltaT, nSpecie_, ddeltaTChem, dYvf, buffer_span, solver_);
 
     thrust::for_each(thrust::device,
                      thrust::make_counting_iterator(0),

@@ -216,9 +216,12 @@ static inline void reactionTests(TestData::Mechanism mech)
     const gLabel li = 0;
 
     const Foam::scalarField c_cpu(nSpecie, 0.123);
-    const device_vector<gScalar> c_gpu = host_vector<gScalar>(c_cpu.begin(), c_cpu.end());
+    auto c_gpu = toDeviceVector(c_cpu);
+    //const device_vector<gScalar> c_gpu = host_vector<gScalar>(c_cpu.begin(), c_cpu.end());
 
-    device_vector<gpuReaction>  gpu_reactions(gpu_reactions_temp.begin(), gpu_reactions_temp.end());
+    //device_vector<gpuReaction>  gpu_reactions(gpu_reactions_temp.begin(), gpu_reactions_temp.end());
+
+    auto gpu_reactions = toDeviceVector(gpu_reactions_temp);
     CHECK(cpu_reactions.size() == gLabel(gpu_reactions.size()));
 
     SECTION("Thigh/Tlow")
