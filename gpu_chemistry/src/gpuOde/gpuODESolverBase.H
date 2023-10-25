@@ -6,34 +6,18 @@
 #include "cuda_math.H"
 #include "double_intrinsics.H"
 #include "gpuODESystem.H"
+#include "gpuOdeSolve.H"
+#include "stepState.H"
 #include <string>
 
 namespace FoamGpu {
 
+
+
+
 template <class Derived> class gpuODESolverBase {
 
 protected:
-    class stepState {
-    public:
-        const bool forward;
-        gScalar    dxTry;
-        gScalar    dxDid;
-        bool       first;
-        bool       last;
-        bool       reject;
-        bool       prevReject;
-
-        CUDA_HOSTDEV stepState(const gScalar dx)
-            : forward(dx > 0 ? true : false)
-            , dxTry(dx)
-            , dxDid(0)
-            , first(true)
-            , last(false)
-            , reject(false)
-            , prevReject(false) {}
-    };
-
-    // Protected data
 
     //- Absolute convergence tolerance per step
     gScalar absTol_;
@@ -44,32 +28,8 @@ protected:
     //- The maximum number of sub-steps allowed for the integration step
     gLabel maxSteps_;
 
-    CUDA_HOSTDEV
-    gScalar normaliseError(gScalar y0, gScalar y, gScalar err) const {
-
-        double tol = absTol_ + relTol_ * std::max(std::abs(y0), std::abs(y));
-        double ret = std::abs(err) / tol;
-        return ret;
-    }
-
-    CUDA_HOSTDEV gScalar normaliseError(const mdspan<const gScalar, 1> y0,
-                                        const mdspan<const gScalar, 1> y,
-                                        const mdspan<const gScalar, 1> err) const {
-        // Calculate the maximum error
-        gScalar maxErr = 0.0;
-
-        for (gLabel i = 0; i < gLabel(y.size()); ++i) {
-
-            gScalar t = normaliseError(y0[i], y[i], err[i]);
-            maxErr    = std::max(maxErr, t);
-        }
-
-        return maxErr;
-    }
-
 private:
     // CRTP interface for Derived::solve
-
     CUDA_HOSTDEV void interface(gScalar&            x,
                                 mdspan<gScalar, 1> y,
                                 const gLabel        li,
@@ -99,6 +59,8 @@ public:
                             const gLabel        li,
                             gScalar&            dxTry,
                             gpuBuffer&          buffer) const {
+
+        //odeSolve(*this, xStart, xEnd, y, li, dxTry, buffer, maxSteps_);
 
         stepState step(dxTry);
         gScalar   x = xStart;
@@ -136,13 +98,14 @@ public:
             // If the step.dxTry was reject set step.prevReject
             if (step.reject) { step.prevReject = true; }
         }
+
     }
 
     //- Return access to the absolute tolerance field
-    inline CUDA_HOSTDEV gScalar& absTol() { return absTol_; }
+    inline CUDA_HOSTDEV gScalar absTol() const { return absTol_; }
 
     //- Return access to the relative tolerance field
-    inline CUDA_HOSTDEV gScalar& relTol() { return relTol_; }
+    inline CUDA_HOSTDEV gScalar relTol() const { return relTol_; }
 };
 
 } // namespace FoamGpu

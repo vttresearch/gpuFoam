@@ -38,14 +38,13 @@ constexpr gScalar d3 = 2.1851380027664058511513169485832;
 
 template <class System>
 class gpuRosenbrock23 : public gpuODESolverBase<gpuRosenbrock23<System>>,
-                        public gpuAdaptiveSolver<gpuRosenbrock23<System>> {
+                        public gpuAdaptiveSolver {
     // Private Data
 
     CUDA_HOSTDEV gLabel nEqns() const { return odes_.nEqns(); }
 
 public:
     using myType = gpuRosenbrock23<System>;
-    using typename gpuODESolverBase<myType>::stepState;
 
     System odes_;
 
@@ -53,29 +52,29 @@ public:
 
     gpuRosenbrock23(const System& ode, const gpuODESolverInputs& i)
         : gpuODESolverBase<gpuRosenbrock23<System>>(i)
-        , gpuAdaptiveSolver<gpuRosenbrock23<System>>(i)
+        , gpuAdaptiveSolver(i)
         , odes_(ode) {}
 
     using gpuODESolverBase<myType>::solve;
 
-    CUDA_HOSTDEV void solve(gScalar&            x,
+    CUDA_HOSTDEV void solve(gScalar&           x,
                             mdspan<gScalar, 1> y,
-                            const gLabel        li,
-                            stepState&          step,
-                            gpuBuffer&          buffer) const {
+                            const gLabel       li,
+                            stepState&         step,
+                            gpuBuffer&         buffer) const {
         gScalar x0 = x;
-        this->adaptiveSolve(odes_, x, y, li, step.dxTry, buffer);
+        adaptiveSolve(odes_, *this, x, y, li, step.dxTry, buffer);
         step.dxDid = x - x0;
     }
 
     //- Solve a single step dx and return the error
-    CUDA_HOSTDEV gScalar solve(const gScalar             x0,
+    CUDA_HOSTDEV gScalar solve(const gScalar                  x0,
                                const mdspan<const gScalar, 1> y0,
-                               const gLabel              li,
+                               const gLabel                   li,
                                const mdspan<const gScalar, 1> dydx0,
-                               const gScalar             dx,
-                               mdspan<gScalar, 1>       y,
-                               gpuBuffer&                buffer) const {
+                               const gScalar                  dx,
+                               mdspan<gScalar, 1>             y,
+                               gpuBuffer&                     buffer) const {
 
         using namespace Rosenbrock23Coeffs;
 
@@ -87,7 +86,7 @@ public:
         auto k3           = buffer.k3();
         auto err          = buffer.err();
         auto lubuffer     = buffer.lubuffer();
-        auto a = buffer.J();
+        auto a            = buffer.J();
 
         odes_.jacobian(x0, y0, li, dfdx, a, buffer);
 
@@ -133,7 +132,7 @@ public:
             err[i] = e1 * k1[i] + e2 * k2[i] + e3 * k3[i];
         }
 
-        return gpuODESolverBase<myType>::normaliseError(y0, y, err);
+        return normaliseError(y0, y, err, this->absTol(), this->relTol());
     }
 };
 

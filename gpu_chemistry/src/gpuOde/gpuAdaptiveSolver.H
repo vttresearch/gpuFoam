@@ -8,7 +8,7 @@
 
 namespace FoamGpu {
 
-template <class Derived> struct gpuAdaptiveSolver {
+struct gpuAdaptiveSolver {
 
     //- Step-size adjustment controls
     gScalar safeScale_, alphaInc_, alphaDec_, minScale_, maxScale_;
@@ -22,73 +22,15 @@ template <class Derived> struct gpuAdaptiveSolver {
         , minScale_(i.minScale)
         , maxScale_(i.maxScale) {}
 
-private:
-    //- Solve a single step dx and return the error
 
-    CUDA_HOSTDEV gScalar interface(const gScalar                  x0,
-                                   const mdspan<const gScalar, 1> y0,
-                                   const gLabel                   li,
-                                   const mdspan<const gScalar, 1> dydx0,
-                                   const gScalar                  dx,
-                                   mdspan<gScalar, 1>             y,
-                                   gpuBuffer& buffer) const {
+    CUDA_HOSTDEV gScalar safeScale() const {return safeScale_;}
+    CUDA_HOSTDEV gScalar alphaInc() const {return alphaInc_;}
+    CUDA_HOSTDEV gScalar alphaDec() const {return alphaDec_;}
+    CUDA_HOSTDEV gScalar minScale() const {return minScale_;}
+    CUDA_HOSTDEV gScalar maxScale() const {return maxScale_;}
 
-        return static_cast<const Derived*>(this)->solve(
-            x0, y0, li, dydx0, dx, y, buffer);
-    }
 
-public:
-    //- Solve the ODE system and the update the state
-    // template <class System, class Span, class TwoDSpan>
-    template <class System>
-    CUDA_HOSTDEV void adaptiveSolve(const System&      odes,
-                                    gScalar&           x,
-                                    mdspan<gScalar, 1> y,
-                                    const gLabel       li,
-                                    gScalar&           dxTry,
-                                    gpuBuffer&         buffer) const {
 
-        auto dydx0 = buffer.dydx0();
-        auto yTemp = buffer.yTemp();
-
-        gScalar dx  = dxTry;
-        gScalar err = 0.0;
-
-        odes.derivatives(x, y, li, dydx0, buffer);
-
-        // Loop over solver and adjust step-size as necessary
-        // to achieve desired error
-        do {
-            // Solve step and provide error estimate
-            err = interface(x, y, li, dydx0, dx, yTemp, buffer);
-
-            // If error is large reduce dx
-            if (err > 1) {
-                gScalar scale =
-                    max(safeScale_ * pow(err, -alphaDec_), minScale_);
-                dx *= scale;
-
-                if (dx < gpuVSmall) {
-                    printf("Small time step in ode. \n");
-                    assert(0);
-                }
-            }
-        } while (err > 1.0);
-
-        // Update the state
-        x += dx;
-
-        // y = yTemp;
-        for (gLabel i = 0; i < gLabel(y.size()); ++i) { y[i] = yTemp[i]; }
-
-        // If the error is small increase the step-size
-        if (err > pow(maxScale_ / safeScale_, -1.0 / alphaInc_)) {
-            dxTry = min(max(safeScale_ * pow(err, -alphaInc_), minScale_),
-                        maxScale_) * dx;
-        } else {
-            dxTry = safeScale_ * maxScale_ * dx;
-        }
-    }
 };
 
 } // namespace FoamGpu
