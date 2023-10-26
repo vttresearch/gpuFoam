@@ -6,6 +6,8 @@
 #include "gpuODESolverBase.H"
 #include "gpu_constants.H"
 #include "ludecompose.H"
+#include "normaliseError.H"
+
 
 namespace FoamGpu {
 

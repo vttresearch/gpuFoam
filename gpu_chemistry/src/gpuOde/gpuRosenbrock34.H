@@ -6,6 +6,7 @@
 #include "gpuODESolverBase.H"
 #include "gpu_constants.H"
 #include "ludecompose.H"
+#include "normaliseError.H"
 
 namespace FoamGpu {
 
@@ -54,7 +55,6 @@ class gpuRosenbrock34 : public gpuODESolverBase,
     CUDA_HOSTDEV gLabel nEqns() const { return odes_.nEqns(); }
 
 public:
-    using myType = gpuRosenbrock34<System>;
 
     System odes_;
 
