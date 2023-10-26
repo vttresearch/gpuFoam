@@ -85,7 +85,7 @@ static inline CUDA_HOSTDEV void adaptiveSolve(const System&      system,
     }
 }
 
-/*
+
 // This is the main solve call from gpuODESolverBase
 template <class Ode>
 static inline CUDA_HOSTDEV void odeSolve(const Ode&         ode,
@@ -94,15 +94,14 @@ static inline CUDA_HOSTDEV void odeSolve(const Ode&         ode,
                                          mdspan<gScalar, 1> y,
                                          const gLabel       li,
                                          gScalar&           dxTry,
-                                         gpuBuffer&         buffer,
-                                         gLabel             maxSteps) {
+                                         gpuBuffer&         buffer) {
 
     stepState step(dxTry);
     gScalar   x = xStart;
 
     // printf("dxTry value = %lf\n", dxTry);
 
-    for (gLabel nStep = 0; nStep < maxSteps; nStep++) {
+    for (gLabel nStep = 0; nStep < ode.maxSteps(); nStep++) {
 
         // Store previous iteration dxTry
         gScalar dxTry0 = step.dxTry;
@@ -117,7 +116,7 @@ static inline CUDA_HOSTDEV void odeSolve(const Ode&         ode,
         }
 
         // Integrate as far as possible up to step.dxTry
-        ode.interface(x, y, li, step, buffer);
+        ode.solve(x, y, li, step, buffer);
 
         // Check if reached xEnd
         if ((x - xEnd) * (xEnd - xStart) >= 0) {
@@ -134,6 +133,6 @@ static inline CUDA_HOSTDEV void odeSolve(const Ode&         ode,
         if (step.reject) { step.prevReject = true; }
     }
 }
-*/
+
 
 } // namespace FoamGpu

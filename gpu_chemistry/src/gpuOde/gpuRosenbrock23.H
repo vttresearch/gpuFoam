@@ -37,25 +37,24 @@ constexpr gScalar d3 = 2.1851380027664058511513169485832;
 } // namespace Rosenbrock23Coeffs
 
 template <class System>
-class gpuRosenbrock23 : public gpuODESolverBase<gpuRosenbrock23<System>>,
+class gpuRosenbrock23 : public gpuODESolverBase,
                         public gpuAdaptiveSolver {
     // Private Data
 
     CUDA_HOSTDEV gLabel nEqns() const { return odes_.nEqns(); }
 
 public:
-    using myType = gpuRosenbrock23<System>;
 
     System odes_;
 
     gpuRosenbrock23() = default;
 
     gpuRosenbrock23(const System& ode, const gpuODESolverInputs& i)
-        : gpuODESolverBase<gpuRosenbrock23<System>>(i)
+        : gpuODESolverBase(i)
         , gpuAdaptiveSolver(i)
         , odes_(ode) {}
 
-    using gpuODESolverBase<myType>::solve;
+    
 
     CUDA_HOSTDEV void solve(gScalar&           x,
                             mdspan<gScalar, 1> y,

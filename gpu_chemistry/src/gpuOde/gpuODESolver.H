@@ -19,11 +19,11 @@ using solver = variant::variant<gpuRosenbrock23<gpuODESystem>,
 
 struct ode_visitor {
     CUDA_HOSTDEV
-    ode_visitor(const gScalar       xStart,
-                const gScalar       xEnd,
+    ode_visitor(const gScalar      xStart,
+                const gScalar      xEnd,
                 mdspan<gScalar, 1> y,
-                gScalar&            dxTry,
-                gpuBuffer&          buffer)
+                gScalar&           dxTry,
+                gpuBuffer&         buffer)
         : xStart_(xStart)
         , xEnd_(xEnd)
         , y_(y)
@@ -31,14 +31,14 @@ struct ode_visitor {
         , buffer_(buffer) {}
 
     template <class T> CUDA_HOSTDEV void operator()(const T& i) {
-        i.solve(xStart_, xEnd_, y_, 0, dxTry_, buffer_);
+        odeSolve(i, xStart_, xEnd_, y_, 0, dxTry_, buffer_);
     }
 
-    gScalar             xStart_;
-    gScalar             xEnd_;
+    gScalar            xStart_;
+    gScalar            xEnd_;
     mdspan<gScalar, 1> y_;
-    gScalar&            dxTry_;
-    gpuBuffer&          buffer_;
+    gScalar&           dxTry_;
+    gpuBuffer&         buffer_;
 };
 
 struct gpuODESolver {
@@ -50,12 +50,12 @@ struct gpuODESolver {
     gpuODESolver(const gpu::solver& solver)
         : solver_(solver) {}
 
-    CUDA_HOSTDEV void solve(const gScalar       xStart,
-                            const gScalar       xEnd,
+    CUDA_HOSTDEV void solve(const gScalar      xStart,
+                            const gScalar      xEnd,
                             mdspan<gScalar, 1> y,
-                            const gLabel        li,
-                            gScalar&            dxTry,
-                            gpuBuffer&          buffer) const {
+                            const gLabel       li,
+                            gScalar&           dxTry,
+                            gpuBuffer&         buffer) const {
         (void)li;
         ode_visitor v(xStart, xEnd, y, dxTry, buffer);
         variant::apply_visitor(v, solver_);

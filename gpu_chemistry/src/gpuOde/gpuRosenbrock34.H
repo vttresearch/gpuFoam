@@ -47,7 +47,7 @@ constexpr gScalar d4 = 29.0 / 250.0;
 } // namespace Rosenbrock34Coeffs
 
 template <class System>
-class gpuRosenbrock34 : public gpuODESolverBase<gpuRosenbrock34<System>>,
+class gpuRosenbrock34 : public gpuODESolverBase,
                         public gpuAdaptiveSolver {
     // Private Data
 
@@ -61,11 +61,11 @@ public:
     gpuRosenbrock34() = default;
 
     gpuRosenbrock34(const System& ode, const gpuODESolverInputs& i)
-        : gpuODESolverBase<gpuRosenbrock34<System>>(i)
+        : gpuODESolverBase(i)
         , gpuAdaptiveSolver(i)
         , odes_(ode) {}
 
-    using gpuODESolverBase<myType>::solve;
+    
 
     CUDA_HOSTDEV void solve(gScalar&           x,
                             mdspan<gScalar, 1> y,
