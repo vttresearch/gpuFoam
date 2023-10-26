@@ -2,21 +2,23 @@
 
 #include "cuda_host_dev.H"
 #include "cuda_math.H"
+#include "gpuODESolverBase.H"
 #include "gpuODESolverInputs.H"
-#include "gpuODESystem.H"
 #include "gpu_constants.H"
 
 namespace FoamGpu {
 
-struct gpuAdaptiveSolver {
+template <class System>
+struct gpuAdaptiveSolver : public gpuODESolverBase<System> {
 
     //- Step-size adjustment controls
     gScalar safeScale_, alphaInc_, alphaDec_, minScale_, maxScale_;
 
     gpuAdaptiveSolver() = default;
 
-    gpuAdaptiveSolver(const gpuODESolverInputs& i)
-        : safeScale_(i.safeScale)
+    gpuAdaptiveSolver(const System& system, const gpuODESolverInputs& i)
+        : gpuODESolverBase<System>(system, i)
+        , safeScale_(i.safeScale)
         , alphaInc_(i.alphaInc)
         , alphaDec_(i.alphaDec)
         , minScale_(i.minScale)
@@ -29,9 +31,8 @@ struct gpuAdaptiveSolver {
     CUDA_HOSTDEV gScalar maxScale() const { return maxScale_; }
 };
 
-template <class System, class Ode>
-static inline CUDA_HOSTDEV void adaptiveSolve(const System&      system,
-                                              const Ode&         ode,
+template <class Ode>
+static inline CUDA_HOSTDEV void adaptiveSolve(const Ode&         ode,
                                               gScalar&           x,
                                               mdspan<gScalar, 1> y,
                                               gScalar&           dxTry,
@@ -43,7 +44,7 @@ static inline CUDA_HOSTDEV void adaptiveSolve(const System&      system,
     gScalar dx  = dxTry;
     gScalar err = 0.0;
 
-    system.derivatives(x, y, dydx0, buffer);
+    ode.system().derivatives(x, y, dydx0, buffer);
 
     // Loop over solver and adjust step-size as necessary
     // to achieve desired error

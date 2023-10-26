@@ -48,31 +48,20 @@ constexpr gScalar d4 = 29.0 / 250.0;
 } // namespace Rosenbrock34Coeffs
 
 template <class System>
-class gpuRosenbrock34 : public gpuODESolverBase,
-                        public gpuAdaptiveSolver {
-    // Private Data
-
-    CUDA_HOSTDEV gLabel nEqns() const { return odes_.nEqns(); }
+class gpuRosenbrock34 : public gpuAdaptiveSolver<System> {
 
 public:
-
-    System odes_;
-
     gpuRosenbrock34() = default;
 
-    gpuRosenbrock34(const System& ode, const gpuODESolverInputs& i)
-        : gpuODESolverBase(i)
-        , gpuAdaptiveSolver(i)
-        , odes_(ode) {}
-
-    
+    gpuRosenbrock34(const System& system, const gpuODESolverInputs& i)
+        : gpuAdaptiveSolver<System>(system, i) {}
 
     CUDA_HOSTDEV void solve(gScalar&           x,
                             mdspan<gScalar, 1> y,
                             stepState&         step,
                             gpuBuffer&         buffer) const {
         gScalar x0 = x;
-        adaptiveSolve(odes_, *this, x, y, step.dxTry, buffer);
+        adaptiveSolve(*this, x, y, step.dxTry, buffer);
         step.dxDid = x - x0;
     }
 
@@ -97,12 +86,12 @@ public:
         auto lubuffer     = buffer.lubuffer();
         auto a            = buffer.J();
 
-        odes_.jacobian(x0, y0, dfdx, a, buffer);
+        this->system().jacobian(x0, y0, dfdx, a, buffer);
 
         const gScalar temp = gScalar(1.0) / (gamma * dx);
         // Negate the jacobian and add 1/(gamma*dx) to diagonal
-        for (gLabel i = 0; i < nEqns(); i++) {
-            for (gLabel j = 0; j < nEqns(); j++) { a(i, j) = -a(i, j); }
+        for (gLabel i = 0; i < this->nEqns(); i++) {
+            for (gLabel j = 0; j < this->nEqns(); j++) { a(i, j) = -a(i, j); }
 
             a(i, i) += temp; // gScalar(1.0)/(gamma*dx);
         }
@@ -110,31 +99,33 @@ public:
         FoamGpu::LUDecompose(a, pivotIndices, lubuffer);
 
         // Calculate k1:
-        for (gLabel i = 0; i < nEqns(); ++i) {
+        for (gLabel i = 0; i < this->nEqns(); ++i) {
             k1[i] = dydx0[i] + dx * d1 * dfdx[i];
         }
 
         FoamGpu::LUBacksubstitute(a, pivotIndices, k1);
 
         // Calculate k2:
-        for (gLabel i = 0; i < nEqns(); ++i) { y[i] = y0[i] + a21 * k1[i]; }
+        for (gLabel i = 0; i < this->nEqns(); ++i) {
+            y[i] = y0[i] + a21 * k1[i];
+        }
 
-        odes_.derivatives(x0 + c2 * dx, y, dydx, buffer);
+        this->system().derivatives(x0 + c2 * dx, y, dydx, buffer);
 
-        for (gLabel i = 0; i < nEqns(); ++i) {
+        for (gLabel i = 0; i < this->nEqns(); ++i) {
             k2[i] = dydx[i] + dx * d2 * dfdx[i] + c21 * k1[i] / dx;
         }
 
         FoamGpu::LUBacksubstitute(a, pivotIndices, k2);
 
         // Calculate k3:
-        for (gLabel i = 0; i < nEqns(); ++i) {
+        for (gLabel i = 0; i < this->nEqns(); ++i) {
             y[i] = y0[i] + a31 * k1[i] + a32 * k2[i];
         }
 
-        odes_.derivatives(x0 + c3 * dx, y, dydx, buffer);
+        this->system().derivatives(x0 + c3 * dx, y, dydx, buffer);
 
-        for (gLabel i = 0; i < nEqns(); ++i) {
+        for (gLabel i = 0; i < this->nEqns(); ++i) {
             k3[i] =
                 dydx[i] + dx * d3 * dfdx[i] + (c31 * k1[i] + c32 * k2[i]) / dx;
         }
@@ -142,7 +133,7 @@ public:
         FoamGpu::LUBacksubstitute(a, pivotIndices, k3);
 
         // Calculate k4:
-        for (gLabel i = 0; i < nEqns(); ++i) {
+        for (gLabel i = 0; i < this->nEqns(); ++i) {
             k4[i] = dydx[i] + dx * d4 * dfdx[i] +
                     (c41 * k1[i] + c42 * k2[i] + c43 * k3[i]) / dx;
         }
@@ -150,7 +141,7 @@ public:
         FoamGpu::LUBacksubstitute(a, pivotIndices, k4);
 
         // Calculate error and update state:
-        for (gLabel i = 0; i < nEqns(); ++i) {
+        for (gLabel i = 0; i < this->nEqns(); ++i) {
             y[i]   = y0[i] + b1 * k1[i] + b2 * k2[i] + b3 * k3[i] + b4 * k4[i];
             err[i] = e1 * k1[i] + e2 * k2[i] + e4 * k4[i];
         }
