@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Version:  owngpu
+    \\  /    A nd           | Version:  gpu
      \\/     M anipulation  |
 \*---------------------------------------------------------------------------*/
 FoamFile
@@ -31,7 +31,7 @@ deltaT          1e-07;
 
 writeControl    timeStep;
 
-writeInterval   1;
+writeInterval   2000;
 
 purgeWrite      0;
 

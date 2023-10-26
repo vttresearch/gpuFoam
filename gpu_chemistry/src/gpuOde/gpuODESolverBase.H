@@ -3,8 +3,8 @@
 #include "cuda_host_dev.H"
 #include "cuda_math.H"
 #include "double_intrinsics.H"
-#include "gpuODESystem.H"
 #include "gpuODESolverInputs.H"
+#include "gpuODESystem.H"
 #include "stepState.H"
 #include <string>
 
@@ -25,29 +25,46 @@ protected:
     gLabel maxSteps_;
 
 public:
-    // Constructors
     gpuODESolverBase() = default;
 
-    //- Construct for given ODESystem specifying tolerances
-
+    /// @brief Construct from template ode system and solver inputs
+    /// @param system the ODE system used
+    /// @param i the tolerance inputs
     gpuODESolverBase(const System& system, const gpuODESolverInputs& i)
         : system_(system)
         , absTol_(i.absTol)
         , relTol_(i.relTol)
         , maxSteps_(i.maxSteps) {}
 
+    /// @brief Get the absolute tolerance.
+    /// @return Absolute tolerance.
     inline CUDA_HOSTDEV gScalar absTol() const { return absTol_; }
 
+    /// @brief Get the relative tolerance.
+    /// @return Relative tolerance.
     inline CUDA_HOSTDEV gScalar relTol() const { return relTol_; }
 
+    /// @brief Get the maximum number of ode steps within single flow time step.
+    /// @return The maximum number of steps for a single ode.
     inline CUDA_HOSTDEV gLabel maxSteps() const { return maxSteps_; }
 
-    inline CUDA_HOSTDEV gLabel nEqns() const {return system_.nEqns();}
+    /// @brief Get the number of equations in the ode system.
+    /// @return Number of equations in the ode system
+    inline CUDA_HOSTDEV gLabel nEqns() const { return system_.nEqns(); }
 
+    /// @brief Get a reference to the template ode system.
+    /// @return A reference to the ode system.
     inline CUDA_HOSTDEV const System& system() const { return system_; }
 };
 
-// This is the main solve call from gpuODESolverBase
+/// @brief Iterate the input ode starting from time xStart to xEnd for vector y
+/// using dxTry as an initial step estimate.
+/// @param ode The ode to solve.
+/// @param xStart Start time of the iteration.
+/// @param xEnd End time of the iteration.
+/// @param y The modified solution vector of size ode.nEqns().
+/// @param dxTry Initial guess for the step size.
+/// @param buffer A preallocated memory buffer.
 template <class Ode>
 static inline CUDA_HOSTDEV void odeSolve(const Ode&         ode,
                                          const gScalar      xStart,

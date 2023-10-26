@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Version:  owngpu
+    \\  /    A nd           | Version:  gpu
      \\/     M anipulation  |
 \*---------------------------------------------------------------------------*/
 FoamFile
@@ -21,13 +21,12 @@ initialChemicalTimeStep 1;
 
 chemistryType
 {
-    solver          none;
-    method          gpuChemistryModel;
+    solver          ode;
 }
 
 odeCoeffs
 {
-    solver          Rosenbrock23;
+    solver          Rosenbrock34;
     absTol          1e-08;
     relTol          0.1;
 }

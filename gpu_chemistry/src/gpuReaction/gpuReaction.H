@@ -103,6 +103,7 @@ public:
         }
     }
 
+
     /// @brief Returns a span to the LHS specie coeffcients.
     /// @return A span to the LHS specie coefficients.
     inline CUDA_HOSTDEV auto lhs() const {
@@ -273,7 +274,6 @@ public:
                                           mdspan<gScalar, 1> cTpWork0,
                                           mdspan<gScalar, 1> cTpWork1) const;
 
-private:
     /// @brief Checks if the LHS specie coefficients contain small (< 1)
     /// exponents.
     /// @return Returns true if the LHS species of the reaction contain less
@@ -428,8 +428,8 @@ private:
     /// @param Cr The product of the RHS concentration powers.
     /// @param kr The reverse rate constant.
     /// @param c A span of concentrations in a cell.
-    /// @param cTpWork0 A a span of at least size nSpecie used as a temporary.
-    /// @param cTpWork1 A a span of at least size nSpecie used as a temporary.
+    /// @param cTpWork0 A span of at least size nSpecie used as a temporary.
+    /// @param cTpWork1 A span of at least size nSpecie used as a temporary.
     /// @param ddNdtByVdcTp A two dimensional span where the result is assigned.
     inline CUDA_HOSTDEV void
     jac_dCdC_contribution(const gScalar                  p,
@@ -441,6 +441,13 @@ private:
                           mdspan<gScalar, 1>             cTpWork0,
                           mdspan<gScalar, 1>             cTpWork1,
                           mdspan<gScalar, 2>             ddNdtByVdcTp) const;
+
+
+
+    inline CUDA_HOSTDEV bool active(const mdspan<const gScalar, 1> c) const {
+        //return (!lhsSmallConcentration(c) || !rhsSmallConcentration(c));
+        return true;
+    }
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////

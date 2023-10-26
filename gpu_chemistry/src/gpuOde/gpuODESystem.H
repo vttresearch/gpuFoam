@@ -21,10 +21,19 @@ private:
     const gpuThermo*   thermos_;
     const gpuReaction* reactions_;
 
+    /// @brief Get a pointer to the species thermos.
+    /// @return A pointer to the specie thermos.
     CUDA_HOSTDEV const gpuThermo* specieThermos() const { return thermos_; }
 
+    /// @brief Get a pointer to the reactions.
+    /// @return A pointer to the reactions.
     CUDA_HOSTDEV const gpuReaction* reactions() const { return reactions_; }
 
+    /// @brief Get the density of the mixture.
+    /// @param y Mass fractions.
+    /// @param p Pressure.
+    /// @param T Temperature.
+    /// @return Density of the mixture.
     CUDA_HOSTDEV gScalar rhoMixture(const mdspan<const gScalar, 1> y,
                                     const gScalar                  p,
                                     const gScalar                  T) const {
@@ -36,6 +45,11 @@ private:
         return gScalar(1) / rhoM;
     }
 
+    /// @brief Get the specific heat of the mixture.
+    /// @param y Mass fractions.
+    /// @param p Pressure.
+    /// @param T Temperature.
+    /// @return Specific heat of the mixture.
     CUDA_HOSTDEV gScalar CpMixture(const mdspan<const gScalar, 1> y,
                                    const gScalar                  p,
                                    const gScalar                  T) const {
@@ -47,6 +61,11 @@ private:
         return CpM;
     }
 
+    /// @brief Get the derivative of specific heat w.r.t. temperature of the mixture.
+    /// @param y Mass fractions.
+    /// @param p Pressure.
+    /// @param T Temperature.
+    /// @return Derivative of specific heat w.r.t. temperature.
     CUDA_HOSTDEV gScalar dCpMdTMixture(const mdspan<const gScalar, 1> y,
                                        const gScalar                  p,
                                        const gScalar                  T) const {
@@ -58,7 +77,12 @@ private:
         return dCpMdT;
     }
 
-    // Mixture thermal expansion coefficient
+    /// @brief Get the thermal expansion coefficient of the mixture.
+    /// @param y Mass fractions.
+    /// @param p Pressure.
+    /// @param T Temperature.
+    /// @param rhoM Mixture density.
+    /// @return Mixture thermal expansion coefficient.
     CUDA_HOSTDEV gScalar alphavMixture(const mdspan<const gScalar, 1> y,
                                        const gScalar                  p,
                                        const gScalar                  T,
@@ -75,6 +99,10 @@ private:
         return alphavM;
     }
 
+    /// @brief Get the mixture concentration.
+    /// @param y Mass fractions.
+    /// @param c The concentration vector of at least size nSpecie which is modified.
+    /// @param rhoM Mixture density.
     CUDA_HOSTDEV void concentration(const mdspan<const gScalar, 1> y,
                                     mdspan<gScalar, 1>             c,
                                     const gScalar                  rhoM) const {
@@ -85,6 +113,10 @@ private:
         }
     }
 
+    /// @brief Compute the absolute enthalpy of the species.
+    /// @param Ha The modified absolute enthalpy vector of at least size nSpecie.
+    /// @param p Pressure.
+    /// @param T Temperature.
     CUDA_HOSTDEV void absoluteEnthalpy(mdspan<gScalar, 1> Ha,
                                        const gScalar      p,
                                        const gScalar      T) const {
@@ -93,6 +125,11 @@ private:
             Ha[i] = specieThermos()[i].Ha(p, T);
         }
     }
+
+    /// @brief Compute the heat capacity of the species.
+    /// @param Cp The modified heat capacity vector of at least size nSpecie.
+    /// @param p Pressure.
+    /// @param T Temperature.
     CUDA_HOSTDEV void heatCapacity(mdspan<gScalar, 1> Cp,
                                    const gScalar      p,
                                    const gScalar      T) const {
@@ -102,25 +139,30 @@ private:
         }
     }
 
-    CUDA_HOSTDEV void dYdt(mdspan<gScalar, 1> dydx, const gScalar rhoM) const {
+    /// @brief Compute the derivative of y w.r.t. temperature.
+    /// @param dydt The modified dY/dT vector of at least size nSpecie.
+    /// @param rhoM Mixture density.
+    CUDA_HOSTDEV void dYdT(mdspan<gScalar, 1> dydt, const gScalar rhoM) const {
         const gLabel nSpecie = nEqns() - 2;
         // Reactions return dNdtByV, so we need to convert the result to dYdt
         for (gLabel i = 0; i < nSpecie; i++) {
-            dydx[i] *= specieThermos()[i].W() / rhoM;
+            dydt[i] *= specieThermos()[i].W() / rhoM;
         }
     }
 
     // Temperature derivative, notes assumes dydx[0 ... nSpecie] has been
     // computed
-    CUDA_HOSTDEV void dTdt(mdspan<gScalar, 1>             dydx,
+
+    CUDA_HOSTDEV gScalar dTdt(const mdspan<const gScalar, 1>             dydx,
                            const mdspan<const gScalar, 1> Ha,
                            const gScalar                  CpM) const {
 
         const gLabel nSpecie = nEqns() - 2;
+        gScalar ret = 0.0;
         for (gLabel i = 0; i < nSpecie; i++) {
-            dydx[nSpecie] -= dydx[i] * Ha[i];
+            ret -= dydx[i] * Ha[i];
         }
-        dydx[nSpecie] /= CpM;
+        return ret / CpM;
     }
 
     CUDA_HOSTDEV void dpdt(mdspan<gScalar, 1> dydx) const {
@@ -241,16 +283,20 @@ public:
         concentration(y, c, rhoM);
 
         for (gLabel ri = 0; ri < nReactions(); ++ri) {
-            reactions()[ri].dNdtByV(p, T, c, dydx);
+            const auto& reaction = reactions()[ri];
+            if (reaction.active(c))
+            {
+                reactions()[ri].dNdtByV(p, T, c, dydx);
+            }
         }
 
         // dY/dT
-        dYdt(dydx, rhoM);
+        dYdT(dydx, rhoM);
 
         // dT/dt
         auto Ha = buffer.tempField1();
         absoluteEnthalpy(Ha, p, T);
-        dTdt(dydx, Ha, CpM);
+        dydx[nSpecie] = dTdt(dydx, Ha, CpM);
 
         dpdt(dydx);
     }
@@ -288,12 +334,29 @@ public:
         }
 
         for (gLabel ri = 0; ri < nReactions(); ++ri) {
-            reactions()[ri].ddNdtByVdcTp(
+
+
+            const auto& reaction = reactions()[ri];
+
+            if (reaction.active(c))
+            {
+                reaction.ddNdtByVdcTp(
                 p, T, c, dfdx, dfdy, 0, nSpecie, tempField1, tempField2);
+            }
+
         }
 
+        /*
+        for (gLabel ri = 0; ri < nReactions(); ++ri) {
+
+            //reactions()[ri].ddNdtByVdcTp(
+            //    p, T, c, dfdx, dfdy, 0, nSpecie, tempField1, tempField2);
+        }
+        */
+
+
         // dY/dT
-        dYdt(dfdx, rhoM);
+        dYdT(dfdx, rhoM);
 
         dpdt(dfdx);
 
@@ -313,7 +376,7 @@ public:
         auto Ha = buffer.tempField1();
         absoluteEnthalpy(Ha, p, T);
 
-        dTdt(dfdx, Ha, CpM);
+        dfdx[nSpecie] = dTdt(dfdx, Ha, CpM);
         ////////////////////////////////
 
         // d(dTdt)/dY

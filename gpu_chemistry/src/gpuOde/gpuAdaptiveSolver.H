@@ -16,6 +16,9 @@ struct gpuAdaptiveSolver : public gpuODESolverBase<System> {
 
     gpuAdaptiveSolver() = default;
 
+    /// @brief Construct from template ode system and solver inputs
+    /// @param system the ODE system used
+    /// @param i the tolerance inputs
     gpuAdaptiveSolver(const System& system, const gpuODESolverInputs& i)
         : gpuODESolverBase<System>(system, i)
         , safeScale_(i.safeScale)
@@ -24,13 +27,33 @@ struct gpuAdaptiveSolver : public gpuODESolverBase<System> {
         , minScale_(i.minScale)
         , maxScale_(i.maxScale) {}
 
+    /// @brief Get the safeScale value
+    /// @return Value of the safeScale
     CUDA_HOSTDEV gScalar safeScale() const { return safeScale_; }
+
+    /// @brief Get the alpha increase value
+    /// @return Value of alpha increase
     CUDA_HOSTDEV gScalar alphaInc() const { return alphaInc_; }
+
+    /// @brief Get the alpha decrease value
+    /// @return Value of alpha decrease
     CUDA_HOSTDEV gScalar alphaDec() const { return alphaDec_; }
+
+    /// @brief Get the minimum scale value
+    /// @return Minimum scale
     CUDA_HOSTDEV gScalar minScale() const { return minScale_; }
+
+    /// @brief Get the maximum scale value
+    /// @return Maximum scale
     CUDA_HOSTDEV gScalar maxScale() const { return maxScale_; }
 };
 
+/// @brief Integrate the ode as far as possible between [x, x+dxTry] while adjusting the step size.
+/// @param ode The ode to integrate
+/// @param x Start point.
+/// @param y The modified solution vector of size ode.nEqns().
+/// @param dxTry Initial guess for the step size.
+/// @param buffer A preallocated memory buffer.
 template <class Ode>
 static inline CUDA_HOSTDEV void adaptiveSolve(const Ode&         ode,
                                               gScalar&           x,
