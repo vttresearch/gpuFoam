@@ -225,7 +225,6 @@ public:
 
     CUDA_HOSTDEV void derivatives(const gScalar                  x,
                                   const mdspan<const gScalar, 1> y,
-                                  const gLabel                   li,
                                   mdspan<gScalar, 1>             dydx,
                                   gpuBuffer&                     buffer) const {
 
@@ -258,7 +257,6 @@ public:
 
     CUDA_HOSTDEV void jacobian(const gScalar                  x,
                                const mdspan<const gScalar, 1> y,
-                               const gLabel                   li,
                                mdspan<gScalar, 1>             dfdx,
                                mdspan<gScalar, 2>             dfdy,
                                gpuBuffer&                     buffer) const {
@@ -291,7 +289,7 @@ public:
 
         for (gLabel ri = 0; ri < nReactions(); ++ri) {
             reactions()[ri].ddNdtByVdcTp(
-                p, T, c, li, dfdx, dfdy, 0, nSpecie, tempField1, tempField2);
+                p, T, c, dfdx, dfdy, 0, nSpecie, tempField1, tempField2);
         }
 
         // dY/dT

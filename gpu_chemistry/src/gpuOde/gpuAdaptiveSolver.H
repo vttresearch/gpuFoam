@@ -34,7 +34,6 @@ static inline CUDA_HOSTDEV void adaptiveSolve(const System&      system,
                                               const Ode&         ode,
                                               gScalar&           x,
                                               mdspan<gScalar, 1> y,
-                                              const gLabel       li,
                                               gScalar&           dxTry,
                                               gpuBuffer&         buffer) {
 
@@ -44,13 +43,13 @@ static inline CUDA_HOSTDEV void adaptiveSolve(const System&      system,
     gScalar dx  = dxTry;
     gScalar err = 0.0;
 
-    system.derivatives(x, y, li, dydx0, buffer);
+    system.derivatives(x, y, dydx0, buffer);
 
     // Loop over solver and adjust step-size as necessary
     // to achieve desired error
     do {
         // Solve step and provide error estimate
-        err = ode.solve(x, y, li, dydx0, dx, yTemp, buffer);
+        err = ode.solve(x, y, dydx0, dx, yTemp, buffer);
 
         // If error is large reduce dx
         if (err > 1) {

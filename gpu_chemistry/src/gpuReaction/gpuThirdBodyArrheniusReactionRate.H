@@ -32,19 +32,17 @@ public:
 
     inline CUDA_HOSTDEV gScalar operator()(const gScalar                  p,
                                            const gScalar                  T,
-                                           const mdspan<const gScalar, 1> c,
-                                           const gLabel li) const {
+                                           const mdspan<const gScalar, 1> c) const {
         return thirdBodyEfficiencies_.M(c) *
-               gpuArrheniusReactionRate::operator()(p, T, c, li);
+               gpuArrheniusReactionRate::operator()(p, T, c);
     }
 
     //- The derivative of the rate w.r.t. temperature
     inline CUDA_HOSTDEV gScalar ddT(const gScalar                  p,
                                     const gScalar                  T,
-                                    const mdspan<const gScalar, 1> c,
-                                    const gLabel                   li) const {
+                                    const mdspan<const gScalar, 1> c) const {
         return thirdBodyEfficiencies_.M(c) *
-               gpuArrheniusReactionRate::ddT(p, T, c, li);
+               gpuArrheniusReactionRate::ddT(p, T, c);
     }
 
     //- Is the rate a function of concentration?
@@ -54,9 +52,8 @@ public:
     inline CUDA_HOSTDEV void ddc(const gScalar                  p,
                                  const gScalar                  T,
                                  const mdspan<const gScalar, 1> c,
-                                 const gLabel                   li,
                                  mdspan<gScalar, 1>             ddc) const {
-        const gScalar k = gpuArrheniusReactionRate::operator()(p, T, c, li);
+        const gScalar k = gpuArrheniusReactionRate::operator()(p, T, c);
 
         for (gLabel i = 0; i < gLabel(ddc.size()); ++i) {
             ddc[i] = thirdBodyEfficiencies_.dMdc(c)[i] * k;

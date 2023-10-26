@@ -116,7 +116,6 @@ auto callGpuSolve
     const gScalar xStart = p.xStart;
     const gScalar xEnd = p.xEnd;
     const gScalar dxTry = p.dxTry;
-    const gLabel li = 0;
 
     auto y = toDeviceVector(y0);
 
@@ -129,13 +128,12 @@ auto callGpuSolve
         xStart = xStart,
         xEnd = xEnd,
         y = make_mdspan(y, extents<1>{nEqns}),
-        li = li,
         dxTry = dxTry,
         buffers = make_mdspan(buffers, extents<1>{1})
     ]()
     {
         gScalar dxTry_temp = dxTry;
-        ode.solve(xStart, xEnd, y, li, dxTry_temp, buffers[0]);
+        ode.solve(xStart, xEnd, y, dxTry_temp, buffers[0]);
         return dxTry_temp;
     };
 

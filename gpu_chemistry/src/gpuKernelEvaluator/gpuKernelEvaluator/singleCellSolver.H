@@ -28,13 +28,12 @@ struct singleCellSolver {
         // Initialise time progress
         gScalar timeLeft = deltaT_;
 
-        constexpr gLabel li = 0;
 
         // Calculate the chemical source terms
         while (timeLeft > gpuSmall) {
             gScalar dt = timeLeft;
 
-            ode_.solve(0, dt, Y, li, deltaTChem_[celli], buffer_[celli]);
+            ode_.solve(0, dt, Y, deltaTChem_[celli], buffer_[celli]);
 
             for (int i = 0; i < nSpecie_; i++) { Y[i] = std::max(0.0, Y[i]); }
 

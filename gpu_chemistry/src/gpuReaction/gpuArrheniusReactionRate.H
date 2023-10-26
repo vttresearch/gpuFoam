@@ -35,19 +35,15 @@ public:
 
     inline CUDA_HOSTDEV gScalar operator()(const gScalar                  p,
                                            const gScalar                  T,
-                                           const mdspan<const gScalar, 1> c,
-                                           const gLabel li) const {
+                                           const mdspan<const gScalar, 1> c) const {
         (void)c;
-        (void)li;
         return computeAk(p, T);
     }
 
     inline CUDA_HOSTDEV gScalar ddT(const gScalar                  p,
                                     const gScalar                  T,
-                                    const mdspan<const gScalar, 1> c,
-                                    const gLabel                   li) const {
+                                    const mdspan<const gScalar, 1> c) const {
         (void)c;
-        (void)li;
         return computeAk(p, T) * (beta_ + Ta_ / T) / T;
     }
 
@@ -56,7 +52,6 @@ public:
     inline CUDA_HOSTDEV void ddc(const gScalar                  p,
                                  const gScalar                  T,
                                  const mdspan<const gScalar, 1> c,
-                                 const gLabel                   li,
                                  mdspan<gScalar, 1>             ddc) const {
         for (gLabel i = 0; i < gLabel(ddc.size()); ++i) { ddc[i] = 0; }
     }

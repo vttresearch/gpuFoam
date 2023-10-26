@@ -31,7 +31,7 @@ struct ode_visitor {
         , buffer_(buffer) {}
 
     template <class T> CUDA_HOSTDEV void operator()(const T& i) {
-        odeSolve(i, xStart_, xEnd_, y_, 0, dxTry_, buffer_);
+        odeSolve(i, xStart_, xEnd_, y_, dxTry_, buffer_);
     }
 
     gScalar            xStart_;
@@ -53,10 +53,8 @@ struct gpuODESolver {
     CUDA_HOSTDEV void solve(const gScalar      xStart,
                             const gScalar      xEnd,
                             mdspan<gScalar, 1> y,
-                            const gLabel       li,
                             gScalar&           dxTry,
                             gpuBuffer&         buffer) const {
-        (void)li;
         ode_visitor v(xStart, xEnd, y, dxTry, buffer);
         variant::apply_visitor(v, solver_);
     }

@@ -90,7 +90,7 @@ TEST_CASE("Test gpuReactionRate")
                 gScalar Ta = 14567.38636;
                 gpuArrheniusReactionRate gpu(A, beta, Ta);
                 Foam::ArrheniusReactionRate cpu(A, beta, Ta);
-                REQUIRE(eval([=](){return gpu(p, T, c, li);}) == Approx(cpu(p, T, c_cpu, li)).epsilon(errorTol));
+                REQUIRE(eval([=](){return gpu(p, T, c);}) == Approx(cpu(p, T, c_cpu, li)).epsilon(errorTol));
 
             }
             SECTION("Test 1")
@@ -100,7 +100,7 @@ TEST_CASE("Test gpuReactionRate")
                 gScalar Ta = 20127.64955;
                 gpuArrheniusReactionRate gpu(A, beta, Ta);
                 Foam::ArrheniusReactionRate cpu(A, beta, Ta);
-                REQUIRE(eval([=](){return gpu(p, T, c, li);}) == Approx(cpu(p, T, c_cpu, li)).epsilon(errorTol));
+                REQUIRE(eval([=](){return gpu(p, T, c);}) == Approx(cpu(p, T, c_cpu, li)).epsilon(errorTol));
 
             }
         }
@@ -279,30 +279,30 @@ static inline void reactionTests(TestData::Mechanism mech)
 
             REQUIRE
             (
-                eval([=](){return gpu->kf(p, T, c, li);})
+                eval([=](){return gpu->kf(p, T, c);})
                 == Approx(cpu.kf(p, T, c_cpu, li)).epsilon(errorTol)
             );
             REQUIRE
             (
-                eval([=](){return gpu->kr(p, T, c, li);})
+                eval([=](){return gpu->kr(p, T, c);})
                 == Approx(cpu.kr(p, T, c_cpu, li)).epsilon(errorTol)
             );
 
             REQUIRE
             (
-                eval([=](){return gpu->kr(32.0, p, T, c, li);})
+                eval([=](){return gpu->kr(32.0, p, T, c);})
                 == Approx(cpu.kr(32.0, p, T, c_cpu, li)).epsilon(errorTol)
             );
 
             REQUIRE
             (
-                eval([=](){return gpu->dkfdT(p, T, c, li);})
+                eval([=](){return gpu->dkfdT(p, T, c);})
                 == Approx(cpu.dkfdT(p, T, c_cpu, li)).epsilon(errorTol)
             );
 
             REQUIRE
             (
-                eval([=](){return gpu->dkrdT(p, T, c, li, 0.1, 0.3);})
+                eval([=](){return gpu->dkrdT(p, T, c, 0.1, 0.3);})
                 == Approx(cpu.dkrdT(p, T, c_cpu, li, 0.1, 0.3)).epsilon(errorTol)
             );
 
@@ -310,7 +310,7 @@ static inline void reactionTests(TestData::Mechanism mech)
             device_vector<gScalar> dkfdc_gpu_temp(nSpecie, 0.4);
             auto dkfdc_gpu = make_mdspan(dkfdc_gpu_temp, extents<1>{nSpecie});
 
-            eval([=](){gpu->dkfdc(p, T, c, li, dkfdc_gpu); return 0;});
+            eval([=](){gpu->dkfdc(p, T, c, dkfdc_gpu); return 0;});
             cpu.dkfdc(p, T, c_cpu, li, dkfdc_cpu);
 
             REQUIRE_THAT
@@ -325,7 +325,7 @@ static inline void reactionTests(TestData::Mechanism mech)
             auto dkrdc_gpu = make_mdspan(dkrdc_gpu_temp, extents<1>{nSpecie});
 
 
-            eval([=](){gpu->dkrdc(p, T, c, li, dkfdc_gpu, 0.1, dkrdc_gpu); return 0;});
+            eval([=](){gpu->dkrdc(p, T, c, dkfdc_gpu, 0.1, dkrdc_gpu); return 0;});
             cpu.dkrdc(p, T, c_cpu, li, dkfdc_cpu, 0.1, dkrdc_cpu);
 
             REQUIRE_THAT
@@ -439,7 +439,6 @@ static inline void reactionTests(TestData::Mechanism mech)
                     p,
                     T,
                     c,
-                    li,
                     dNdtByV,
                     ddNdtByVdcTp,
                     csi0,
@@ -538,7 +537,6 @@ static inline void reactionTests(TestData::Mechanism mech)
                     p,
                     T,
                     c,
-                    li,
                     dNdtByV,
                     ddNdtByVdcTp,
                     csi0,

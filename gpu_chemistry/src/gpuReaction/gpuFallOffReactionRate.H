@@ -34,10 +34,9 @@ public:
     //- Return the rate
     inline CUDA_HOSTDEV gScalar operator()(const gScalar                  p,
                                            const gScalar                  T,
-                                           const mdspan<const gScalar, 1> c,
-                                           const gLabel li) const {
-        const gScalar k0   = k0_(p, T, c, li);
-        const gScalar kInf = kInf_(p, T, c, li);
+                                           const mdspan<const gScalar, 1> c) const {
+        const gScalar k0   = k0_(p, T, c);
+        const gScalar kInf = kInf_(p, T, c);
         const gScalar M    = thirdBodyEfficiencies_.M(c);
         const gScalar Pr   = k0 / kInf * M;
         const gScalar F    = F_(T, Pr);
@@ -48,15 +47,14 @@ public:
     //- The derivative of the rate w.r.t. temperature
     inline CUDA_HOSTDEV gScalar ddT(const gScalar                  p,
                                     const gScalar                  T,
-                                    const mdspan<const gScalar, 1> c,
-                                    const gLabel                   li) const {
-        const gScalar k0   = k0_(p, T, c, li);
-        const gScalar kInf = kInf_(p, T, c, li);
+                                    const mdspan<const gScalar, 1> c) const {
+        const gScalar k0   = k0_(p, T, c);
+        const gScalar kInf = kInf_(p, T, c);
         const gScalar M    = thirdBodyEfficiencies_.M(c);
         const gScalar Pr   = k0 / kInf * M;
         const gScalar F    = F_(T, Pr);
 
-        const gScalar dkInfdT = kInf_.ddT(p, T, c, li);
+        const gScalar dkInfdT = kInf_.ddT(p, T, c);
 
         return dkInfdT * (Pr / (1.0 + Pr)) * F;
     }
@@ -68,16 +66,15 @@ public:
     inline CUDA_HOSTDEV void ddc(const gScalar                  p,
                                  const gScalar                  T,
                                  const mdspan<const gScalar, 1> c,
-                                 const gLabel                   li,
                                  mdspan<gScalar, 1>             ddc) const {
 
-        const gScalar k0   = k0_(p, T, c, li);
-        const gScalar kInf = kInf_(p, T, c, li);
+        const gScalar k0   = k0_(p, T, c);
+        const gScalar kInf = kInf_(p, T, c);
         const gScalar M    = thirdBodyEfficiencies_.M(c);
         const gScalar Pr   = k0 / kInf * M;
         const gScalar F    = F_(T, Pr);
 
-        kInf_.ddc(p, T, c, li, ddc);
+        kInf_.ddc(p, T, c, ddc);
 
         for (gLabel i = 0; i < gLabel(ddc.size()); ++i) {
             ddc[i] *= (Pr / (1.0 + Pr)) * F;

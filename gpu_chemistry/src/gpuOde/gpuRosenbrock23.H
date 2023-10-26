@@ -60,18 +60,16 @@ public:
 
     CUDA_HOSTDEV void solve(gScalar&           x,
                             mdspan<gScalar, 1> y,
-                            const gLabel       li,
                             stepState&         step,
                             gpuBuffer&         buffer) const {
         gScalar x0 = x;
-        adaptiveSolve(odes_, *this, x, y, li, step.dxTry, buffer);
+        adaptiveSolve(odes_, *this, x, y, step.dxTry, buffer);
         step.dxDid = x - x0;
     }
 
     //- Solve a single step dx and return the error
     CUDA_HOSTDEV gScalar solve(const gScalar                  x0,
                                const mdspan<const gScalar, 1> y0,
-                               const gLabel                   li,
                                const mdspan<const gScalar, 1> dydx0,
                                const gScalar                  dx,
                                mdspan<gScalar, 1>             y,
@@ -89,7 +87,7 @@ public:
         auto lubuffer     = buffer.lubuffer();
         auto a            = buffer.J();
 
-        odes_.jacobian(x0, y0, li, dfdx, a, buffer);
+        odes_.jacobian(x0, y0, dfdx, a, buffer);
 
         const gScalar temp = gScalar(1.0) / (gamma * dx);
         // Negate the jacobian and add 1/(gamma*dx) to diagonal
@@ -111,7 +109,7 @@ public:
         // Calculate k2:
         for (gLabel i = 0; i < nEqns(); ++i) { y[i] = y0[i] + a21 * k1[i]; }
 
-        odes_.derivatives(x0 + c2 * dx, y, li, dydx, buffer);
+        odes_.derivatives(x0 + c2 * dx, y, dydx, buffer);
 
         for (gLabel i = 0; i < nEqns(); ++i) {
             k2[i] = dydx[i] + dx * d2 * dfdx[i] + c21 * k1[i] / dx;

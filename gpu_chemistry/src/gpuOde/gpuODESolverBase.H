@@ -54,7 +54,6 @@ static inline CUDA_HOSTDEV void odeSolve(const Ode&         ode,
                                          const gScalar      xStart,
                                          const gScalar      xEnd,
                                          mdspan<gScalar, 1> y,
-                                         const gLabel       li,
                                          gScalar&           dxTry,
                                          gpuBuffer&         buffer) {
 
@@ -78,7 +77,7 @@ static inline CUDA_HOSTDEV void odeSolve(const Ode&         ode,
         }
 
         // Integrate as far as possible up to step.dxTry
-        ode.solve(x, y, li, step, buffer);
+        ode.solve(x, y, step, buffer);
 
         // Check if reached xEnd
         if ((x - xEnd) * (xEnd - xStart) >= 0) {

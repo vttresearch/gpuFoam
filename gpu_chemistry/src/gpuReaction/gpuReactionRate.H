@@ -41,19 +41,18 @@ std::variant
 struct my_visitor1 {
 
     CUDA_HOSTDEV
-    my_visitor1(gScalar pp, gScalar TT, mdspan<const gScalar, 1> cc, gLabel lli)
+    my_visitor1(gScalar pp, gScalar TT, mdspan<const gScalar, 1> cc)
         : p(pp)
         , Temperature(TT)
         , c(cc)
-        , li(lli) {}
+         {}
 
     gScalar                  p;
     gScalar                  Temperature;
     mdspan<const gScalar, 1> c;
-    gLabel                   li;
 
     template <class T> CUDA_HOSTDEV gScalar operator()(const T& i) const {
-        return i.operator()(p, Temperature, c, li);
+        return i.operator()(p, Temperature, c);
     }
 };
 
@@ -72,41 +71,37 @@ struct my_visitor3 {
     my_visitor3(gScalar                  pp,
                 gScalar                  TT,
                 mdspan<const gScalar, 1> cc,
-                gLabel                   lli,
                 mdspan<gScalar, 1>       ddkfdc)
         : p(pp)
         , Temperature(TT)
         , c(cc)
-        , li(lli)
         , dkfdc(ddkfdc) {}
 
     gScalar                  p;
     gScalar                  Temperature;
     mdspan<const gScalar, 1> c;
-    gLabel                   li;
     mdspan<gScalar, 1>       dkfdc;
 
     template <class T> CUDA_HOSTDEV void operator()(const T& i) const {
-        return i.ddc(p, Temperature, c, li, dkfdc);
+        return i.ddc(p, Temperature, c, dkfdc);
     }
 };
 
 struct my_visitor4 {
 
     CUDA_HOSTDEV
-    my_visitor4(gScalar pp, gScalar TT, mdspan<const gScalar, 1> cc, gLabel lli)
+    my_visitor4(gScalar pp, gScalar TT, mdspan<const gScalar, 1> cc)
         : p(pp)
         , Temperature(TT)
         , c(cc)
-        , li(lli) {}
+         {}
 
     gScalar                  p;
     gScalar                  Temperature;
     mdspan<const gScalar, 1> c;
-    gLabel                   li;
 
     template <class T> CUDA_HOSTDEV gScalar operator()(const T& i) const {
-        return i.ddT(p, Temperature, c, li);
+        return i.ddT(p, Temperature, c);
     }
 };
 
@@ -125,11 +120,10 @@ struct gpuReactionRate {
 
     inline CUDA_HOSTDEV gScalar operator()(const gScalar                  p,
                                            const gScalar                  T,
-                                           const mdspan<const gScalar, 1> c,
-                                           const gLabel li) const {
+                                           const mdspan<const gScalar, 1> c) const {
         using namespace gpu;
 
-        my_visitor1 v(p, T, c, li);
+        my_visitor1 v(p, T, c);
 
         //auto v = [=] CUDA_HOSTDEV (const auto& i){return i.operator()(p, T, c, li);}; 
 
@@ -145,19 +139,17 @@ struct gpuReactionRate {
     inline CUDA_HOSTDEV void ddc(const gScalar                  p,
                                  const gScalar                  T,
                                  const mdspan<const gScalar, 1> c,
-                                 const gLabel                   li,
                                  mdspan<gScalar, 1>             dkfdc) const {
-        my_visitor3 v(p, T, c, li, dkfdc);
+        my_visitor3 v(p, T, c, dkfdc);
         variant::apply_visitor(v, rate_);
         // std::visit(v, rate_);
     }
 
     inline CUDA_HOSTDEV gScalar ddT(const gScalar                  p,
                                     const gScalar                  T,
-                                    const mdspan<const gScalar, 1> c,
-                                    const gLabel                   li) const {
+                                    const mdspan<const gScalar, 1> c) const {
 
-        my_visitor4 v(p, T, c, li);
+        my_visitor4 v(p, T, c);
         return variant::apply_visitor(v, rate_);
         // return std::visit(v, rate_);
         // return

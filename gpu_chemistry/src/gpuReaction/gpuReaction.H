@@ -66,7 +66,6 @@ private:
 
     gScalar RSMALL{sqrt(gpuSmall)};
 
-
 public:
     gpuReaction() = default;
 
@@ -175,60 +174,50 @@ public:
     /// @param p Pressure.
     /// @param T Temperature.
     /// @param c A span of concentrations in a cell
-    /// @param li Arbitrary integer TODO: remove.
     /// @return The forward reaction rate constant of this reaction.
     inline CUDA_HOSTDEV gScalar kf(const gScalar                  p,
                                    const gScalar                  T,
-                                   const mdspan<const gScalar, 1> c,
-                                   const gLabel                   li) const;
+                                   const mdspan<const gScalar, 1> c) const;
 
     /// @brief Computes the reverse reaction rate constant of this reaction.
     /// @param kfwd Forward reaction rate contant.
     /// @param p Pressure.
     /// @param T Temperature.
     /// @param c A span of concentrations in a cell
-    /// @param li Arbitrary integer TODO: remove.
     /// @return The reverse reaction rate constant of this reaction.
     inline CUDA_HOSTDEV gScalar kr(const gScalar                  kfwd,
                                    const gScalar                  p,
                                    const gScalar                  T,
-                                   const mdspan<const gScalar, 1> c,
-                                   const gLabel                   li) const;
+                                   const mdspan<const gScalar, 1> c) const;
 
     /// @brief Computes the reverse reaction rate constant of this reaction.
     /// @param p Pressure.
     /// @param T Temperature.
     /// @param c A span of concentrations in a cell
-    /// @param li Arbitrary integer TODO: remove.
     /// @return The reverse reaction rate constant of this reaction.
     inline CUDA_HOSTDEV gScalar kr(const gScalar                  p,
                                    const gScalar                  T,
-                                   const mdspan<const gScalar, 1> c,
-                                   const gLabel                   li) const;
+                                   const mdspan<const gScalar, 1> c) const;
 
     /// @brief Computes the temperature derivative of the forward rate.
     /// @param p Pressure.
     /// @param T Temperature.
     /// @param c A span of concentrations in a cell
-    /// @param li Arbitrary integer TODO: remove.
     /// @return The temperature derivative of the forward rate.
     inline CUDA_HOSTDEV gScalar dkfdT(const gScalar                  p,
                                       const gScalar                  T,
-                                      const mdspan<const gScalar, 1> c,
-                                      const gLabel                   li) const;
+                                      const mdspan<const gScalar, 1> c) const;
 
     /// @brief Computes the temperature derivative of the reverse rate.
     /// @param p Pressure.
     /// @param T Temperature.
     /// @param c A span of concentrations in a cell
-    /// @param li Arbitrary integer TODO: remove.
     /// @param dkfdT Temperature derivative of the forward rate.
     /// @param kr The reverse rate constant.
     /// @return The temperature derivative of the reverse rate.
     inline CUDA_HOSTDEV gScalar dkrdT(const gScalar                  p,
                                       const gScalar                  T,
                                       const mdspan<const gScalar, 1> c,
-                                      const gLabel                   li,
                                       const gScalar                  dkfdT,
                                       const gScalar                  kr) const;
 
@@ -236,26 +225,22 @@ public:
     /// @param p Pressure
     /// @param T Temperature
     /// @param c A span of concentrations in a cell
-    /// @param li Arbitrary integer TODO: remove.
     /// @param dkfdc A span of concentation derivatives to be modified.
     inline CUDA_HOSTDEV void dkfdc(const gScalar                  p,
                                    const gScalar                  T,
                                    const mdspan<const gScalar, 1> c,
-                                   const gLabel                   li,
                                    mdspan<gScalar, 1>             dkfdc) const;
 
     /// @brief Computes the concentration derivative of the reverse rate.
     /// @param p Pressure
     /// @param T Temperature
     /// @param c A span of concentrations in a cell
-    /// @param li Arbitrary integer TODO: remove.
     /// @param dkfdc Concentration derivatives of the forward rate.
     /// @param kr The reverse rate constant.
     /// @param dkrdc A span of concentation derivatives to be modified.
     inline CUDA_HOSTDEV void dkrdc(const gScalar                  p,
                                    const gScalar                  T,
                                    const mdspan<const gScalar, 1> c,
-                                   const gLabel                   li,
                                    const mdspan<const gScalar, 1> dkfdc,
                                    const gScalar                  kr,
                                    mdspan<gScalar, 1>             dkrdc) const;
@@ -266,7 +251,6 @@ public:
     /// @param p Pressure
     /// @param T Temperature
     /// @param c A span of concentrations in a cell.
-    /// @param li Arbitrary integer TODO: remove.
     /// @param dNdtByV A one dimensional span where the derivative contributions
     /// are assigned.
     /// @param ddNdtByVdcTp A two dimensional span where the jacobian
@@ -282,7 +266,6 @@ public:
     inline CUDA_HOSTDEV void ddNdtByVdcTp(const gScalar                  p,
                                           const gScalar                  T,
                                           const mdspan<const gScalar, 1> c,
-                                          const gLabel                   li,
                                           mdspan<gScalar, 1> dNdtByV,
                                           mdspan<gScalar, 2> ddNdtByVdcTp,
                                           const gLabel       Nsi0,
@@ -355,8 +338,8 @@ private:
     /// @return The derivative of the product of concentration powers w.r.t to
     /// all concentrations on the LHS.
     inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-    calcdCfdcj(const std::array<gScalar, MAX_REACTION_WIDTH> lhsPow,
-               const mdspan<const gScalar, 1>                c) const;
+                        calcdCfdcj(const std::array<gScalar, MAX_REACTION_WIDTH> lhsPow,
+                                   const mdspan<const gScalar, 1>                c) const;
 
     /// @brief Given precomputed RHS powers, computes the derivatives of the
     /// product of the powers w.r.t all concentrations on the RHS. This
@@ -366,8 +349,8 @@ private:
     /// @return The derivative of the product of concentration powers w.r.t to
     /// all concentrations on the RHS.
     inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-    calcdCrdcj(const std::array<gScalar, MAX_REACTION_WIDTH> rhsPow,
-               const mdspan<const gScalar, 1>                c) const;
+                        calcdCrdcj(const std::array<gScalar, MAX_REACTION_WIDTH> rhsPow,
+                                   const mdspan<const gScalar, 1>                c) const;
 
     /// @brief Given precomputed product of the LHS powers, computes the
     /// derivatives of the product w.r.t all concentrations on the LHS. This
@@ -377,7 +360,7 @@ private:
     /// @param c A span of concentrations in a cell.
     /// @return The derivative of Cf w.r.t all concentrations on the LHS.
     inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-    calcdCfdcjLargeC(const gScalar Cf, const mdspan<const gScalar, 1> c) const;
+                        calcdCfdcjLargeC(const gScalar Cf, const mdspan<const gScalar, 1> c) const;
 
     /// @brief Given precomputed product of the RHS powers, computes the
     /// derivatives of the product w.r.t all concentrations on the RHS. This
@@ -387,7 +370,7 @@ private:
     /// @param c A span of concentrations in a cell.
     /// @return The derivative of Cr w.r.t all concentrations on the RHS.
     inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-    calcdCrdcjLargeC(const gScalar Cr, const mdspan<const gScalar, 1> c) const;
+                        calcdCrdcjLargeC(const gScalar Cr, const mdspan<const gScalar, 1> c) const;
 
     /// @brief Computes and assigns the jacobian contributions from the
     /// derivative of the LHS concentration products.
@@ -483,7 +466,7 @@ gpuReaction::rhsSmallConcentration(const mdspan<const gScalar, 1> c) const {
 }
 
 inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-gpuReaction::lhsPowers(const mdspan<const gScalar, 1> c) const {
+                    gpuReaction::lhsPowers(const mdspan<const gScalar, 1> c) const {
 
     const auto                              llhs = lhs();
     std::array<gScalar, MAX_REACTION_WIDTH> ret{};
@@ -498,7 +481,7 @@ gpuReaction::lhsPowers(const mdspan<const gScalar, 1> c) const {
 }
 
 inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-gpuReaction::rhsPowers(const mdspan<const gScalar, 1> c) const {
+                    gpuReaction::rhsPowers(const mdspan<const gScalar, 1> c) const {
 
     const auto                              rrhs = rhs();
     std::array<gScalar, MAX_REACTION_WIDTH> ret{};
@@ -527,7 +510,7 @@ inline CUDA_HOSTDEV gScalar gpuReaction::calcCr(
 }
 
 inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-gpuReaction::calcdCfdcj(const std::array<gScalar, MAX_REACTION_WIDTH> lhsPow,
+                    gpuReaction::calcdCfdcj(const std::array<gScalar, MAX_REACTION_WIDTH> lhsPow,
                         const mdspan<const gScalar, 1>                c) const {
 
     std::array<gScalar, MAX_REACTION_WIDTH> ret{};
@@ -552,7 +535,7 @@ gpuReaction::calcdCfdcj(const std::array<gScalar, MAX_REACTION_WIDTH> lhsPow,
 }
 
 inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-gpuReaction::calcdCrdcj(const std::array<gScalar, MAX_REACTION_WIDTH> rhsPow,
+                    gpuReaction::calcdCrdcj(const std::array<gScalar, MAX_REACTION_WIDTH> rhsPow,
                         const mdspan<const gScalar, 1>                c) const {
     std::array<gScalar, MAX_REACTION_WIDTH> ret{};
 
@@ -616,9 +599,8 @@ inline CUDA_HOSTDEV gScalar gpuReaction::omega(
     const gScalar clippedT = min(max(T, this->Tlow()), this->Thigh());
 
     // Rate constants
-    const gLabel  li = 0;
-    const gScalar kf = this->kf(p, clippedT, c, li);
-    const gScalar kr = this->kr(kf, p, clippedT, c, li);
+    const gScalar kf = this->kf(p, clippedT, c);
+    const gScalar kr = this->kr(kf, p, clippedT, c);
 
     const gScalar Cf = calcCf(lhsPowers(c));
     const gScalar Cr = calcCr(rhsPowers(c));
@@ -657,51 +639,41 @@ gpuReaction::dNdtByV(const gScalar                  p,
 
 inline CUDA_HOSTDEV gScalar gpuReaction::kf(const gScalar                  p,
                                             const gScalar                  T,
-                                            const mdspan<const gScalar, 1> c,
-                                            const gLabel li) const {
+                                            const mdspan<const gScalar, 1> c) const {
     // return 43.0;
-    (void)li;
-    return k_(p, T, c, li);
+    return k_(p, T, c);
 }
 
 inline CUDA_HOSTDEV gScalar gpuReaction::kr(const gScalar                  kfwd,
                                             const gScalar                  p,
                                             const gScalar                  T,
-                                            const mdspan<const gScalar, 1> c,
-                                            const gLabel li) const {
+                                            const mdspan<const gScalar, 1> c) const {
 
-    (void)li;
     if (isIrreversible()) { return 0.0; }
     return kfwd / max(this->Kc(p, T), RSMALL);
 }
 
 inline CUDA_HOSTDEV gScalar gpuReaction::kr(const gScalar                  p,
                                             const gScalar                  T,
-                                            const mdspan<const gScalar, 1> c,
-                                            const gLabel li) const {
-    (void)li;
+                                            const mdspan<const gScalar, 1> c) const {
     if (isIrreversible()) { return 0.0; }
-    return kr(kf(p, T, c, li), p, T, c, li);
+    return kr(kf(p, T, c), p, T, c);
 }
 
 inline CUDA_HOSTDEV gScalar gpuReaction::dkfdT(const gScalar                  p,
                                                const gScalar                  T,
-                                               const mdspan<const gScalar, 1> c,
-                                               const gLabel li) const {
-    (void)li;
-    return k_.ddT(p, T, c, li);
+                                               const mdspan<const gScalar, 1> c) const {
+    return k_.ddT(p, T, c);
 }
 
 inline CUDA_HOSTDEV gScalar gpuReaction::dkrdT(const gScalar                  p,
                                                const gScalar                  T,
                                                const mdspan<const gScalar, 1> c,
-                                               const gLabel  li,
                                                const gScalar dkfdT,
                                                const gScalar kr) const {
 
-    (void)li;
     if (isIrreversible()) { return 0.0; }
-    const gScalar Kc     = max(this->Kc(p, T), RSMALL);
+    const gScalar Kc = max(this->Kc(p, T), RSMALL);
 
     return dkfdT / Kc - (Kc > RSMALL ? kr * this->dKcdTbyKc(p, T) : 0.0);
 }
@@ -709,27 +681,23 @@ inline CUDA_HOSTDEV gScalar gpuReaction::dkrdT(const gScalar                  p,
 inline CUDA_HOSTDEV void gpuReaction::dkfdc(const gScalar                  p,
                                             const gScalar                  T,
                                             const mdspan<const gScalar, 1> c,
-                                            const gLabel                   li,
                                             mdspan<gScalar, 1> dkfdc) const {
-    (void)li;
-    k_.ddc(p, T, c, li, dkfdc);
+    k_.ddc(p, T, c, dkfdc);
 }
 
 inline CUDA_HOSTDEV void
 gpuReaction::dkrdc(const gScalar                  p,
                    const gScalar                  T,
                    const mdspan<const gScalar, 1> c,
-                   const gLabel                   li,
                    const mdspan<const gScalar, 1> dkfdc,
                    const gScalar                  kr,
                    mdspan<gScalar, 1>             dkrdc) const {
 
-    (void)li;
     if (isIrreversible()) {
 
         for (gLabel i = 0; i < gLabel(dkrdc.size()); ++i) { dkrdc[i] = 0.0; }
     } else {
-        const gScalar Kc     = max(this->Kc(p, T), RSMALL);
+        const gScalar Kc = max(this->Kc(p, T), RSMALL);
 
         for (gLabel i = 0; i < gLabel(dkrdc.size()); ++i) {
             dkrdc[i] = dkfdc[i] / Kc;
@@ -815,8 +783,8 @@ gpuReaction::jac_dCdT_contribution(const gScalar                  p,
                                    const mdspan<const gScalar, 1> c,
                                    mdspan<gScalar, 2> ddNdtByVdcTp) const {
 
-    const gScalar dkfdT = this->dkfdT(p, T, c, 0);
-    const gScalar dkrdT = this->dkrdT(p, T, c, 0, dkfdT, kr);
+    const gScalar dkfdT = this->dkfdT(p, T, c);
+    const gScalar dkrdT = this->dkrdT(p, T, c, dkfdT, kr);
 
     const gScalar dwdT = dkfdT * Cf - dkrdT * Cr;
 
@@ -848,8 +816,8 @@ gpuReaction::jac_dCdC_contribution(const gScalar                  p,
         auto& dkfdc = cTpWork0;
         auto& dkrdc = cTpWork1;
 
-        this->dkfdc(p, T, c, 0, dkfdc);
-        this->dkrdc(p, T, c, 0, dkfdc, kr, dkrdc);
+        this->dkfdc(p, T, c, dkfdc);
+        this->dkrdc(p, T, c, dkfdc, kr, dkrdc);
 
         // Do the compute here once and reuse the first work array
         for (gLabel j = 0; j < gLabel(c.size()); ++j) {
@@ -882,7 +850,6 @@ inline CUDA_HOSTDEV void
 gpuReaction::ddNdtByVdcTp(const gScalar                  p,
                           const gScalar                  T,
                           const mdspan<const gScalar, 1> c,
-                          const gLabel                   li,
                           mdspan<gScalar, 1>             dNdtByV,
                           mdspan<gScalar, 2>             ddNdtByVdcTp,
                           const gLabel                   Nsi0,
@@ -890,7 +857,6 @@ gpuReaction::ddNdtByVdcTp(const gScalar                  p,
                           mdspan<gScalar, 1>             cTpWork0,
                           mdspan<gScalar, 1>             cTpWork1) const {
 
-    (void)li;
 
     const auto lhsPow = lhsPowers(c);
     const auto rhsPow = rhsPowers(c);
@@ -899,8 +865,8 @@ gpuReaction::ddNdtByVdcTp(const gScalar                  p,
     const gScalar Cr = calcCr(rhsPow);
 
     // Rate constants
-    const gScalar kf = this->kf(p, T, c, li);
-    const gScalar kr = this->kr(kf, p, T, c, li);
+    const gScalar kf = this->kf(p, T, c);
+    const gScalar kr = this->kr(kf, p, T, c);
 
     // Overall reaction rate
     const gScalar omega = kf * Cf - kr * Cr;
