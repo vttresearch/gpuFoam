@@ -63,7 +63,7 @@ jobs:
 
     #gpuFoam compilation
     - name: Compile gpuFoam
-      run: source /opt/openfoam-dev/etc/bashrc && ./Allwmake
+      run: ls /opt/ && source /opt/openfoam-dev/etc/bashrc && ./Allwmake
 
 
     #unittests
