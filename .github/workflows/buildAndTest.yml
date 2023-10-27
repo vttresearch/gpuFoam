@@ -9,7 +9,9 @@ on:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
-
+  CC: /usr/bin/gcc
+  CXX: /usr/bin/g++
+  CUDA_ROOT: /usr/local/cuda
 
 jobs:
   build:
@@ -66,7 +68,7 @@ jobs:
 
     #gpuFoam compilation
     - name: Compile gpuFoam
-      run: ls /opt/ && source /opt/openfoam-dev/etc/bashrc && ./Allwmake
+      run: ln -s /usr/bin/gcc $CUDA_ROOT/bin/gcc && ln -s /usr/bin/g++ $CUDA_ROOT/bin/g++ && source /opt/openfoam-dev/etc/bashrc && ./Allwmake
 
 
     #unittests
