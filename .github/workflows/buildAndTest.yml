@@ -54,12 +54,17 @@ jobs:
         sudo apt-get -y install openfoam-dev
 
     #gpuFoam compilation
+    #- name: Compile gpuFoam
+    #  run: |
+    #    source /opt/openfoam-dev/etc/bashrc
+    #    cd ${{github.workspace}}
+    #    simpleFoam --version
+    #    ./Allwmake -j
+
+    #gpuFoam compilation
     - name: Compile gpuFoam
-      run: |
-        source /opt/openfoam-dev/etc/bashrc
-        cd ${{github.workspace}}
-        simpleFoam --version
-        ./Allwmake -j
+      run: source /opt/openfoam-dev/etc/bashrc && ./Allwmake
+
 
     #unittests
     - name: Run gpuChemistry unittests
