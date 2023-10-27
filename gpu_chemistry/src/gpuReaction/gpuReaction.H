@@ -445,6 +445,18 @@ public:
 
 
     inline CUDA_HOSTDEV bool active(const mdspan<const gScalar, 1> c) const {
+
+        bool lhs_small = lhsSmallConcentration(c);
+        bool rhs_small = rhsSmallConcentration(c);
+
+        if (isIrreversible() && lhs_small){
+            return false;
+        }
+
+        if (rhs_small || rhs_small){
+            return false;
+        }
+
         //return (!lhsSmallConcentration(c) || !rhsSmallConcentration(c));
         return true;
     }
