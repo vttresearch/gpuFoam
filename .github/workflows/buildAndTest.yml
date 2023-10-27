@@ -45,7 +45,7 @@ jobs:
 
     #Test GCC
     - name: Test gcc
-      run: g++ --version
+      run: g++ --version && whereis g++
 
     #OpenFOAM-dev (Foundation set-up)
     - name: Set up OpenFOAM-dev
