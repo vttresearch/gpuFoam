@@ -40,12 +40,22 @@ jobs:
     #  run: sudo apt-get install libopenmpi-dev
 
 
+    - name: LS_USER
+      run:
+        ls /usr
 
+    - name: LS_LIB
+      run:
+        ls /usr/lib/
+
+    - name: LS_LIB_CUDA
+      run:
+        ls /usr/lib/cuda
 
     #Test NVCC
-    - name: Test nvcc
-      run:
-        nvcc --version && ls /usr/lib && /usr/lib/cuda
+    #- name: Test nvcc
+    #  run:
+    #    nvcc --version && ls /usr/lib && /usr/lib/cuda
         #nvcc --version && whereis nvcc && find / -type d -name cuda 2>/dev/null
 
     #Test GCC
