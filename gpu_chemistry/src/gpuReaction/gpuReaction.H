@@ -730,18 +730,19 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCfdcj_contribution(
     const auto rrhs = rhs();
 
     for (size_t j = 0; j < llhs.size(); ++j) {
-        const gScalar dCfdcj = dCfdjs[j];
 
+        const gScalar dCfdcj_kf = dCfdjs[j] * kf;
         const gLabel sj = llhs[j].index;
+
         for (size_t i = 0; i < llhs.size(); ++i) {
             const gLabel  si = llhs[i].index;
             const gScalar sl = llhs[i].stoichCoeff;
-            ddNdtByVdcTp(si, sj) -= sl * kf * dCfdcj;
+            ddNdtByVdcTp(si, sj) -= sl * dCfdcj_kf;
         }
         for (size_t i = 0; i < rrhs.size(); ++i) {
             const gLabel  si = rrhs[i].index;
             const gScalar sr = rrhs[i].stoichCoeff;
-            ddNdtByVdcTp(si, sj) += sr * kf * dCfdcj;
+            ddNdtByVdcTp(si, sj) += sr * dCfdcj_kf;
         }
     }
 }
@@ -764,18 +765,19 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCrdcj_contribution(
     const auto rrhs = rhs();
 
     for (size_t j = 0; j < rrhs.size(); ++j) {
-        const gScalar dCrcj = dCrdjs[j];
 
+        const gScalar dCrcj_kr = dCrdjs[j] * kr;
         const gLabel sj = rrhs[j].index;
+
         for (size_t i = 0; i < llhs.size(); ++i) {
             const gLabel  si = llhs[i].index;
             const gScalar sl = llhs[i].stoichCoeff;
-            ddNdtByVdcTp(si, sj) += sl * kr * dCrcj;
+            ddNdtByVdcTp(si, sj) += sl * dCrcj_kr;
         }
         for (size_t i = 0; i < rrhs.size(); ++i) {
             const gLabel  si = rrhs[i].index;
             const gScalar sr = rrhs[i].stoichCoeff;
-            ddNdtByVdcTp(si, sj) -= sr * kr * dCrcj;
+            ddNdtByVdcTp(si, sj) -= sr * dCrcj_kr;
         }
     }
 }
