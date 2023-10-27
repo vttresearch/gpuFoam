@@ -45,7 +45,7 @@ jobs:
     #Test NVCC
     - name: Test nvcc
       run:
-        nvcc --version && whereis nvcc && locate cuda | grep /cuda$
+        nvcc --version && whereis nvcc && find / -type d -name cuda 2>/dev/null
 
     #Test GCC
     - name: Test gcc
