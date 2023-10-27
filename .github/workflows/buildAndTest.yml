@@ -68,7 +68,8 @@ jobs:
 
     #gpuFoam compilation
     - name: Compile gpuFoam
-      run: ln -s /usr/bin/gcc $CUDA_ROOT/bin/gcc && ln -s /usr/bin/g++ $CUDA_ROOT/bin/g++ && source /opt/openfoam-dev/etc/bashrc && ./Allwmake
+      #run: ln -s /usr/bin/gcc $CUDA_ROOT/bin/gcc && ln -s /usr/bin/g++ $CUDA_ROOT/bin/g++ && source /opt/openfoam-dev/etc/bashrc && ./Allwmake
+      run: source /opt/openfoam-dev/etc/bashrc && ./Allwmake
 
 
     #unittests
