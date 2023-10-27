@@ -43,6 +43,9 @@ jobs:
       run: |
         nvcc --version
 
+    #Test GCC
+    - name: Test gcc
+      run: g++ --version
 
     #OpenFOAM-dev (Foundation set-up)
     - name: Set up OpenFOAM-dev
