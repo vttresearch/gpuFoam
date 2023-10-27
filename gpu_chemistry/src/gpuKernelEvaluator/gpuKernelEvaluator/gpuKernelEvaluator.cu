@@ -69,7 +69,6 @@ __global__ void cuda_kernel(gLabel nCells, singleCellSolver op) {
 }
 
 
-
 std::pair<std::vector<gScalar>, std::vector<gScalar>>
 GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
                                 gScalar                     deltaTChemMax,
