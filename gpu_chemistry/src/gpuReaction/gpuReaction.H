@@ -453,12 +453,7 @@ public:
             return false;
         }
 
-        if (rhs_small || rhs_small){
-            return false;
-        }
-
-        //return (!lhsSmallConcentration(c) || !rhsSmallConcentration(c));
-        return true;
+        return (!lhs_small || !rhs_small);
     }
 };
 
