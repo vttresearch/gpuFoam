@@ -23,6 +23,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - uses: Jimver/cuda-toolkit@v0.2.11
+      id: cuda-toolkit
+      with:
+        cuda: '12.1.0'
+
+    - run: echo "Installed cuda version is: ${{steps.cuda-toolkit.outputs.cuda}}"
+    - run: echo "Cuda install location: ${{steps.cuda-toolkit.outputs.CUDA_PATH}}"
+    - run: nvcc -V
+
+
 
 
     #GCC Set-up
@@ -32,25 +42,12 @@ jobs:
     #    version: 10
     #    platform: x64
 
-    - name: Set up NVCC
-      run: sudo apt-get install nvidia-cuda-toolkit
+    #- name: Set up NVCC
+    #  run: sudo apt-get install nvidia-cuda-toolkit
 
     #Mpi set-up
     #- name: Set up MPI
     #  run: sudo apt-get install libopenmpi-dev
-
-
-    #- name: LS_USER
-    #  run:
-    #    ls /usr
-
-    #- name: LS_LIB
-    #  run:
-    #    ls /usr/lib/
-
-    #- name: LS_LIB_CUDA
-    #  run:
-    #    ls /usr/lib/cuda
 
     #Test NVCC
     #- name: Test nvcc
@@ -63,18 +60,17 @@ jobs:
       run: g++ --version && whereis g++
 
     #OpenFOAM-dev (Foundation set-up)
-    - name: Set up OpenFOAM-dev
-      run: |
-        sudo sh -c "wget -O - https://dl.openfoam.org/gpg.key > /etc/apt/trusted.gpg.d/openfoam.asc"
-        sudo add-apt-repository http://dl.openfoam.org/ubuntu
-        sudo add-apt-repository "http://dl.openfoam.org/ubuntu dev"
-        sudo apt-get update
-        sudo apt-get -y install openfoam-dev
+    #- name: Set up OpenFOAM-dev
+    #  run: |
+    #    sudo sh -c "wget -O - https://dl.openfoam.org/gpg.key > /etc/apt/trusted.gpg.d/openfoam.asc"
+    #    sudo add-apt-repository http://dl.openfoam.org/ubuntu
+    #    sudo add-apt-repository "http://dl.openfoam.org/ubuntu dev"
+    #    sudo apt-get update
+    #    sudo apt-get -y install openfoam-dev
 
 
     #gpuFoam compilation
-    - name: Compile gpuFoam
-      run: ln -s /usr/bin/gcc $CUDA_ROOT/bin/gcc && ln -s /usr/bin/g++ $CUDA_ROOT/bin/g++ && source /opt/openfoam-dev/etc/bashrc && ./Allwmake
+    #- name: Compile gpuFoam
       #run: source /opt/openfoam-dev/etc/bashrc && ./Allwmake
 
 
