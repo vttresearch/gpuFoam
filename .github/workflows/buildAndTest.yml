@@ -42,8 +42,8 @@ jobs:
 
     #Test NVCC
     - name: Test nvcc
-      run: |
-        nvcc --version
+      run:
+        nvcc --version && whereis nvcc
 
     #Test GCC
     - name: Test gcc
