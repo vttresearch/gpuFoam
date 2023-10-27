@@ -2,7 +2,8 @@
 
 #include "cuda_host_dev.H"
 #include "gpu_constants.H"
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+#include <cmath>
+
 
 namespace FoamGpu {
 

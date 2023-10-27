@@ -49,6 +49,7 @@ FoamGpu::GpuKernelEvaluator make_evaluator
 
     auto inputs = read_gpuODESolverInputs(odeDict);
 
+
     return GpuKernelEvaluator
     (
         nCells,
@@ -86,7 +87,7 @@ void runBenchmarks(TestData::Mechanism mech)
 {
     const gScalar deltaT = BenchmarkParams::deltaT;
     const gScalar deltaTChemMax = BenchmarkParams::deltaTChemMax;
-    const gLabel nCells = BenchmarkParams::nCells;
+    const gLabel nCells = 1E4;
 
     const auto rho = make_random_rhos(nCells);
     const auto deltaTChem = make_random_deltaTChem(nCells);

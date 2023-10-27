@@ -59,6 +59,16 @@ GpuKernelEvaluator::GpuKernelEvaluator(
 }
 
 
+__global__ void cuda_kernel(gLabel nCells, singleCellSolver op) {
+
+    int celli = blockIdx.x * blockDim.x + threadIdx.x;
+    if (celli < nCells)
+    {
+        op(celli);
+    }
+}
+
+
 
 std::pair<std::vector<gScalar>, std::vector<gScalar>>
 GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
@@ -81,11 +91,19 @@ GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
 
     singleCellSolver op(deltaT, nSpecie_, ddeltaTChem, dYvf, buffer_span, solver_);
 
+
+    gLabel NTHREADS = 32;
+    gLabel NBLOCKS  = (nCells + NTHREADS - 1) / NTHREADS;
+    cuda_kernel<<<NBLOCKS, NTHREADS>>>(nCells, op);
+
+    CHECK_LAST_CUDA_ERROR();
+    CHECK_CUDA_ERROR(cudaDeviceSynchronize());
+    /*
     thrust::for_each(thrust::device,
                      thrust::make_counting_iterator(0),
                      thrust::make_counting_iterator(nCells),
                      op);
-
+    */
     return std::make_pair(toStdVector(dYvf_arr), toStdVector(ddeltaTChem_arr));
 }
 
