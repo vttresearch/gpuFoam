@@ -31,10 +31,7 @@ jobs:
         platform: x64
 
     - name: Set up NVCC
-      uses: Jimver/cuda-toolkit@v0.2.11
-      id: cuda-toolkit
-      with:
-        cuda: '12.1.0'
+      run: sudo apt-get install nvidia-cuda-toolkit
 
     #Mpi set-up
     - name: Set up MPI
@@ -44,8 +41,6 @@ jobs:
     #Test NVCC
     - name: Test nvcc
       run: |
-        echo "Installed cuda version is: ${{steps.cuda-toolkit.outputs.cuda}}"
-        echo "Cuda install location: ${{steps.cuda-toolkit.outputs.CUDA_PATH}}"
         nvcc --version
 
 
