@@ -8,10 +8,10 @@ on:
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Release
-  CC: /usr/bin/gcc
-  CXX: /usr/bin/g++
-  CUDA_ROOT: /usr/lib/cuda
+  #BUILD_TYPE: Release
+  #CC: /usr/bin/gcc
+  #CXX: /usr/bin/g++
+  #CUDA_ROOT: /usr/lib/cuda
 
 jobs:
   build:
@@ -59,18 +59,18 @@ jobs:
       run: g++ --version && whereis g++
 
     #OpenFOAM-dev (Foundation set-up)
-    #- name: Set up OpenFOAM-dev
-    #  run: |
-    #    sudo sh -c "wget -O - https://dl.openfoam.org/gpg.key > /etc/apt/trusted.gpg.d/openfoam.asc"
-    #    sudo add-apt-repository http://dl.openfoam.org/ubuntu
-    #    sudo add-apt-repository "http://dl.openfoam.org/ubuntu dev"
-    #    sudo apt-get update
-    #    sudo apt-get -y install openfoam-dev
+    - name: Set up OpenFOAM-dev
+      run: |
+        sudo sh -c "wget -O - https://dl.openfoam.org/gpg.key > /etc/apt/trusted.gpg.d/openfoam.asc"
+        sudo add-apt-repository http://dl.openfoam.org/ubuntu
+        sudo add-apt-repository "http://dl.openfoam.org/ubuntu dev"
+        sudo apt-get update
+        sudo apt-get -y install openfoam-dev
 
 
     #gpuFoam compilation
-    #- name: Compile gpuFoam
-      #run: source /opt/openfoam-dev/etc/bashrc && ./Allwmake
+    - name: Compile gpuFoam
+      run: source /opt/openfoam-dev/etc/bashrc && ./Allwmake
 
 
     #unittests
