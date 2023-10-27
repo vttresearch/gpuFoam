@@ -79,6 +79,7 @@ GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
 
     memory_.resize(nCells, nSpecie_);
 
+
     // Convert fields from host to device
     auto ddeltaTChem_arr = toDeviceVector(deltaTChem);
     auto dYvf_arr        = toDeviceVector(Y);
