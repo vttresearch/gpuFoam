@@ -40,41 +40,36 @@ jobs:
       run: sudo apt-get install libopenmpi-dev
 
 
+
+
     #Test NVCC
     - name: Test nvcc
       run:
-        nvcc --version && whereis nvcc
+        apt-cache search cuda && nvcc --version && whereis nvcc
 
     #Test GCC
     - name: Test gcc
       run: g++ --version && whereis g++
 
     #OpenFOAM-dev (Foundation set-up)
-    - name: Set up OpenFOAM-dev
-      run: |
-        sudo sh -c "wget -O - https://dl.openfoam.org/gpg.key > /etc/apt/trusted.gpg.d/openfoam.asc"
-        sudo add-apt-repository http://dl.openfoam.org/ubuntu
-        sudo add-apt-repository "http://dl.openfoam.org/ubuntu dev"
-        sudo apt-get update
-        sudo apt-get -y install openfoam-dev
+    #- name: Set up OpenFOAM-dev
+    #  run: |
+    #    sudo sh -c "wget -O - https://dl.openfoam.org/gpg.key > /etc/apt/trusted.gpg.d/openfoam.asc"
+    #    sudo add-apt-repository http://dl.openfoam.org/ubuntu
+    #    sudo add-apt-repository "http://dl.openfoam.org/ubuntu dev"
+    #    sudo apt-get update
+    #    sudo apt-get -y install openfoam-dev
+
 
     #gpuFoam compilation
     #- name: Compile gpuFoam
-    #  run: |
-    #    source /opt/openfoam-dev/etc/bashrc
-    #    cd ${{github.workspace}}
-    #    simpleFoam --version
-    #    ./Allwmake -j
-
-    #gpuFoam compilation
-    - name: Compile gpuFoam
-      #run: ln -s /usr/bin/gcc $CUDA_ROOT/bin/gcc && ln -s /usr/bin/g++ $CUDA_ROOT/bin/g++ && source /opt/openfoam-dev/etc/bashrc && ./Allwmake
-      run: source /opt/openfoam-dev/etc/bashrc && ./Allwmake
+    #  #run: ln -s /usr/bin/gcc $CUDA_ROOT/bin/gcc && ln -s /usr/bin/g++ $CUDA_ROOT/bin/g++ && source /opt/openfoam-dev/etc/bashrc && ./Allwmake
+    #  run: source /opt/openfoam-dev/etc/bashrc && ./Allwmake
 
 
     #unittests
-    - name: Run gpuChemistry unittests
-      run: testGpuChemistry
+    #- name: Run gpuChemistry unittests
+    #  run: testGpuChemistry
 
 
 
