@@ -11,7 +11,7 @@ env:
   BUILD_TYPE: Release
   CC: /usr/bin/gcc
   CXX: /usr/bin/g++
-  CUDA_ROOT: /usr/local/cuda
+  CUDA_ROOT: /usr/
 
 jobs:
   build:
@@ -26,18 +26,18 @@ jobs:
 
 
     #GCC Set-up
-    - name: Set up GCC
-      uses: egor-tensin/setup-gcc@v1
-      with:
-        version: 10
-        platform: x64
+    #- name: Set up GCC
+    #  uses: egor-tensin/setup-gcc@v1
+    #  with:
+    #    version: 10
+    #    platform: x64
 
     - name: Set up NVCC
       run: sudo apt-get install nvidia-cuda-toolkit
 
     #Mpi set-up
-    - name: Set up MPI
-      run: sudo apt-get install libopenmpi-dev
+    #- name: Set up MPI
+    #  run: sudo apt-get install libopenmpi-dev
 
 
 
@@ -45,7 +45,8 @@ jobs:
     #Test NVCC
     - name: Test nvcc
       run:
-        nvcc --version && whereis nvcc && find / -type d -name cuda 2>/dev/null
+        nvcc --version && ls /usr/lib && /usr/lib/cuda
+        #nvcc --version && whereis nvcc && find / -type d -name cuda 2>/dev/null
 
     #Test GCC
     - name: Test gcc
