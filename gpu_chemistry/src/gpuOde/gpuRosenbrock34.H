@@ -86,7 +86,7 @@ public:
         auto lubuffer     = buffer.lubuffer();
         auto a            = buffer.J();
 
-        this->system().jacobian(x0, y0, dfdx, a, buffer);
+        this->system().jacobian(y0, dfdx, a, buffer);
 
         const gScalar temp = gScalar(1.0) / (gamma * dx);
         // Negate the jacobian and add 1/(gamma*dx) to diagonal
@@ -110,7 +110,7 @@ public:
             y[i] = y0[i] + a21 * k1[i];
         }
 
-        this->system().derivatives(x0 + c2 * dx, y, dydx, buffer);
+        this->system().derivatives(y, dydx, buffer);
 
         for (gLabel i = 0; i < this->nEqns(); ++i) {
             k2[i] = dydx[i] + dx * d2 * dfdx[i] + c21 * k1[i] / dx;
@@ -123,7 +123,7 @@ public:
             y[i] = y0[i] + a31 * k1[i] + a32 * k2[i];
         }
 
-        this->system().derivatives(x0 + c3 * dx, y, dydx, buffer);
+        this->system().derivatives(y, dydx, buffer);
 
         for (gLabel i = 0; i < this->nEqns(); ++i) {
             k3[i] =

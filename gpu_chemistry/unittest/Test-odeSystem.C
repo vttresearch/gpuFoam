@@ -64,7 +64,7 @@ static inline void runMechanismTests(TestData::Mechanism mech)
         ]
         ()
         {
-            gpu.derivatives(0.0, y, dy, buffers[0]);
+            gpu.derivatives(y, dy, buffers[0]);
             return 0;
         };
 
@@ -111,7 +111,7 @@ static inline void runMechanismTests(TestData::Mechanism mech)
         ]
         ()
         {
-            gpu.jacobian(time, y, dy, J, buffers[0]);
+            gpu.jacobian(y, dy, J, buffers[0]);
             return 0;
         };
 

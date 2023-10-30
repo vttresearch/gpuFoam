@@ -71,11 +71,11 @@ public:
         auto k1           = buffer.k1();
         auto k2           = buffer.k2();
         auto k3           = buffer.k3();
-        auto err          = buffer.err();
+        //auto err          = buffer.err();
         auto lubuffer     = buffer.lubuffer();
         auto a            = buffer.J();
 
-        this->system().jacobian(x0, y0, dfdx, a, buffer);
+        this->system().jacobian(y0, dfdx, a, buffer);
 
         const gScalar temp = gScalar(1.0) / (gamma * dx);
         // Negate the jacobian and add 1/(gamma*dx) to diagonal
@@ -99,7 +99,7 @@ public:
             y[i] = y0[i] + a21 * k1[i];
         }
 
-        this->system().derivatives(x0 + c2 * dx, y, dydx, buffer);
+        this->system().derivatives(y, dydx, buffer);
 
         for (gLabel i = 0; i < this->nEqns(); ++i) {
             k2[i] = dydx[i] + dx * d2 * dfdx[i] + c21 * k1[i] / dx;
@@ -116,6 +116,7 @@ public:
         FoamGpu::LUBacksubstitute(a, pivotIndices, k3);
 
         // Calculate error and update state:
+        auto err = buffer.err();
         for (gLabel i = 0; i < this->nEqns(); ++i) {
             y[i]   = y0[i] + b1 * k1[i] + b2 * k2[i] + b3 * k3[i];
             err[i] = e1 * k1[i] + e2 * k2[i] + e3 * k3[i];

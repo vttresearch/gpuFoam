@@ -46,6 +46,25 @@ struct gpuAdaptiveSolver : public gpuODESolverBase<System> {
     /// @brief Get the maximum scale value
     /// @return Maximum scale
     CUDA_HOSTDEV gScalar maxScale() const { return maxScale_; }
+
+    /*
+    CUDA_HOSTDEV void computeJacobian(const gScalar x0, const mdspan<const gScalar, 1> y0, ) const
+    {
+        this->system().jacobian(x0, y0, dfdx, a, buffer);
+
+        const gScalar temp = gScalar(1.0) / (gamma * dx);
+        // Negate the jacobian and add 1/(gamma*dx) to diagonal
+        for (gLabel i = 0; i < this->nEqns(); i++) {
+            for (gLabel j = 0; j < this->nEqns(); j++) { a(i, j) = -a(i, j); }
+
+            a(i, i) += temp; // gScalar(1.0)/(gamma*dx);
+        }
+
+        FoamGpu::LUDecompose(a, pivotIndices, lubuffer);
+    }
+    */
+
+
 };
 
 /// @brief Integrate the ode as far as possible between [x, x+dxTry] while adjusting the step size.
@@ -67,7 +86,7 @@ static inline CUDA_HOSTDEV void adaptiveSolve(const Ode&         ode,
     gScalar dx  = dxTry;
     gScalar err = 0.0;
 
-    ode.system().derivatives(x, y, dydx0, buffer);
+    ode.system().derivatives(y, dydx0, buffer);
 
     // Loop over solver and adjust step-size as necessary
     // to achieve desired error

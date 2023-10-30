@@ -9,7 +9,8 @@
 #include "gpu_constants.H"
 #include "mdspan.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+// * * * //
 
 namespace FoamGpu {
 
@@ -23,11 +24,15 @@ private:
 
     /// @brief Get a pointer to the species thermos.
     /// @return A pointer to the specie thermos.
-    CUDA_HOSTDEV const gpuThermo* specieThermos() const { return thermos_; }
+    CUDA_HOSTDEV const gpuThermo* specieThermos() const {
+        return thermos_;
+    }
 
     /// @brief Get a pointer to the reactions.
     /// @return A pointer to the reactions.
-    CUDA_HOSTDEV const gpuReaction* reactions() const { return reactions_; }
+    CUDA_HOSTDEV const gpuReaction* reactions() const {
+        return reactions_;
+    }
 
     /// @brief Get the density of the mixture.
     /// @param y Mass fractions.
@@ -36,7 +41,7 @@ private:
     /// @return Density of the mixture.
     CUDA_HOSTDEV gScalar rhoMixture(const mdspan<const gScalar, 1> y,
                                     const gScalar                  p,
-                                    const gScalar                  T) const {
+                                    const gScalar T) const {
         const gLabel nSpecie = nEqns() - 2;
         gScalar      rhoM    = 0.0;
         for (gLabel i = 0; i < nSpecie; i++) {
@@ -52,7 +57,7 @@ private:
     /// @return Specific heat of the mixture.
     CUDA_HOSTDEV gScalar CpMixture(const mdspan<const gScalar, 1> y,
                                    const gScalar                  p,
-                                   const gScalar                  T) const {
+                                   const gScalar T) const {
         const gLabel nSpecie = nEqns() - 2;
         gScalar      CpM     = 0.0;
         for (gLabel i = 0; i < nSpecie; i++) {
@@ -61,14 +66,16 @@ private:
         return CpM;
     }
 
-    /// @brief Get the derivative of specific heat w.r.t. temperature of the mixture.
+    /// @brief Get the derivative of specific heat w.r.t. temperature
+    /// of the mixture.
     /// @param y Mass fractions.
     /// @param p Pressure.
     /// @param T Temperature.
     /// @return Derivative of specific heat w.r.t. temperature.
-    CUDA_HOSTDEV gScalar dCpMdTMixture(const mdspan<const gScalar, 1> y,
-                                       const gScalar                  p,
-                                       const gScalar                  T) const {
+    CUDA_HOSTDEV gScalar
+    dCpMdTMixture(const mdspan<const gScalar, 1> y,
+                  const gScalar                  p,
+                  const gScalar                  T) const {
         const gLabel nSpecie = nEqns() - 2;
         gScalar      dCpMdT  = 0.0;
         for (gLabel i = 0; i < nSpecie; i++) {
@@ -83,17 +90,20 @@ private:
     /// @param T Temperature.
     /// @param rhoM Mixture density.
     /// @return Mixture thermal expansion coefficient.
-    CUDA_HOSTDEV gScalar alphavMixture(const mdspan<const gScalar, 1> y,
-                                       const gScalar                  p,
-                                       const gScalar                  T,
-                                       const gScalar rhoM) const {
+    CUDA_HOSTDEV gScalar
+    alphavMixture(const mdspan<const gScalar, 1> y,
+                  const gScalar                  p,
+                  const gScalar                  T,
+                  const gScalar                  rhoM) const {
         const gLabel nSpecie = nEqns() - 2;
 
         gScalar alphavM = gScalar(0);
         for (gLabel i = 0; i < nSpecie; i++) {
-            const gScalar vi = gScalar(1.0) / specieThermos()[i].rho(p, T);
+            const gScalar vi =
+                gScalar(1.0) / specieThermos()[i].rho(p, T);
             const gScalar Yi = std::max(y[i], gScalar(0));
-            alphavM += Yi * rhoM * vi * specieThermos()[i].alphav(p, T);
+            alphavM +=
+                Yi * rhoM * vi * specieThermos()[i].alphav(p, T);
         }
 
         return alphavM;
@@ -101,11 +111,12 @@ private:
 
     /// @brief Get the mixture concentration.
     /// @param y Mass fractions.
-    /// @param c The concentration vector of at least size nSpecie which is modified.
+    /// @param c The concentration vector of at least size nSpecie
+    /// which is modified.
     /// @param rhoM Mixture density.
     CUDA_HOSTDEV void concentration(const mdspan<const gScalar, 1> y,
                                     mdspan<gScalar, 1>             c,
-                                    const gScalar                  rhoM) const {
+                                    const gScalar rhoM) const {
         const gLabel nSpecie = nEqns() - 2;
         // Evaluate the concentrations
         for (gLabel i = 0; i < nSpecie; i++) {
@@ -114,7 +125,8 @@ private:
     }
 
     /// @brief Compute the absolute enthalpy of the species.
-    /// @param Ha The modified absolute enthalpy vector of at least size nSpecie.
+    /// @param Ha The modified absolute enthalpy vector of at least
+    /// size nSpecie.
     /// @param p Pressure.
     /// @param T Temperature.
     CUDA_HOSTDEV void absoluteEnthalpy(mdspan<gScalar, 1> Ha,
@@ -127,7 +139,8 @@ private:
     }
 
     /// @brief Compute the heat capacity of the species.
-    /// @param Cp The modified heat capacity vector of at least size nSpecie.
+    /// @param Cp The modified heat capacity vector of at least size
+    /// nSpecie.
     /// @param p Pressure.
     /// @param T Temperature.
     CUDA_HOSTDEV void heatCapacity(mdspan<gScalar, 1> Cp,
@@ -140,25 +153,28 @@ private:
     }
 
     /// @brief Compute the derivative of y w.r.t. temperature.
-    /// @param dydt The modified dY/dT vector of at least size nSpecie.
+    /// @param dydt The modified dY/dT vector of at least size
+    /// nSpecie.
     /// @param rhoM Mixture density.
-    CUDA_HOSTDEV void dYdT(mdspan<gScalar, 1> dydt, const gScalar rhoM) const {
+    CUDA_HOSTDEV void dYdT(mdspan<gScalar, 1> dydt,
+                           const gScalar      rhoM) const {
         const gLabel nSpecie = nEqns() - 2;
-        // Reactions return dNdtByV, so we need to convert the result to dYdt
+        // Reactions return dNdtByV, so we need to convert the result
+        // to dYdt
         for (gLabel i = 0; i < nSpecie; i++) {
             dydt[i] *= specieThermos()[i].W() / rhoM;
         }
     }
 
-    // Temperature derivative, notes assumes dydx[0 ... nSpecie] has been
-    // computed
+    // Temperature derivative, notes assumes dydx[0 ... nSpecie] has
+    // been computed
 
-    CUDA_HOSTDEV gScalar dTdt(const mdspan<const gScalar, 1>             dydx,
-                           const mdspan<const gScalar, 1> Ha,
-                           const gScalar                  CpM) const {
+    CUDA_HOSTDEV gScalar dTdt(const mdspan<const gScalar, 1> dydx,
+                              const mdspan<const gScalar, 1> Ha,
+                              const gScalar CpM) const {
 
         const gLabel nSpecie = nEqns() - 2;
-        gScalar ret = 0.0;
+        gScalar      ret     = 0.0;
         for (gLabel i = 0; i < nSpecie; i++) {
             ret -= dydx[i] * Ha[i];
         }
@@ -178,21 +194,25 @@ private:
                                const gScalar                  rhoM,
                                const gScalar                  alphavM,
                                const gScalar                  p,
-                               const gScalar                  T) const {
+                               const gScalar T) const {
         const gLabel nSpecie = nEqns() - 2;
 
         for (gLabel i = 0; i < nSpecie; i++) {
             const gScalar WiByrhoM = specieThermos()[i].W() / rhoM;
 
-            for (gLabel j = 0; j < (nSpecie + 2); ++j) { temp[j] = dfdy(i, j); }
+            for (gLabel j = 0; j < (nSpecie + 2); ++j) {
+                temp[j] = dfdy(i, j);
+            }
 
             for (gLabel j = 0; j < nSpecie; j++) {
-                const gScalar rhoMByWi = rhoM / specieThermos()[j].W();
+                const gScalar rhoMByWi =
+                    rhoM / specieThermos()[j].W();
 
-                const gScalar vj = gScalar(1.0) / specieThermos()[j].rho(p, T);
+                const gScalar vj =
+                    gScalar(1.0) / specieThermos()[j].rho(p, T);
 
-                dfdy(i, j) =
-                    WiByrhoM * temp[j] * rhoMByWi + rhoM * vj * dydx[i];
+                dfdy(i, j) = WiByrhoM * temp[j] * rhoMByWi +
+                             rhoM * vj * dydx[i];
             }
 
             gScalar ddNidtByVdT = temp[nSpecie];
@@ -201,19 +221,20 @@ private:
                 ddNidtByVdT -= temp[j] * c[j] * alphavM;
             }
 
-            dfdy(i, nSpecie)     = WiByrhoM * ddNidtByVdT + alphavM * dydx[i];
+            dfdy(i, nSpecie) =
+                WiByrhoM * ddNidtByVdT + alphavM * dydx[i];
             dfdy(i, nSpecie + 1) = gScalar(0);
         }
     }
 
-    // Assumes dfdy(0...nSpecie, 0...nSpecie) and dydx(0 ... nSpecie +1 ) have
-    // been computed
+    // Assumes dfdy(0...nSpecie, 0...nSpecie) and dydx(0 ... nSpecie
+    // +1 ) have been computed
     //  d(dTdt)/dY
     CUDA_HOSTDEV void ddT_dtdY(mdspan<gScalar, 2>             dfdy,
                                const mdspan<const gScalar, 1> dydx,
                                const mdspan<const gScalar, 1> Cp,
                                const mdspan<const gScalar, 1> Ha,
-                               const gScalar                  CpM) const {
+                               const gScalar CpM) const {
 
         const gLabel nSpecie = nEqns() - 2;
 
@@ -235,7 +256,7 @@ private:
                                const mdspan<const gScalar, 1> Cp,
                                const mdspan<const gScalar, 1> Ha,
                                const gScalar                  CpM,
-                               const gScalar                  dCpMdT) const {
+                               const gScalar dCpMdT) const {
 
         const gLabel nSpecie = nEqns() - 2;
 
@@ -265,10 +286,9 @@ public:
 
     CUDA_HOSTDEV gLabel nReactions() const { return nReactions_; }
 
-    CUDA_HOSTDEV void derivatives(const gScalar                  x,
-                                  const mdspan<const gScalar, 1> y,
+    CUDA_HOSTDEV void derivatives(const mdspan<const gScalar, 1> y,
                                   mdspan<gScalar, 1>             dydx,
-                                  gpuBuffer&                     buffer) const {
+                                  gpuBuffer& buffer) const {
 
         for (gLabel i = 0; i < nEqns(); ++i) { dydx[i] = 0; }
 
@@ -284,8 +304,7 @@ public:
 
         for (gLabel ri = 0; ri < nReactions(); ++ri) {
             const auto& reaction = reactions()[ri];
-            if (reaction.active(c))
-            {
+            if (reaction.active(c)) {
                 reactions()[ri].dNdtByV(p, T, c, dydx);
             }
         }
@@ -301,16 +320,25 @@ public:
         dpdt(dydx);
     }
 
-    CUDA_HOSTDEV void jacobian(const gScalar                  x,
-                               const mdspan<const gScalar, 1> y,
+    CUDA_HOSTDEV void jacobian(const mdspan<const gScalar, 1> y,
                                mdspan<gScalar, 1>             dfdx,
                                mdspan<gScalar, 2>             dfdy,
-                               gpuBuffer&                     buffer) const {
+                               gpuBuffer& buffer) const {
+
+        // Evaluate contributions from reactions
+        // dfdx = Zero;
+        for (gLabel i = 0; i < gLabel(y.size()); ++i) {
+            dfdx[i] = gScalar(0);
+        }
+
+        for (int i = 0; i < nEqns(); ++i) {
+            for (int j = 0; j < nEqns(); ++j) {
+                dfdy(i, j) = gScalar(0.0);
+            }
+        }
+
         const gLabel nEqs    = nEqns();
         const gLabel nSpecie = nEqs - 2;
-
-        auto tempField1 = buffer.tempField1();
-        auto tempField2 = buffer.tempField2();
 
         const gScalar T = y[nSpecie];
         const gScalar p = y[nSpecie + 1];
@@ -325,35 +353,25 @@ public:
         // Evaluate the mixture thermal expansion coefficient
         const gScalar alphavM = alphavMixture(y, p, T, rhoM);
 
-        // Evaluate contributions from reactions
-        // dfdx = Zero;
-        for (gLabel i = 0; i < gLabel(y.size()); ++i) { dfdx[i] = gScalar(0); }
-
-        for (int i = 0; i < nEqs; ++i) {
-            for (int j = 0; j < nEqs; ++j) { dfdy(i, j) = gScalar(0.0); }
-        }
-
+        auto tempField1 = buffer.tempField1();
+        auto tempField2 = buffer.tempField2();
         for (gLabel ri = 0; ri < nReactions(); ++ri) {
-
 
             const auto& reaction = reactions()[ri];
 
-            if (reaction.active(c))
-            {
-                reaction.ddNdtByVdcTp(
-                p, T, c, dfdx, dfdy, 0, nSpecie, tempField1, tempField2);
+            if (reaction.active(c)) {
+
+                reaction.ddNdtByVdcTp(p,
+                                      T,
+                                      c,
+                                      dfdx,
+                                      dfdy,
+                                      0,
+                                      nSpecie,
+                                      tempField1,
+                                      tempField2);
             }
-
         }
-
-        /*
-        for (gLabel ri = 0; ri < nReactions(); ++ri) {
-
-            //reactions()[ri].ddNdtByVdcTp(
-            //    p, T, c, dfdx, dfdy, 0, nSpecie, tempField1, tempField2);
-        }
-        */
-
 
         // dY/dT
         dYdT(dfdx, rhoM);
@@ -366,8 +384,8 @@ public:
         ddY_dcdY(dfdy, dfdx, c, temp, rhoM, alphavM, p, T);
 
         ////////////////////////////////
-        // Here the derivative computation is finished because the temp arrays
-        // are free
+        // Here the derivative computation is finished because the
+        // temp arrays are free
         //  and Cp/Ha can be cached
         //  dT/dt
         auto Cp = buffer.tempField2();
@@ -400,6 +418,7 @@ public:
     }
 };
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+// * * * //
 
 } // namespace FoamGpu
