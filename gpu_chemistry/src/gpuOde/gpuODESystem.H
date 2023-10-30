@@ -288,6 +288,35 @@ public:
 
     CUDA_HOSTDEV void derivatives(const mdspan<const gScalar, 1> y,
                                   mdspan<gScalar, 1>             dydx,
+                                  gpuBuffer& buffer,
+                                  const mdspan<const gScalar, 1> c,
+                                  const gScalar                  CpM,
+                                  const gScalar rhoM) const {
+
+        for (gLabel i = 0; i < nEqns(); ++i) { dydx[i] = 0; }
+
+        const gLabel nSpecie = nEqns() - 2;
+
+        const gScalar T = y[nSpecie];
+        const gScalar p = y[nSpecie + 1];
+
+        for (gLabel ri = 0; ri < nReactions(); ++ri) {
+            reactions()[ri].dNdtByV(p, T, c, dydx);
+        }
+
+        // dY/dT
+        dYdT(dydx, rhoM);
+
+        // dT/dt
+        auto Ha = buffer.tempField1();
+        absoluteEnthalpy(Ha, p, T);
+        dydx[nSpecie] = dTdt(dydx, Ha, CpM);
+
+        dpdt(dydx);
+    }
+
+    CUDA_HOSTDEV void derivatives(const mdspan<const gScalar, 1> y,
+                                  mdspan<gScalar, 1>             dydx,
                                   gpuBuffer& buffer) const {
 
         for (gLabel i = 0; i < nEqns(); ++i) { dydx[i] = 0; }
@@ -302,22 +331,7 @@ public:
         auto c = buffer.c();
         concentration(y, c, rhoM);
 
-        for (gLabel ri = 0; ri < nReactions(); ++ri) {
-            const auto& reaction = reactions()[ri];
-            if (reaction.active(c)) {
-                reactions()[ri].dNdtByV(p, T, c, dydx);
-            }
-        }
-
-        // dY/dT
-        dYdT(dydx, rhoM);
-
-        // dT/dt
-        auto Ha = buffer.tempField1();
-        absoluteEnthalpy(Ha, p, T);
-        dydx[nSpecie] = dTdt(dydx, Ha, CpM);
-
-        dpdt(dydx);
+        derivatives(y, dydx, buffer, c, CpM, rhoM);
     }
 
     CUDA_HOSTDEV void jacobian(const mdspan<const gScalar, 1> y,
@@ -325,62 +339,48 @@ public:
                                mdspan<gScalar, 2>             dfdy,
                                gpuBuffer& buffer) const {
 
-        // Evaluate contributions from reactions
-        // dfdx = Zero;
-        for (gLabel i = 0; i < gLabel(y.size()); ++i) {
-            dfdx[i] = gScalar(0);
-        }
-
         for (int i = 0; i < nEqns(); ++i) {
             for (int j = 0; j < nEqns(); ++j) {
                 dfdy(i, j) = gScalar(0.0);
             }
         }
 
-        const gLabel nEqs    = nEqns();
-        const gLabel nSpecie = nEqs - 2;
+        const gLabel nSpecie = nEqns() - 2;
 
         const gScalar T = y[nSpecie];
         const gScalar p = y[nSpecie + 1];
 
-        const gScalar rhoM   = rhoMixture(y, p, T);
-        const gScalar CpM    = CpMixture(y, p, T);
-        const gScalar dCpMdT = dCpMdTMixture(y, p, T);
+        const gScalar rhoM = rhoMixture(y, p, T);
+        const gScalar CpM  = CpMixture(y, p, T);
 
         auto c = buffer.c();
         concentration(y, c, rhoM);
 
-        // Evaluate the mixture thermal expansion coefficient
-        const gScalar alphavM = alphavMixture(y, p, T, rhoM);
+        this->derivatives(y, dfdx, buffer, c, CpM, rhoM);
 
         auto tempField1 = buffer.tempField1();
         auto tempField2 = buffer.tempField2();
+
         for (gLabel ri = 0; ri < nReactions(); ++ri) {
 
             const auto& reaction = reactions()[ri];
 
-            if (reaction.active(c)) {
 
-                reaction.ddNdtByVdcTp(p,
-                                      T,
-                                      c,
-                                      dfdx,
-                                      dfdy,
-                                      0,
-                                      nSpecie,
-                                      tempField1,
-                                      tempField2);
-            }
+            reaction.ddNdtByVdcTp(p,
+                                    T,
+                                    c,
+                                    dfdy,
+                                    0,
+                                    nSpecie,
+                                    tempField1,
+                                    tempField2);
         }
-
-        // dY/dT
-        dYdT(dfdx, rhoM);
-
-        dpdt(dfdx);
 
         // Temporary array to allow for re-using dfdy
         auto temp = buffer.tempField1();
 
+        // Evaluate the mixture thermal expansion coefficient
+        const gScalar alphavM = alphavMixture(y, p, T, rhoM);
         ddY_dcdY(dfdy, dfdx, c, temp, rhoM, alphavM, p, T);
 
         ////////////////////////////////
@@ -394,13 +394,13 @@ public:
         auto Ha = buffer.tempField1();
         absoluteEnthalpy(Ha, p, T);
 
-        dfdx[nSpecie] = dTdt(dfdx, Ha, CpM);
         ////////////////////////////////
 
         // d(dTdt)/dY
         ddT_dtdY(dfdy, dfdx, Cp, Ha, CpM);
 
         // d(dTdt)/dT
+        const gScalar dCpMdT = dCpMdTMixture(y, p, T);
         ddT_dtdT(dfdy, dfdx, Cp, Ha, CpM, dCpMdT);
 
         /*

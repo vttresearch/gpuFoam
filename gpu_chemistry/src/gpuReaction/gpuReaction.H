@@ -298,6 +298,45 @@ public:
                  mdspan<gScalar, 1>             cTpWork0,
                  mdspan<gScalar, 1>             cTpWork1) const;
 
+    inline CUDA_HOSTDEV void
+    ddNdtByVdcTp(const gScalar                  p,
+                 const gScalar                  T,
+                 const mdspan<const gScalar, 1> c,
+                 mdspan<gScalar, 2>             ddNdtByVdcTp,
+                 const gLabel                   Nsi0,
+                 const gLabel                   Tsi,
+                 mdspan<gScalar, 1>             cTpWork0,
+                 mdspan<gScalar, 1>             cTpWork1) const
+    {
+
+        const auto lhsPow = lhsPowers(c);
+        const gScalar kf = this->kf(p, T, c);
+        const gScalar Cf = calcCf(lhsPow);
+
+        jac_dCfdcj_contribution(kf, Cf, lhsPow, c, ddNdtByVdcTp);
+
+        const auto rhsPow = rhsPowers(c);
+
+        const gScalar Cr = calcCr(rhsPow);
+
+
+
+        const gScalar kr = this->kr(kf, p, T, c);
+
+
+        jac_dCrdcj_contribution(kr, Cr, rhsPow, c, ddNdtByVdcTp);
+
+
+        jac_dCdT_contribution(p, T, Cf, Cr, kr, Tsi, c, ddNdtByVdcTp);
+
+        jac_dCdC_contribution(
+            p, T, Cf, Cr, kr, c, cTpWork0, cTpWork1, ddNdtByVdcTp);
+
+
+    }
+
+
+
     /// @brief Checks if the LHS specie coefficients contain small (<
     /// 1) exponents.
     /// @return Returns true if the LHS species of the reaction
@@ -481,18 +520,7 @@ public:
                           mdspan<gScalar, 1>             cTpWork1,
                           mdspan<gScalar, 2> ddNdtByVdcTp) const;
 
-    inline CUDA_HOSTDEV bool
-    active(const mdspan<const gScalar, 1> c) const {
-        /*
-        bool lhs_small = lhsSmallConcentration(c);
-        bool rhs_small = rhsSmallConcentration(c);
 
-        if (isIrreversible() && lhs_small) { return false; }
-
-        return (!lhs_small || !rhs_small);
-        */
-        return true;
-    }
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -778,6 +806,7 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCfdcj_contribution(
     const mdspan<const gScalar, 1>                c,
     mdspan<gScalar, 2> ddNdtByVdcTp) const {
 
+
     std::array<gScalar, MAX_REACTION_WIDTH> dCfdjs;
     if (!lhsSmallConcentration(c)) {
         dCfdjs = calcdCfdcjLargeC(Cf, c);
@@ -819,6 +848,7 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCrdcj_contribution(
     } else {
         dCrdjs = calcdCrdcj(rhsPow, c);
     }
+
 
     const auto llhs = lhs();
     const auto rrhs = rhs();
@@ -946,8 +976,11 @@ gpuReaction::ddNdtByVdcTp(const gScalar                  p,
     // Jacobian contributions from the derivative of the concentration
     // products w.r.t. concentration
 
+
     jac_dCfdcj_contribution(kf, Cf, lhsPow, c, ddNdtByVdcTp);
+
     jac_dCrdcj_contribution(kr, Cr, rhsPow, c, ddNdtByVdcTp);
+
 
     jac_dCdT_contribution(p, T, Cf, Cr, kr, Tsi, c, ddNdtByVdcTp);
 

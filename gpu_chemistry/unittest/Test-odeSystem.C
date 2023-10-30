@@ -70,6 +70,7 @@ static inline void runMechanismTests(TestData::Mechanism mech)
 
         eval(f);
 
+
         REQUIRE_THAT
         (
             toStdVector(dy_gpu),
@@ -116,6 +117,20 @@ static inline void runMechanismTests(TestData::Mechanism mech)
         };
 
         eval(f);
+
+        /*
+        auto Jtemp = make_mdspan(J_gpu, extents<2>{nEqns, nEqns});
+        for (gLabel j = 0; j < nEqns; ++j)
+        {
+            for (gLabel i = 0; i < nEqns; ++i)
+            {
+                if (std::abs(J_cpu(j, i) - Jtemp(j, i)) > gpuSmall  )
+                {
+                    std::cout << J_cpu(j, i) << " " << Jtemp(j, i) << " " << j << " " << i << std::endl;
+                }
+            }
+        }
+        */
 
         REQUIRE_THAT
         (
