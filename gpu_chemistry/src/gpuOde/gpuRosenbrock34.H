@@ -38,8 +38,6 @@ constexpr gScalar e3 = 0.0;
 constexpr gScalar e4 = 125.0 / 108.0;
 
 constexpr gScalar gamma = 1.0 / 2.0;
-constexpr gScalar c2    = 1.0;
-constexpr gScalar c3    = 3.0 / 5.0;
 
 constexpr gScalar d1 = 1.0 / 2.0;
 constexpr gScalar d2 = -3.0 / 2.0;
@@ -66,7 +64,7 @@ public:
     }
 
     //- Solve a single step dx and return the error
-    CUDA_HOSTDEV gScalar solve(const gScalar                  x0,
+    CUDA_HOSTDEV gScalar solve(
                                const mdspan<const gScalar, 1> y0,
                                const mdspan<const gScalar, 1> dydx0,
                                const gScalar                  dx,
@@ -78,27 +76,14 @@ public:
         auto dydx         = buffer.dydx();
         auto dfdx         = buffer.dfdx();
         auto pivotIndices = buffer.pivotIndices();
-        auto k1           = buffer.k1();
-        auto k2           = buffer.k2();
-        auto k3           = buffer.k3();
-        auto k4           = buffer.k4();
-        auto err          = buffer.err();
-        auto lubuffer     = buffer.lubuffer();
         auto a            = buffer.J();
-
-        this->system().jacobian(y0, dfdx, a, buffer);
-
-        const gScalar temp = gScalar(1.0) / (gamma * dx);
-        // Negate the jacobian and add 1/(gamma*dx) to diagonal
-        for (gLabel i = 0; i < this->nEqns(); i++) {
-            for (gLabel j = 0; j < this->nEqns(); j++) { a(i, j) = -a(i, j); }
-
-            a(i, i) += temp; // gScalar(1.0)/(gamma*dx);
-        }
-
-        FoamGpu::LUDecompose(a, pivotIndices, lubuffer);
+        this->computeDecomposedJacobian
+        (
+            dx, gamma, y0, dfdx, a, pivotIndices, buffer
+        );
 
         // Calculate k1:
+        auto k1 = buffer.k1();
         for (gLabel i = 0; i < this->nEqns(); ++i) {
             k1[i] = dydx0[i] + dx * d1 * dfdx[i];
         }
@@ -106,6 +91,7 @@ public:
         FoamGpu::LUBacksubstitute(a, pivotIndices, k1);
 
         // Calculate k2:
+        auto k2 = buffer.k2();
         for (gLabel i = 0; i < this->nEqns(); ++i) {
             y[i] = y0[i] + a21 * k1[i];
         }
@@ -119,6 +105,7 @@ public:
         FoamGpu::LUBacksubstitute(a, pivotIndices, k2);
 
         // Calculate k3:
+        auto k3 = buffer.k3();
         for (gLabel i = 0; i < this->nEqns(); ++i) {
             y[i] = y0[i] + a31 * k1[i] + a32 * k2[i];
         }
@@ -133,6 +120,7 @@ public:
         FoamGpu::LUBacksubstitute(a, pivotIndices, k3);
 
         // Calculate k4:
+        auto k4 = buffer.k4();
         for (gLabel i = 0; i < this->nEqns(); ++i) {
             k4[i] = dydx[i] + dx * d4 * dfdx[i] +
                     (c41 * k1[i] + c42 * k2[i] + c43 * k3[i]) / dx;
@@ -141,6 +129,7 @@ public:
         FoamGpu::LUBacksubstitute(a, pivotIndices, k4);
 
         // Calculate error and update state:
+        auto err = buffer.err();
         for (gLabel i = 0; i < this->nEqns(); ++i) {
             y[i]   = y0[i] + b1 * k1[i] + b2 * k2[i] + b3 * k3[i] + b4 * k4[i];
             err[i] = e1 * k1[i] + e2 * k2[i] + e4 * k4[i];
