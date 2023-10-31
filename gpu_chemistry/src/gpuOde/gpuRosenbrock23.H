@@ -67,6 +67,7 @@ public:
         auto dfdx         = buffer.dfdx();
         auto pivotIndices = buffer.pivotIndices();
         auto a            = buffer.J();
+            
         this->computeDecomposedJacobian(
             dx, gamma, y0, dfdx, a, pivotIndices, buffer);
 

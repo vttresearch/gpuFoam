@@ -339,6 +339,11 @@ public:
                                mdspan<gScalar, 2>             dfdy,
                                gpuBuffer& buffer) const {
 
+
+        for (int i = 0; i < nEqns(); ++i) {
+            dfdx[i] = gScalar(0);
+        }
+
         for (int i = 0; i < nEqns(); ++i) {
             for (int j = 0; j < nEqns(); ++j) {
                 dfdy(i, j) = gScalar(0.0);
@@ -378,6 +383,7 @@ public:
             
         }
 
+        
         // Temporary array to allow for re-using dfdy
         auto temp = buffer.tempField1();
 
@@ -385,17 +391,14 @@ public:
         const gScalar alphavM = alphavMixture(y, p, T, rhoM);
         ddY_dcdY(dfdy, dfdx, c, temp, rhoM, alphavM, p, T);
 
-        ////////////////////////////////
-        // Here the derivative computation is finished because the
-        // temp arrays are free
-        //  and Cp/Ha can be cached
-        //  dT/dt
+        
         auto Cp = buffer.tempField2();
         heatCapacity(Cp, p, T);
 
         auto Ha = buffer.tempField1();
         absoluteEnthalpy(Ha, p, T);
 
+    
         ////////////////////////////////
 
         // d(dTdt)/dY

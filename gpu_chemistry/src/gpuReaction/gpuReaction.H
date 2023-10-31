@@ -192,6 +192,7 @@ public:
             const mdspan<const gScalar, 1> c,
             mdspan<gScalar, 1>             dNdtByV) const;
 
+    
     /// @brief Computes the forward reaction rate constant of this
     /// reaction.
     /// @param p Pressure.
@@ -840,12 +841,14 @@ computeReactionParameters(const gpuReaction&             r,
                           const gScalar                  T) {
     reactionParams ret;
 
+    {
+        ret.kf = r.kf(p, T, c);
+        const auto lhsPow = r.lhsPowers(c);
+        ret.Cf = r.calcCf(lhsPow);
+        ret.dCfdjs = r.calcdCfdcj(lhsPow, c);
+        ret.dkfdT = r.dkfdT(p, T, c);
+    }
     
-    ret.kf = r.kf(p, T, c);
-    const auto lhsPow = r.lhsPowers(c);
-    ret.Cf = r.calcCf(lhsPow);
-    ret.dkfdT = r.dkfdT(p, T, c);
-    ret.dCfdjs = r.calcdCfdcj(lhsPow, c);
     
 
     if (!r.isIrreversible())

@@ -6,6 +6,7 @@
 #include "check_ptr.H"
 namespace FoamGpu {
 
+
 struct gpuBuffer {
 
     gpuBuffer() = default;
