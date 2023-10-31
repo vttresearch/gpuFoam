@@ -91,7 +91,6 @@ GpuKernelEvaluator::computeYNew(gScalar                     deltaT,
 
     singleCellSolver op(deltaT, nSpecie_, ddeltaTChem, dYvf, buffer_span, solver_);
 
-
     gLabel NTHREADS = 32;
     gLabel NBLOCKS  = (nCells + NTHREADS - 1) / NTHREADS;
     cuda_kernel<<<NBLOCKS, NTHREADS>>>(nCells, op);
