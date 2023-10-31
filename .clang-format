@@ -1,7 +1,7 @@
 ---
 # This is a very mimimal clang-format config file, based on the LLVM style
 #
-# For more options see the clang-format documentation, or try using the 
+# For more options see the clang-format documentation, or try using the
 # online clang-format generator:
 #     https://zed0.co.uk/clang-format-configurator/
 #
@@ -17,7 +17,7 @@ AllowShortIfStatementsOnASingleLine: 'true'
 AllowShortLoopsOnASingleLine: 'true'
 BinPackArguments: 'false'
 BinPackParameters: 'false'
-ColumnLimit: '80'
+ColumnLimit: '70'
 IndentWidth: '4'
 PointerAlignment: Left
 SortIncludes: 'true'
