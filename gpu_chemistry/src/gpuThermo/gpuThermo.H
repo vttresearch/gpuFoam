@@ -1,5 +1,5 @@
 #pragma once
-
+#include "cuda_math.H"
 #include "cuda_host_dev.H"
 #include "gpuPerfectGas.H"
 #include "gpu_constants.H"
@@ -81,8 +81,8 @@ public:
     inline CUDA_HOSTDEV gScalar K(const gScalar p, const gScalar T) const {
         (void)p;
         gScalar arg = -this->Y() * this->Gstd(T) / (gpuRR * T);
-        if (arg < 600) { return std::exp(arg); }
-        return std::sqrt(gpuVGreat);
+        if (arg < 600) { return exp(arg); }
+        return sqrt(gpuVGreat);
         // return gpuRootVGreat;
     }
 
@@ -107,7 +107,7 @@ public:
         const gScalar nm = this->Y() / this->W();
 
         if (std::abs(nm - gpuSmall) < gpuVSmall) { return Kp(p, T); }
-        return Kp(p, T) * std::pow(gpuPstd / (gpuRR * T), nm);
+        return Kp(p, T) * pow(gpuPstd / (gpuRR * T), nm);
     }
 
     /// @brief Computes the derivative of B (according to Niemeyer et al.) w.r.t
@@ -191,7 +191,7 @@ public:
         const auto& a = coeffs(T);
         return ((((a[4] / 4.0 * T + a[3] / 3.0) * T + a[2] / 2.0) * T + a[1]) *
                     T +
-                a[0] * std::log(T) + a[6]) +
+                a[0] * log(T) + a[6]) +
                EquationOfState::Sp(p, T);
     }
 
@@ -202,7 +202,7 @@ public:
     inline CUDA_HOSTDEV gScalar Gstd(const gScalar T) const {
         const auto& a = coeffs(T);
 
-        return ((a[0] * (1 - std::log(T)) -
+        return ((a[0] * (1 - log(T)) -
                  (((a[4] / 20.0 * T + a[3] / 12.0) * T + a[2] / 6.0) * T +
                   a[1] / 2.0) *
                      T -
@@ -249,8 +249,8 @@ public:
             Y1 /= this->Y();
             const gScalar Y2 = jt.Y() / this->Y();
 
-            Tlow_  = std::max(Tlow_, jt.Tlow_);
-            Thigh_ = std::min(Thigh_, jt.Thigh_);
+            Tlow_  = max(Tlow_, jt.Tlow_);
+            Thigh_ = min(Thigh_, jt.Thigh_);
 
             for (size_t coefLabel = 0; coefLabel < nCoeffs_; coefLabel++) {
                 highCpCoeffs_[coefLabel] = Y1 * highCpCoeffs_[coefLabel] +
@@ -296,8 +296,8 @@ inline gpuThermo operator+(const gpuThermo& jt1, const gpuThermo& jt2) {
     }
 
     return gpuThermo(eofs,
-                     std::max(jt1.Tlow_, jt2.Tlow_),
-                     std::min(jt1.Thigh_, jt2.Thigh_),
+                     max(jt1.Tlow_, jt2.Tlow_),
+                     min(jt1.Thigh_, jt2.Thigh_),
                      jt1.Tcommon_,
                      highCpCoeffs,
                      lowCpCoeffs);
@@ -342,8 +342,8 @@ inline gpuThermo operator==(const gpuThermo& jt1, const gpuThermo& jt2) {
     }
 
     return gpuThermo(eofs,
-                     std::max(jt2.Tlow_, jt1.Tlow_),
-                     std::min(jt2.Thigh_, jt1.Thigh_),
+                     max(jt2.Tlow_, jt1.Tlow_),
+                     min(jt2.Thigh_, jt1.Thigh_),
                      jt2.Tcommon_,
                      highCpCoeffs,
                      lowCpCoeffs);
