@@ -123,22 +123,27 @@ TEST_CASE("gpuSpeciesCoeffs pow")
         const gScalar exp = 1.0;
 
         Foam::specieExponent cpu(exp);
+        gpuSpecieExponent gpu(exp);
+
         REQUIRE
         (
-            eval([=](){return std::pow(base, exp); })
+            eval([=](){return FoamGpu::speciePow(base, exp); })
             == Approx(Foam::pow(base, cpu)).epsilon(errorTol)
         );
     }
 
+    
+    
     SECTION("Test2")
     {
         const gScalar base = 43.421;
         const gLabel exp = 1;
 
         const Foam::specieExponent cpu(exp);
+        const gpuSpecieExponent gpu(exp);
         REQUIRE
         (
-            eval([=](){return std::pow(base, exp); })
+            eval([=](){return FoamGpu::speciePow(base, exp); })
             == Approx(Foam::pow(base, cpu)).epsilon(errorTol)
         );
     }
@@ -149,9 +154,11 @@ TEST_CASE("gpuSpeciesCoeffs pow")
         const gLabel exp = 5;
 
         const Foam::specieExponent cpu(exp);
+        const gpuSpecieExponent gpu(exp);
+
         REQUIRE
         (
-            eval([=](){return std::pow(base, exp); })
+            eval([=](){return FoamGpu::speciePow(base, exp); })
             == Approx(Foam::pow(base, cpu)).epsilon(errorTol)
         );
     }
@@ -164,6 +171,7 @@ TEST_CASE("gpuSpeciesCoeffs pow")
         const gLabel exp = 2;
         const gLabel n = 60;
         const Foam::specieExponent cpu(exp);
+        const FoamGpu::gpuSpecieExponent gpu(exp);
 
         auto f = [=]()
         {
@@ -172,7 +180,7 @@ TEST_CASE("gpuSpeciesCoeffs pow")
             gScalar dCrcj = 1.0;
             for (gLabel i = 0; i < n; ++i)
             {
-                dCrcj *= er*std::pow(base, er - Foam::specieExponent(gLabel(1)));
+                dCrcj *= er*Foam::pow(base, er - Foam::specieExponent(gLabel(1)));
             }
             return dCrcj;
         };
@@ -180,11 +188,11 @@ TEST_CASE("gpuSpeciesCoeffs pow")
         auto f2 = [=]()
         {
 
-            const Foam::specieExponent er = cpu;
+            const FoamGpu::gpuSpecieExponent er =gpu;
             gScalar dCrcj = 1.0;
             for (gLabel i = 0; i < n; ++i)
             {
-                dCrcj *= er*Foam::pow(base, er - Foam::specieExponent(gLabel(1)));
+                dCrcj *= er*FoamGpu::speciePow(base, er - FoamGpu::gpuSpecieExponent(gLabel(1)));
 
             }
             return dCrcj;
@@ -427,35 +435,30 @@ static inline void reactionTests(TestData::Mechanism mech)
             [
                 =,
                 c = make_mdspan(c_gpu, extents<1>{nSpecie}),
-                dNdtByV = make_mdspan(dNdtByV_gpu, extents<1>{nSpecie}),
                 ddNdtByVdcTp = make_mdspan(ddNdtByVdcTp_gpu, extents<2>{nEqns, nEqns}),
                 cTpWork0 = make_mdspan(cTpWork0_gpu, extents<1>{nSpecie}),
                 cTpWork1 = make_mdspan(cTpWork1_gpu, extents<1>{nSpecie})
             ]
             ()
             {
+                auto params = computeReactionParameters(*gpu, c, p, T);
+
                 gpu->ddNdtByVdcTp
                 (
                     p,
                     T,
                     c,
-                    dNdtByV,
                     ddNdtByVdcTp,
-                    csi0,
-                    Tsi,
                     cTpWork0,
-                    cTpWork1
+                    cTpWork1,
+                    params
+                    
                 );
 
                 return 0;
             };
 
             eval(f);
-
-
-            REQUIRE_THAT(toStdVector(dNdtByV_gpu), Catch::Matchers::Approx(toStdVector(dNdtByV_cpu)).epsilon(errorTol));
-
-
 
             std::vector<double> r_cpu(ddNdtByVdcTp_cpu.v(), ddNdtByVdcTp_cpu.v() + ddNdtByVdcTp_cpu.size());
             std::vector<double> r_gpu = toStdVector(ddNdtByVdcTp_gpu);
@@ -525,24 +528,23 @@ static inline void reactionTests(TestData::Mechanism mech)
             [
                 =,
                 c = make_mdspan(c_gpu2, extents<1>{nSpecie}),
-                dNdtByV = make_mdspan(dNdtByV_gpu, extents<1>{nSpecie}),
                 ddNdtByVdcTp = make_mdspan(ddNdtByVdcTp_gpu, extents<2>{nEqns, nEqns}),
                 cTpWork0 = make_mdspan(cTpWork0_gpu, extents<1>{nSpecie}),
                 cTpWork1 = make_mdspan(cTpWork1_gpu, extents<1>{nSpecie})
             ]
             ()
             {
+                auto params = computeReactionParameters(*gpu, c, p, T);
+
                 gpu->ddNdtByVdcTp
                 (
                     p,
                     T,
                     c,
-                    dNdtByV,
                     ddNdtByVdcTp,
-                    csi0,
-                    Tsi,
                     cTpWork0,
-                    cTpWork1
+                    cTpWork1,
+                    params
                 );
 
                 return 0;
@@ -552,7 +554,6 @@ static inline void reactionTests(TestData::Mechanism mech)
             eval(f);
 
 
-            REQUIRE_THAT(toStdVector(dNdtByV_gpu), Catch::Matchers::Approx(toStdVector(dNdtByV_cpu)).epsilon(errorTol));
 
 
             std::vector<double> r_cpu(ddNdtByVdcTp_cpu.v(), ddNdtByVdcTp_cpu.v() + ddNdtByVdcTp_cpu.size());

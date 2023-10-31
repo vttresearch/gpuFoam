@@ -68,7 +68,18 @@ static inline auto make_specie_coeffs(const Foam::List<Foam::specieCoeffs>& l) {
     for (gLabel i = 0; i < l.size(); ++i) {
         ret[i].index       = l[i].index;
         ret[i].stoichCoeff = l[i].stoichCoeff;
-        ret[i].exponent    = l[i].exponent;
+
+        gScalar exp = l[i].exponent;
+
+        if (isInteger(exp)){
+           ret[i].exponent = gpuSpecieExponent(gLabel(exp));
+        }
+        else {
+            ret[i].exponent = gpuSpecieExponent(gScalar(exp));
+        }
+        //ret[i].exponent = gpuSpecieExponent(gScalar(exp));
+
+        //ret[i].exponent    = l[i].exponent;
     }
     return ret;
 }

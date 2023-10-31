@@ -365,15 +365,17 @@ public:
 
             const auto& reaction = reactions()[ri];
 
+            auto params = computeReactionParameters(reaction, c, p, T);
 
+            
             reaction.ddNdtByVdcTp(p,
                                     T,
                                     c,
                                     dfdy,
-                                    0,
-                                    nSpecie,
                                     tempField1,
-                                    tempField2);
+                                    tempField2,
+                                    params);
+            
         }
 
         // Temporary array to allow for re-using dfdy

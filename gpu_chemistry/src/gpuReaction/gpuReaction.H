@@ -5,11 +5,25 @@
 #include "cuda_host_dev.H"
 #include "cuda_math.H"
 #include "gpuReactionRate.H"
+#include "gpuSpecieExponent.H"
 #include "gpuThermo.H"
 #include "gpu_constants.H"
 #include "mdspan.H"
 
 namespace FoamGpu {
+
+struct reactionParams {
+
+    gScalar                                 kf = 0.0;
+    gScalar                                 kr = 0.0;
+    gScalar                                 Cf = 0.0;
+    gScalar                                 Cr = 0.0;
+    gScalar                                 dkfdT = 0.0;
+    gScalar                                 dkrdT = 0.0;
+
+    std::array<gScalar, MAX_REACTION_WIDTH> dCfdjs{};
+    std::array<gScalar, MAX_REACTION_WIDTH> dCrdjs{};
+};
 
 struct gpuSpecieCoeffs {
 
@@ -22,7 +36,7 @@ struct gpuSpecieCoeffs {
     gScalar stoichCoeff;
 
     //- Exponent of the specie concentration
-    gScalar exponent;
+    gpuSpecieExponent exponent;
 };
 
 /*---------------------------------------------------------------------------*\
@@ -36,7 +50,7 @@ public:
         std::array<gpuSpecieCoeffs, MAX_REACTION_WIDTH>;
 
     //- Default temperature limits of applicability of gpuReaction
-    //rates
+    // rates
     static constexpr gScalar TlowDefault = 0;
     static constexpr gScalar ThighDefault =
         std::numeric_limits<double>::max() / 10;
@@ -49,12 +63,12 @@ private:
     specieCoeffArray rhs_;
 
     //- Number of species on the LHS. This is different than the size
-    //of the
+    // of the
     // lhs_ array because of static memory.
     gLabel lhs_size_;
 
     //- Number of species on the RHS. This is different than the size
-    //of the
+    // of the
     // rhs_ array because of static memory.
     gLabel rhs_size_;
 
@@ -268,74 +282,30 @@ public:
           const gScalar                  kr,
           mdspan<gScalar, 1>             dkrdc) const;
 
-    /// @brief Computes and assigns the jacobian contributions from
-    /// the derivative of the rate constants w.r.t concentration and
-    /// temperature. Pressure is assumed constant and thus the
-    /// contributions are zero.
-    /// @param p Pressure
-    /// @param T Temperature
-    /// @param c A span of concentrations in a cell.
-    /// @param dNdtByV A one dimensional span where the derivative
-    /// contributions are assigned.
-    /// @param ddNdtByVdcTp A two dimensional span where the jacobian
-    /// contributions are assigned.
-    /// @param Nsi0 Starting index of the concentrations in the
-    /// solution array (0).
-    /// @param Tsi0 Starting index of the temperature in the solution
-    /// array (nSpecie).
-    /// @param cTpWork0 A a span of at least size nSpecie + 2 used as
-    /// a temporary.
-    /// @param cTpWork1 A a span of at least size nSpecie + 2 used as
-    /// a temporary.
-    inline CUDA_HOSTDEV void
-    ddNdtByVdcTp(const gScalar                  p,
-                 const gScalar                  T,
-                 const mdspan<const gScalar, 1> c,
-                 mdspan<gScalar, 1>             dNdtByV,
-                 mdspan<gScalar, 2>             ddNdtByVdcTp,
-                 const gLabel                   Nsi0,
-                 const gLabel                   Tsi,
-                 mdspan<gScalar, 1>             cTpWork0,
-                 mdspan<gScalar, 1>             cTpWork1) const;
+    
 
     inline CUDA_HOSTDEV void
     ddNdtByVdcTp(const gScalar                  p,
                  const gScalar                  T,
                  const mdspan<const gScalar, 1> c,
                  mdspan<gScalar, 2>             ddNdtByVdcTp,
-                 const gLabel                   Nsi0,
-                 const gLabel                   Tsi,
                  mdspan<gScalar, 1>             cTpWork0,
-                 mdspan<gScalar, 1>             cTpWork1) const
-    {
+                 mdspan<gScalar, 1>             cTpWork1,
+                 const reactionParams&          r) const {
 
-        const auto lhsPow = lhsPowers(c);
-        const gScalar kf = this->kf(p, T, c);
-        const gScalar Cf = calcCf(lhsPow);
+        jac_dCfdcj_contribution(r, ddNdtByVdcTp);
 
-        jac_dCfdcj_contribution(kf, Cf, lhsPow, c, ddNdtByVdcTp);
+        jac_dCrdcj_contribution(r, ddNdtByVdcTp);
 
-        const auto rhsPow = rhsPowers(c);
+        const gLabel Tsi = static_cast<gLabel>(std::size(c));
 
-        const gScalar Cr = calcCr(rhsPow);
+        jac_dCdT_contribution(r, Tsi, ddNdtByVdcTp);
 
-
-
-        const gScalar kr = this->kr(kf, p, T, c);
-
-
-        jac_dCrdcj_contribution(kr, Cr, rhsPow, c, ddNdtByVdcTp);
-
-
-        jac_dCdT_contribution(p, T, Cf, Cr, kr, Tsi, c, ddNdtByVdcTp);
-
+        
         jac_dCdC_contribution(
-            p, T, Cf, Cr, kr, c, cTpWork0, cTpWork1, ddNdtByVdcTp);
-
-
+            p, T, r, c, cTpWork0, cTpWork1, ddNdtByVdcTp);
+        
     }
-
-
 
     /// @brief Checks if the LHS specie coefficients contain small (<
     /// 1) exponents.
@@ -369,19 +339,19 @@ public:
     inline CUDA_HOSTDEV bool
     rhsSmallConcentration(const mdspan<const gScalar, 1> c) const;
 
-    /// @brief Computes the powers pow(c_i, e_i) of the LHS specie
+    /// @brief Computes the powers speciePow(c_i, e_i) of the LHS specie
     /// concentrations.
     /// @param c A span of concentrations in a cell.
     /// @return An array of powers of the LHS species.
     inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-    lhsPowers(const mdspan<const gScalar, 1> c) const;
+                        lhsPowers(const mdspan<const gScalar, 1> c) const;
 
-    /// @brief Computes the powers pow(c_i, e_i) of the RHS specie
+    /// @brief Computes the powers speciePow(c_i, e_i) of the RHS specie
     /// concentrations.
     /// @param c A span of concentrations in a cell.
     /// @return An array of powers of the RHS species.
     inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-    rhsPowers(const mdspan<const gScalar, 1> c) const;
+                        rhsPowers(const mdspan<const gScalar, 1> c) const;
 
     /// @brief Given an array of LHS concentration powers, computes
     /// the product of them all.
@@ -405,8 +375,8 @@ public:
     /// @return The derivative of the product of concentration powers
     /// w.r.t to all concentrations on the LHS.
     inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-    calcdCfdcj(const std::array<gScalar, MAX_REACTION_WIDTH> lhsPow,
-               const mdspan<const gScalar, 1>                c) const;
+                        calcdCfdcj(const std::array<gScalar, MAX_REACTION_WIDTH> lhsPow,
+                                   const mdspan<const gScalar, 1>                c) const;
 
     /// @brief Given precomputed RHS powers, computes the derivatives
     /// of the product of the powers w.r.t all concentrations on the
@@ -416,12 +386,12 @@ public:
     /// @return The derivative of the product of concentration powers
     /// w.r.t to all concentrations on the RHS.
     inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-    calcdCrdcj(const std::array<gScalar, MAX_REACTION_WIDTH> rhsPow,
-               const mdspan<const gScalar, 1>                c) const;
+                        calcdCrdcj(const std::array<gScalar, MAX_REACTION_WIDTH> rhsPow,
+                                   const mdspan<const gScalar, 1>                c) const;
 
     /// @brief Given precomputed product of the LHS powers, computes
     /// the derivatives of the product w.r.t all concentrations on the
-    /// LHS. This version requires no pow() calls but may overflow for
+    /// LHS. This version requires no speciePow() calls but may overflow for
     /// small concentrations.
     /// @param Cf Precomputed product of LHS powers.
     /// @param c A span of concentrations in a cell.
@@ -433,7 +403,7 @@ public:
 
     /// @brief Given precomputed product of the RHS powers, computes
     /// the derivatives of the product w.r.t all concentrations on the
-    /// RHS. This version requires no pow() calls but may overflow for
+    /// RHS. This version requires no speciePow() calls but may overflow for
     /// small concentrations.
     /// @param Cr Precomputed product of RHS powers.
     /// @param c A span of concentrations in a cell.
@@ -443,84 +413,31 @@ public:
                         calcdCrdcjLargeC(const gScalar                  Cr,
                                          const mdspan<const gScalar, 1> c) const;
 
-    /// @brief Computes and assigns the jacobian contributions from
-    /// the derivative of the LHS concentration products.
-    /// @param kf The forward rate constant.
-    /// @param Cf The product of the LHS concentration powers.
-    /// @param lhsPow The LHS concentration powers.
-    /// @param c A span of concentrations in a cell.
-    /// @param ddNdtByVdcTp A two dimensional span where the result is
-    /// assigned.
+    
     inline CUDA_HOSTDEV void jac_dCfdcj_contribution(
-        const gScalar                                 kf,
-        const gScalar                                 Cf,
-        const std::array<gScalar, MAX_REACTION_WIDTH> lhsPow,
-        const mdspan<const gScalar, 1>                c,
+        const reactionParams& r,
         mdspan<gScalar, 2> ddNdtByVdcTp) const;
 
-    /// @brief Computes and assigns the jacobian contributions from
-    /// the derivative of the RHS concentration products.
-    /// @param kr The reverse rate constant.
-    /// @param Cr The product of the RHS concentration powers.
-    /// @param rhsPow The RHS concentration powers.
-    /// @param c A span of concentrations in a cell.
-    /// @param ddNdtByVdcTp A two dimensional span where the result is
-    /// assigned.
+    
     inline CUDA_HOSTDEV void jac_dCrdcj_contribution(
-        const gScalar                                 kr,
-        const gScalar                                 Cr,
-        const std::array<gScalar, MAX_REACTION_WIDTH> rhsPow,
-        const mdspan<const gScalar, 1>                c,
+        const reactionParams& r,
         mdspan<gScalar, 2> ddNdtByVdcTp) const;
 
-    /// @brief Computes and assigns the jacobian contributions from
-    /// the derivative of the rate constants w.r.t temperature.
-    /// @param p Pressure
-    /// @param T Temperature
-    /// @param Cf The product of the LHS concentration powers.
-    /// @param Cr The product of the RHS concentration powers.
-    /// @param kr The reverse rate constant.
-    /// @param Tsi Starting index of temperature in the solution array
-    /// (nSpecie)
-    /// @param c A span of concentrations in a cell.
-    /// @param ddNdtByVdcTp A two dimensional span where the result is
-    /// assigned.
+    
     inline CUDA_HOSTDEV void
-    jac_dCdT_contribution(const gScalar                  p,
-                          const gScalar                  T,
-                          const gScalar                  Cf,
-                          const gScalar                  Cr,
-                          const gScalar                  kr,
+    jac_dCdT_contribution(const reactionParams& r,
                           const gLabel                   Tsi,
-                          const mdspan<const gScalar, 1> c,
                           mdspan<gScalar, 2> ddNdtByVdcTp) const;
 
-    /// @brief Computes and assigns the jacobian contributions from
-    /// the derivative of the rate constants w.r.t concentration.
-    /// @param p Pressure
-    /// @param T Temperature
-    /// @param Cf The product of the LHS concentration powers.
-    /// @param Cr The product of the RHS concentration powers.
-    /// @param kr The reverse rate constant.
-    /// @param c A span of concentrations in a cell.
-    /// @param cTpWork0 A span of at least size nSpecie used as a
-    /// temporary.
-    /// @param cTpWork1 A span of at least size nSpecie used as a
-    /// temporary.
-    /// @param ddNdtByVdcTp A two dimensional span where the result is
-    /// assigned.
+    
     inline CUDA_HOSTDEV void
     jac_dCdC_contribution(const gScalar                  p,
                           const gScalar                  T,
-                          const gScalar                  Cf,
-                          const gScalar                  Cr,
-                          const gScalar                  kr,
+                          const reactionParams&          r,
                           const mdspan<const gScalar, 1> c,
                           mdspan<gScalar, 1>             cTpWork0,
                           mdspan<gScalar, 1>             cTpWork1,
                           mdspan<gScalar, 2> ddNdtByVdcTp) const;
-
-
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -546,7 +463,7 @@ inline CUDA_HOSTDEV bool gpuReaction::rhsSmallConcentration(
 }
 
 inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-gpuReaction::lhsPowers(const mdspan<const gScalar, 1> c) const {
+                    gpuReaction::lhsPowers(const mdspan<const gScalar, 1> c) const {
 
     const auto                              llhs = lhs();
     std::array<gScalar, MAX_REACTION_WIDTH> ret{};
@@ -554,14 +471,14 @@ gpuReaction::lhsPowers(const mdspan<const gScalar, 1> c) const {
         for (size_t i = 0; i < llhs.size(); ++i) {
             const auto& el = llhs[i].exponent;
             const auto& si = llhs[i].index;
-            ret[i]         = pow(c[si], el);
+            ret[i]         = speciePow(c[si], el);
         }
     }
     return ret;
 }
 
 inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-gpuReaction::rhsPowers(const mdspan<const gScalar, 1> c) const {
+                    gpuReaction::rhsPowers(const mdspan<const gScalar, 1> c) const {
 
     const auto                              rrhs = rhs();
     std::array<gScalar, MAX_REACTION_WIDTH> ret{};
@@ -569,7 +486,7 @@ gpuReaction::rhsPowers(const mdspan<const gScalar, 1> c) const {
         for (size_t i = 0; i < rrhs.size(); ++i) {
             const auto& er = rrhs[i].exponent;
             const auto& si = rrhs[i].index;
-            ret[i]         = pow(c[si], er);
+            ret[i]         = speciePow(c[si], er);
         }
     }
     return ret;
@@ -604,7 +521,7 @@ inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
             const auto& el = llhs[i].exponent;
             const auto& si = llhs[i].index;
             if (i == j) {
-                dCfdcj *= el * pow(c[si], el - gScalar(1));
+                dCfdcj *= el * speciePow(c[si], el - gpuSpecieExponent(gLabel(1)));
             } else {
                 dCfdcj *= lhsPow[i];
             }
@@ -629,7 +546,7 @@ inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
             const auto& er = rrhs[i].exponent;
             const auto& si = rrhs[i].index;
             if (i == j) {
-                dCrdcj *= er * pow(c[si], er - gScalar(1));
+                dCrdcj *= er * speciePow(c[si], er - gpuSpecieExponent(gLabel(1)));
             } else {
                 dCrdcj *= rhsPow[i];
             }
@@ -800,26 +717,15 @@ gpuReaction::dkrdc(const gScalar                  p,
 }
 
 inline CUDA_HOSTDEV void gpuReaction::jac_dCfdcj_contribution(
-    const gScalar                                 kf,
-    const gScalar                                 Cf,
-    const std::array<gScalar, MAX_REACTION_WIDTH> lhsPow,
-    const mdspan<const gScalar, 1>                c,
-    mdspan<gScalar, 2> ddNdtByVdcTp) const {
-
-
-    std::array<gScalar, MAX_REACTION_WIDTH> dCfdjs;
-    if (!lhsSmallConcentration(c)) {
-        dCfdjs = calcdCfdcjLargeC(Cf, c);
-    } else {
-        dCfdjs = calcdCfdcj(lhsPow, c);
-    }
+    const reactionParams&          r,
+    mdspan<gScalar, 2>             ddNdtByVdcTp) const {
 
     const auto llhs = lhs();
     const auto rrhs = rhs();
 
     for (size_t j = 0; j < llhs.size(); ++j) {
 
-        const gScalar dCfdcj_kf = dCfdjs[j] * kf;
+        const gScalar dCfdcj_kf = r.dCfdjs[j] * r.kf;
         const gLabel  sj        = llhs[j].index;
 
         for (size_t i = 0; i < llhs.size(); ++i) {
@@ -836,26 +742,17 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCfdcj_contribution(
 }
 
 inline CUDA_HOSTDEV void gpuReaction::jac_dCrdcj_contribution(
-    const gScalar                                 kr,
-    const gScalar                                 Cr,
-    const std::array<gScalar, MAX_REACTION_WIDTH> rhsPow,
-    const mdspan<const gScalar, 1>                c,
+    const reactionParams& r,
     mdspan<gScalar, 2> ddNdtByVdcTp) const {
 
-    std::array<gScalar, MAX_REACTION_WIDTH> dCrdjs;
-    if (!rhsSmallConcentration(c)) {
-        dCrdjs = calcdCrdcjLargeC(Cr, c);
-    } else {
-        dCrdjs = calcdCrdcj(rhsPow, c);
-    }
-
+    
 
     const auto llhs = lhs();
     const auto rrhs = rhs();
 
     for (size_t j = 0; j < rrhs.size(); ++j) {
 
-        const gScalar dCrcj_kr = dCrdjs[j] * kr;
+        const gScalar dCrcj_kr = r.dCrdjs[j] * r.kr;
         const gLabel  sj       = rrhs[j].index;
 
         for (size_t i = 0; i < llhs.size(); ++i) {
@@ -872,19 +769,11 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCrdcj_contribution(
 }
 
 inline CUDA_HOSTDEV void gpuReaction::jac_dCdT_contribution(
-    const gScalar                  p,
-    const gScalar                  T,
-    const gScalar                  Cf,
-    const gScalar                  Cr,
-    const gScalar                  kr,
+    const reactionParams& r,
     const gLabel                   Tsi,
-    const mdspan<const gScalar, 1> c,
     mdspan<gScalar, 2>             ddNdtByVdcTp) const {
 
-    const gScalar dkfdT = this->dkfdT(p, T, c);
-    const gScalar dkrdT = this->dkrdT(p, T, c, dkfdT, kr);
-
-    const gScalar dwdT = dkfdT * Cf - dkrdT * Cr;
+    const gScalar dwdT = r.dkfdT * r.Cf - r.dkrdT * r.Cr;
 
     const auto llhs = lhs();
     for (size_t i = 0; i < llhs.size(); ++i) {
@@ -903,9 +792,7 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCdT_contribution(
 inline CUDA_HOSTDEV void gpuReaction::jac_dCdC_contribution(
     const gScalar                  p,
     const gScalar                  T,
-    const gScalar                  Cf,
-    const gScalar                  Cr,
-    const gScalar                  kr,
+    const reactionParams&           r,
     const mdspan<const gScalar, 1> c,
     mdspan<gScalar, 1>             cTpWork0,
     mdspan<gScalar, 1>             cTpWork1,
@@ -915,11 +802,11 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCdC_contribution(
         auto& dkrdc = cTpWork1;
 
         this->dkfdc(p, T, c, dkfdc);
-        this->dkrdc(p, T, c, dkfdc, kr, dkrdc);
+        this->dkrdc(p, T, c, dkfdc, r.kr, dkrdc);
 
         // Do the compute here once and reuse the first work array
         for (gLabel j = 0; j < gLabel(c.size()); ++j) {
-            dkfdc[j] = dkfdc[j] * Cf - dkrdc[j] * Cr;
+            dkfdc[j] = dkfdc[j] * r.Cf - dkrdc[j] * r.Cr;
         }
 
         const auto llhs = lhs();
@@ -944,48 +831,35 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCdC_contribution(
     }
 }
 
-inline CUDA_HOSTDEV void
-gpuReaction::ddNdtByVdcTp(const gScalar                  p,
-                          const gScalar                  T,
+
+
+static inline CUDA_HOSTDEV reactionParams
+computeReactionParameters(const gpuReaction&             r,
                           const mdspan<const gScalar, 1> c,
-                          mdspan<gScalar, 1>             dNdtByV,
-                          mdspan<gScalar, 2>             ddNdtByVdcTp,
-                          const gLabel                   Nsi0,
-                          const gLabel                   Tsi,
-                          mdspan<gScalar, 1>             cTpWork0,
-                          mdspan<gScalar, 1> cTpWork1) const {
+                          const gScalar                  p,
+                          const gScalar                  T) {
+    reactionParams ret;
 
-    const auto lhsPow = lhsPowers(c);
-    const auto rhsPow = rhsPowers(c);
+    
+    ret.kf = r.kf(p, T, c);
+    const auto lhsPow = r.lhsPowers(c);
+    ret.Cf = r.calcCf(lhsPow);
+    ret.dkfdT = r.dkfdT(p, T, c);
+    ret.dCfdjs = r.calcdCfdcj(lhsPow, c);
+    
 
-    const gScalar Cf = calcCf(lhsPow);
-    const gScalar Cr = calcCr(rhsPow);
+    if (!r.isIrreversible())
+    {
+        ret.kr = r.kr(ret.kf, p, T, c);
+        const auto rhsPow = r.rhsPowers(c);
+        ret.Cr = r.calcCr(rhsPow);
+        ret.dkrdT = r.dkrdT(p, T, c, ret.dkfdT, ret.kr);
+        ret.dCrdjs = r.calcdCrdcj(rhsPow, c);
 
-    // Rate constants
-    const gScalar kf = this->kf(p, T, c);
-    const gScalar kr = this->kr(kf, p, T, c);
-
-    // Overall reaction rate
-    const gScalar omega = kf * Cf - kr * Cr;
-
-    // Specie reaction rates
-
-    // Derivative contribuiton
-    this->dNdtByV(omega, dNdtByV);
-
-    // Jacobian contributions from the derivative of the concentration
-    // products w.r.t. concentration
-
-
-    jac_dCfdcj_contribution(kf, Cf, lhsPow, c, ddNdtByVdcTp);
-
-    jac_dCrdcj_contribution(kr, Cr, rhsPow, c, ddNdtByVdcTp);
-
-
-    jac_dCdT_contribution(p, T, Cf, Cr, kr, Tsi, c, ddNdtByVdcTp);
-
-    jac_dCdC_contribution(
-        p, T, Cf, Cr, kr, c, cTpWork0, cTpWork1, ddNdtByVdcTp);
+    }
+    
+    
+    return ret;
 }
 
 } // namespace FoamGpu

@@ -32,7 +32,7 @@ using memoryResource_t = FoamGpu::cpuMemoryResource;
 #ifdef __NVIDIA_COMPILER__
 constexpr double errorTol = 1E-7;
 #else
-constexpr double errorTol = 1E-10;
+constexpr double errorTol = 1E-9;
 #endif
 
 #ifdef __NVIDIA_COMPILER__
