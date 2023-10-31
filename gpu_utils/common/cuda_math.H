@@ -4,6 +4,8 @@
 #ifndef __NVIDIA_COMPILER__
 #include <cmath>
 
+static inline double abs(const double& d) {return std::abs(d);}
+
 //NOTE! These are host only
 static inline const double& max(const double& lhs, const double& rhs)
 {
