@@ -179,6 +179,13 @@ public:
     inline CUDA_HOSTDEV void
     dNdtByV(const gScalar omega, mdspan<gScalar, 1> dNdtByV) const;
 
+    inline CUDA_HOSTDEV void
+    dNdtByV(const reactionParams& r, mdspan<gScalar, 1> dNdtByV) const
+    {
+        gScalar omega = r.kf * r.Cf - r.kr * r.Cr;
+        this->dNdtByV(omega, dNdtByV);
+    }
+
     /// @brief Computes and assigns the net reaction rate for each
     /// specie involved to the input dNdtByV span.
     /// @param p Pressure.

@@ -1,41 +1,39 @@
 #pragma once
 
-#include "mdspan.H"
 #include "arrays.H"
-#include "gpuConstants.H"
 #include "check_ptr.H"
+#include "gpuConstants.H"
+#include "mdspan.H"
+//#include "timer.H"
+
 namespace FoamGpu {
 
-
+// struct gpuBuffer : public Timer {
 struct gpuBuffer {
 
     gpuBuffer() = default;
 
     CUDA_HOSTDEV
-    gpuBuffer(std::array<gLabel*, N_LABEL_ARRAYS>   lData,
-               std::array<gScalar*, N_SCALAR_ARRAYS> sData,
-               std::array<gScalar*, N_TWOD_SCALAR_ARRAYS> twodSData,
-               gLabel                                nSpecie)
+    gpuBuffer(std::array<gLabel*, N_LABEL_ARRAYS>        lData,
+              std::array<gScalar*, N_SCALAR_ARRAYS>      sData,
+              std::array<gScalar*, N_TWOD_SCALAR_ARRAYS> twodSData,
+              gLabel                                     nSpecie)
         : lData_(lData)
         , sData_(sData)
         , twodSData_(twodSData)
         , nSpecie_(nSpecie)
         , nEqns_(nSpecie + 2) {
 
-            for (size_t i = 0; i < lData_.size(); ++i)
-            {
-                check_ptr(lData[i], "label pointer");
-            }
-            for (size_t i = 0; i < sData_.size(); ++i)
-            {
-                check_ptr(sData[i], "scalar pointer");
-            }
-            for (size_t i = 0; i < twodSData_.size(); ++i)
-            {
-                check_ptr(twodSData[i], "twod scalar pointer");
-            }
+        for (size_t i = 0; i < lData_.size(); ++i) {
+            check_ptr(lData[i], "label pointer");
         }
-
+        for (size_t i = 0; i < sData_.size(); ++i) {
+            check_ptr(sData[i], "scalar pointer");
+        }
+        for (size_t i = 0; i < twodSData_.size(); ++i) {
+            check_ptr(twodSData[i], "twod scalar pointer");
+        }
+    }
 
     CUDA_HOSTDEV
     auto getLabelData(labelArrays a, gLabel size) {
@@ -48,15 +46,16 @@ struct gpuBuffer {
     }
 
     CUDA_HOSTDEV
-    auto getTwodScalarData(twoDScalarArrays a, gLabel size1, gLabel size2) {
-        return mdspan<gScalar, 2>(twodSData_[a], extents<2>{size1, size2});
+    auto getTwodScalarData(twoDScalarArrays a,
+                           gLabel           size1,
+                           gLabel           size2) {
+        return mdspan<gScalar, 2>(twodSData_[a],
+                                  extents<2>{size1, size2});
     }
-
 
     CUDA_HOSTDEV auto pivotIndices() {
         return getLabelData(labelArrays::pivotIndices, nEqns_);
     }
-
 
     CUDA_HOSTDEV auto dydx0() {
         return getScalarData(scalarArrays::dydx0, nEqns_);
@@ -114,15 +113,12 @@ struct gpuBuffer {
         return getTwodScalarData(twoDScalarArrays::J, nEqns_, nEqns_);
     }
 
-
 private:
-
-
-    std::array<gLabel*, N_LABEL_ARRAYS>   lData_;
-    std::array<gScalar*, N_SCALAR_ARRAYS> sData_;
+    std::array<gLabel*, N_LABEL_ARRAYS>        lData_;
+    std::array<gScalar*, N_SCALAR_ARRAYS>      sData_;
     std::array<gScalar*, N_TWOD_SCALAR_ARRAYS> twodSData_;
-    gLabel nSpecie_;
-    gLabel nEqns_;
+    gLabel                                     nSpecie_;
+    gLabel                                     nEqns_;
 };
 
 } // namespace FoamGpu

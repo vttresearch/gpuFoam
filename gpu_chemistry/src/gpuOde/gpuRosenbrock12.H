@@ -65,15 +65,15 @@ public:
 
         this->computeDecomposedJacobian(
             dx, gamma, y0, dfdx, a, pivotIndices, buffer);
-
+        
         // Calculate k1:
-
         auto k1 = buffer.k1();
         for (gLabel i = 0; i < this->nEqns(); ++i) {
             k1[i] = dydx0[i] + dx * d1 * dfdx[i];
         }
 
         FoamGpu::LUBacksubstitute(a, pivotIndices, k1);
+
 
         // Calculate k2:
         for (gLabel i = 0; i < this->nEqns(); ++i) {
@@ -89,8 +89,6 @@ public:
 
         FoamGpu::LUBacksubstitute(a, pivotIndices, k2);
 
-    
-
         // Calculate error and update state:
         auto err = buffer.err();
         for (gLabel i = 0; i < this->nEqns(); ++i) {
@@ -100,6 +98,7 @@ public:
 
         return normaliseError(
             y0, y, err, this->absTol(), this->relTol());
+
         
     }
 };

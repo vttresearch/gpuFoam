@@ -5,7 +5,7 @@ Test-memoryResource.C
 Test-odeSystem.C
 Test-ode.C
 Test-evaluator.C
-
+Test-utilities.C
 
 EXE = $(FOAM_USER_APPBIN)/testGpuChemistry
 

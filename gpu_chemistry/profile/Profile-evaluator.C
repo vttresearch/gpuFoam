@@ -50,9 +50,8 @@ auto runProfile(TestData::Mechanism mech, gLabel nTimes)
     const auto deltaTChem = make_random_deltaTChem(nCells);
     const auto Yvf = make_tutorial_y0s(nCells, mech);
 
-    auto dict = make_dict("Rosenbrock23");
+    auto dict = make_dict("Rosenbrock12");
     auto eval = make_evaluator(nCells, dict, mech);
-
     (void) nTimes;
 
     auto r = eval.computeRR(deltaT, deltaTChemMax, rho, deltaTChem, Yvf);

@@ -319,7 +319,6 @@ public:
                                   mdspan<gScalar, 1>             dydx,
                                   gpuBuffer& buffer) const {
 
-        for (gLabel i = 0; i < nEqns(); ++i) { dydx[i] = 0; }
 
         const gLabel nSpecie = nEqns() - 2;
 
@@ -355,13 +354,13 @@ public:
         const gScalar T = y[nSpecie];
         const gScalar p = y[nSpecie + 1];
 
+        
         const gScalar rhoM = rhoMixture(y, p, T);
         const gScalar CpM  = CpMixture(y, p, T);
 
         auto c = buffer.c();
         concentration(y, c, rhoM);
-
-        this->derivatives(y, dfdx, buffer, c, CpM, rhoM);
+        //this->derivatives(y, dfdx, buffer, c, CpM, rhoM);
 
         auto tempField1 = buffer.tempField1();
         auto tempField2 = buffer.tempField2();
@@ -372,6 +371,7 @@ public:
 
             auto params = computeReactionParameters(reaction, c, p, T);
 
+            reaction.dNdtByV(params, dfdx);
             
             reaction.ddNdtByVdcTp(p,
                                     T,
@@ -383,21 +383,26 @@ public:
             
         }
 
+
+
+        dYdT(dfdx, rhoM);
+
         
         // Temporary array to allow for re-using dfdy
         auto temp = buffer.tempField1();
 
         // Evaluate the mixture thermal expansion coefficient
         const gScalar alphavM = alphavMixture(y, p, T, rhoM);
+
         ddY_dcdY(dfdy, dfdx, c, temp, rhoM, alphavM, p, T);
 
-        
         auto Cp = buffer.tempField2();
         heatCapacity(Cp, p, T);
 
         auto Ha = buffer.tempField1();
         absoluteEnthalpy(Ha, p, T);
 
+        dfdx[nSpecie] = dTdt(dfdx, Ha, CpM);
     
         ////////////////////////////////
 
@@ -407,6 +412,8 @@ public:
         // d(dTdt)/dT
         const gScalar dCpMdT = dCpMdTMixture(y, p, T);
         ddT_dtdT(dfdy, dfdx, Cp, Ha, CpM, dCpMdT);
+
+
 
         /*
         // d(dTdt)/dp = 0 (pressure is assumed constant)
