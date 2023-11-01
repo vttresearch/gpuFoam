@@ -31,7 +31,7 @@ EulerImplicitCoeffs
 
 odeCoeffs
 {
-    solver          Rosenbrock23;
+    solver          Rosenbrock12;
     absTol          1e-12;
     relTol          1e-1;
 }

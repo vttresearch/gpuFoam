@@ -1,5 +1,6 @@
 #pragma once
 
+#include "gpuRosenbrock12.H"
 #include "gpuRosenbrock23.H"
 #include "gpuRosenbrock34.H"
 
@@ -13,13 +14,16 @@ static inline gpuODESolver
 make_gpuODESolver(const gpuODESystem& ode, const gpuODESolverInputs& inputs)
 {
     
-
+    if (inputs.name == "Rosenbrock12"){
+        return gpuODESolver(gpuRosenbrock12<gpuODESystem>(ode, inputs));
+    }
     if (inputs.name == "Rosenbrock23"){
         return gpuODESolver(gpuRosenbrock23<gpuODESystem>(ode, inputs));
     }
     if (inputs.name == "Rosenbrock34"){
         return gpuODESolver(gpuRosenbrock34<gpuODESystem>(ode, inputs));
     }
+    
     
     throw std::logic_error("Invalid ODE Solver type");
 

@@ -3,6 +3,7 @@
 #include <variant>
 
 #include "gpuODESystem.H"
+#include "gpuRosenbrock12.H"
 #include "gpuRosenbrock23.H"
 #include "gpuRosenbrock34.H"
 
@@ -12,7 +13,8 @@ namespace gpu {
 
 // using system = gpuODESystem;
 
-using solver = variant::variant<gpuRosenbrock23<gpuODESystem>,
+using solver = variant::variant<gpuRosenbrock12<gpuODESystem>,
+                                gpuRosenbrock23<gpuODESystem>,
                                 gpuRosenbrock34<gpuODESystem>>;
 
 } // namespace gpu

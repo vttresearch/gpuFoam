@@ -93,6 +93,11 @@ void runBenchmarks(TestData::Mechanism mech)
     const auto deltaTChem = make_random_deltaTChem(nCells);
     const auto Yvf = make_tutorial_y0s(nCells, mech);
 
+    BENCHMARK_ADVANCED("Rosenbrock12")(Catch::Benchmark::Chronometer meter) {
+        auto dict = make_dict("Rosenbrock12");
+        auto eval = make_evaluator(nCells, dict, mech);
+        meter.measure([&] { return callGpuSolve(deltaT, deltaTChemMax, rho, deltaTChem, Yvf, eval);});
+    };
 
     BENCHMARK_ADVANCED("Rosenbrock23")(Catch::Benchmark::Chronometer meter) {
         auto dict = make_dict("Rosenbrock23");

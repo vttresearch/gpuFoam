@@ -215,6 +215,22 @@ static inline void runMechanismTests(TestData::Mechanism mech)
 
     {
         Foam::dictionary dict;
+        dict.add("solver", "Rosenbrock12");
+
+        auto cpu = Foam::ODESolver::New(cpu_system, dict);
+        auto gpu = make_gpuODESolver(gpu_system, read_gpuODESolverInputs(dict));
+        auto y_gpu = callGpuSolve(y0, gpu, params);
+        auto y_cpu = callCpuSolve(y0, cpu, params);
+
+        REQUIRE_THAT
+        (
+            y_gpu,
+            Catch::Matchers::Approx(toStdVector(y_cpu)).epsilon(errorTol)
+        );
+    }
+
+    {
+        Foam::dictionary dict;
         dict.add("solver", "Rosenbrock23");
 
         auto cpu = Foam::ODESolver::New(cpu_system, dict);
