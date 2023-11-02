@@ -28,6 +28,5 @@ EXE_LIBS = \
     -lfluidThermophysicalModels \
     -lmulticomponentThermophysicalModels \
     -lfiniteVolume \
-    -lchemistryModel \
-    -lblockMesh
+    -lchemistryModel
 

@@ -1,8 +1,8 @@
 #include "create_gpu_inputs.H"
 
 #include "create_foam_inputs.H"
-#include "makeGpuThermo.H"
 #include "makeGpuReactions.H"
+#include "makeGpuThermo.H"
 
 namespace TestData {
 
@@ -39,6 +39,25 @@ std::vector<FoamGpu::gpuReaction> makeGpuReactions(Mechanism m) {
     return ret;
 }
 
+FoamGpu::gpuODESolverInputs makeGpuODEInputs(std::string odeName,
+                                             Mechanism   m) {
+    (void)m;
+    FoamGpu::gpuODESolverInputs ret;
 
+    ret.name = odeName;
+
+    // These are same for gri and h2 tutorials
+    ret.absTol = 1E-12;
+    ret.relTol = 1E-1;
+
+    ret.maxSteps  = 10000;
+    ret.safeScale = 0.9;
+    ret.alphaInc  = 0.2;
+    ret.alphaDec  = 0.25;
+    ret.minScale  = 0.2;
+    ret.maxScale  = 10;
+
+    return ret;
+}
 
 } // namespace TestData

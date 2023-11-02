@@ -10,6 +10,7 @@
 #include "makeGpuOdeSolver.H"
 
 
+
 static constexpr TestData::Mechanism mech = TestData::GRI;
 
 TEST_CASE("LU")
@@ -160,14 +161,15 @@ TEST_CASE("gpuODESolver"){
 
 
     const gScalar xStart = 0.0;
-    const gScalar xEnd = 1E-5;
+    const gScalar xEnd = 2E-7;
     const gScalar dxTry = 1E-7;
 
 
 
+    //i.absTol =
+
     SECTION("Rosenbrock12"){
-        gpuODESolverInputs i;
-        i.name = "Rosenbrock12";
+        auto i = TestData::makeGpuODEInputs("Rosenbrock12", mech);
         auto solver = make_gpuODESolver(system, i);
 
         auto op = [        =,
@@ -178,27 +180,16 @@ TEST_CASE("gpuODESolver"){
             gScalar temp = dxTry;
             for (int i = 0; i < nEqns; ++i) {
                 y(i) = y0(i);
-                //printf("%f \n", y(i));
             }
 
             solver.solve(xStart, xEnd, y, temp, buffers[0]);
             return temp;
         };
 
-        eval(op);
 
-        auto v = toStdVector(y);
-        for (auto e : v ){
-            std::cout << e << std::endl;
-        }
-
-        //eval(op);
-        /*
         BENCHMARK("Rosenbrock12"){
             return eval(op);
         };
-        */
-
 
     }
 
