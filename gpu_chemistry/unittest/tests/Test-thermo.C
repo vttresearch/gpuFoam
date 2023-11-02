@@ -6,6 +6,30 @@
 #include "create_foam_inputs.H"
 #include "makeGpuThermo.H"
 
+template<class T, unsigned N>
+static inline auto toArray(Foam::FixedList<T, N> a)
+{
+
+    std::array<T, N> ret{};
+    for (size_t i = 0; i < N; ++i)
+    {
+        ret[i] = a[i];
+    }
+    return ret;
+}
+
+
+
+static inline auto toArray(typename FoamGpu::gpuThermo::coeffArray a)
+{
+    std::array<double, 7> ret{};
+    for (size_t i = 0; i < 7; ++i)
+    {
+        ret[i] = a[i];
+    }
+    return ret;
+}
+
 Foam::dictionary get_dictionary()
 {
     using namespace Foam;

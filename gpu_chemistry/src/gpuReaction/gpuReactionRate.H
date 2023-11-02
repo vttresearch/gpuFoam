@@ -125,12 +125,18 @@ struct gpuReactionRate {
 
         my_visitor1 v(p, T, c);
 
-        //auto v = [=] CUDA_HOSTDEV (const auto& i){return i.operator()(p, T, c, li);}; 
+        //auto v = [=] CUDA_HOSTDEV (const auto& i){return i.operator()(p, T, c, li);};
 
         return variant::apply_visitor(v, rate_);
     }
 
     inline CUDA_HOSTDEV bool hasDdc() const {
+        /*
+        auto visitor = [] CUDA_HOSTDEV (const auto& i){
+            return i.hasDdc();
+        };
+        return variant::apply_visitor(visitor, rate_);
+        */
         return variant::apply_visitor(my_visitor2(), rate_);
         // return
         // std::visit(my_visitor2(), rate_);

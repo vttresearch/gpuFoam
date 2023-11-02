@@ -7,7 +7,6 @@
 #include "host_device_vectors.H"
 
 #include "gpuThermo.H"
-#include "FixedList.H"
 #include "gpuMemoryResource.H"
 #include "cpuMemoryResource.H"
 
@@ -50,17 +49,16 @@ __global__ void on_device(T t, R* r)
 
 
 template<class T>
-static inline Foam::scalar eval(T t)
+static inline gScalar eval(T t)
 {
-    using namespace Foam;
 
-    scalar *d_result;
-    CHECK_CUDA_ERROR(cudaMalloc(&d_result, sizeof(scalar)));
+    gScalar *d_result;
+    CHECK_CUDA_ERROR(cudaMalloc(&d_result, sizeof(gScalar)));
     on_device<<<1,1>>>(t, d_result);
     CHECK_LAST_CUDA_ERROR();
     cudaDeviceSynchronize();
-    scalar h_result;
-    CHECK_CUDA_ERROR(cudaMemcpy(&h_result, d_result, sizeof(scalar), cudaMemcpyDeviceToHost));
+    gScalar h_result;
+    CHECK_CUDA_ERROR(cudaMemcpy(&h_result, d_result, sizeof(gScalar), cudaMemcpyDeviceToHost));
     cudaDeviceSynchronize();
     CHECK_CUDA_ERROR(cudaFree(d_result));
     cudaDeviceSynchronize();
@@ -71,7 +69,7 @@ static inline Foam::scalar eval(T t)
 #else
 
 template<class T>
-static inline Foam::scalar eval(T t)
+static inline gScalar eval(T t)
 {
     return t();
 }
@@ -81,29 +79,7 @@ static inline Foam::scalar eval(T t)
 
 
 
-template<class T, unsigned N>
-static inline auto toArray(Foam::FixedList<T, N> a)
-{
 
-    std::array<T, N> ret{};
-    for (size_t i = 0; i < N; ++i)
-    {
-        ret[i] = a[i];
-    }
-    return ret;
-}
-
-
-
-static inline auto toArray(typename FoamGpu::gpuThermo::coeffArray a)
-{
-    std::array<double, 7> ret{};
-    for (size_t i = 0; i < 7; ++i)
-    {
-        ret[i] = a[i];
-    }
-    return ret;
-}
 
 static inline double random_number(double LO, double HI){
     double r = LO + static_cast <double> (rand()) /( static_cast <double> (RAND_MAX/(HI-LO)));
