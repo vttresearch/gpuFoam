@@ -5,7 +5,7 @@
 #include "gpuKernelEvaluator.H"
 #include "readGpuOdeInputs.H"
 #include "test_utilities.H"
-#include "create_inputs.H"
+#include "create_gpu_inputs.H"
 #include "benchmark_utilities.H"
 
 

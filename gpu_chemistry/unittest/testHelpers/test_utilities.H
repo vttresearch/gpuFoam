@@ -11,6 +11,8 @@
 #include "gpuMemoryResource.H"
 #include "cpuMemoryResource.H"
 
+
+
 #ifdef __NVIDIA_COMPILER__
 
 
@@ -119,6 +121,9 @@ static inline void fill_random(T& v, double LO = 0.0, double HI = 1.0)
     }
 
 }
+
+
+
 
 
 

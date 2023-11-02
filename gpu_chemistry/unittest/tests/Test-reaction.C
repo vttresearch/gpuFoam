@@ -6,7 +6,8 @@
 #include "gpuReaction.H"
 
 #include "test_utilities.H"
-#include "create_inputs.H"
+#include "create_gpu_inputs.H"
+#include "create_foam_inputs.H"
 
 TEST_CASE("variant")
 {
@@ -132,8 +133,8 @@ TEST_CASE("gpuSpeciesCoeffs pow")
         );
     }
 
-    
-    
+
+
     SECTION("Test2")
     {
         const gScalar base = 43.421;
@@ -452,7 +453,7 @@ static inline void reactionTests(TestData::Mechanism mech)
                     cTpWork0,
                     cTpWork1,
                     params
-                    
+
                 );
 
                 return 0;

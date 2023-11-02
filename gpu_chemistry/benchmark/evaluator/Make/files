@@ -1,0 +1,5 @@
+Benchmark-evaluator.C
+
+EXE = $(FOAM_USER_APPBIN)/gpuChemistrybenchmarkEvaluator
+
+

@@ -1,9 +1,8 @@
 EXE_INC = \
-    -I../catchMain/lnInclude \
-    -I../src/lnInclude \
-    -I../src/gpuChemistryModels/lnInclude \
-    -I../src/gpuKernelEvaluator/lnInclude \
-    -I../../gpu_utils/common/lnInclude \
+    -I../../src/lnInclude \
+    -I../../src/gpuChemistryModels/lnInclude \
+    -I../../src/gpuKernelEvaluator/lnInclude \
+    -I../../../gpu_utils/common/lnInclude \
     -I$(LIB_SRC)/physicalProperties/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/multicomponentThermo/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/basic/lnInclude \
@@ -20,7 +19,6 @@ EXE_INC = \
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
     -lGpuKernelEvaluator \
-    -lCatchMain \
     -lmeshTools \
     -lthermophysicalProperties \
     -lODE \
@@ -33,4 +31,3 @@ EXE_LIBS = \
     -lchemistryModel \
     -lblockMesh
 
-#include ../nvcpp

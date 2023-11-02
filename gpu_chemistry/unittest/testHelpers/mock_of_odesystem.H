@@ -3,7 +3,7 @@
 #include "test_utilities.H"
 
 #include "ODESystem.H"
-#include "create_inputs.H"
+#include "create_foam_inputs.H"
 
 namespace Foam
 {

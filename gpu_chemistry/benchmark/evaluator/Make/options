@@ -1,11 +1,11 @@
 EXE_INC = \
-    -I../catchMain/lnInclude \
-    -I../src/lnInclude \
-    -I../src/gpuChemistryModels/lnInclude \
-    -I../src/gpuKernelEvaluator/lnInclude \
-    -I../../gpu_utils/common/lnInclude \
-    -I../unittest/testHelpers \
-    -I../benchmark \
+    -I../../catchMain/lnInclude \
+    -I../../src/lnInclude \
+    -I../../src/gpuChemistryModels/lnInclude \
+    -I../../src/gpuKernelEvaluator/lnInclude \
+    -I../../../gpu_utils/common/lnInclude \
+    -I../../unittest/testHelpers/ \
+    -I../ \
     -I$(LIB_SRC)/physicalProperties/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/multicomponentThermo/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/basic/lnInclude \
@@ -35,5 +35,3 @@ EXE_LIBS = \
     -lchemistryModel \
     -lblockMesh
 
-#include ../nvcc
-#include ../nvcpp

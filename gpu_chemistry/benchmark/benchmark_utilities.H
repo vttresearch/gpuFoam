@@ -2,7 +2,7 @@
 
 #include <vector>
 #include "gpu_constants.H"
-#include "create_inputs.H"
+#include "create_gpu_inputs.H"
 
 struct BenchmarkParams{
 
