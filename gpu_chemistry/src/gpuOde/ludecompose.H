@@ -25,29 +25,26 @@ static inline CUDA_HOSTDEV void LUDecompose(mdspan<gScalar, 2> matrix,
         vv[i] = 1.0 / largestCoeff;
     }
 
+    //std::array<gScalr, SPECIE_MAX> matrix_i{};
+
     for (gLabel j = 0; j < m; j++) {
         for (gLabel i = 0; i < j; i++) {
-            gScalar sum = matrix(i, j);
 
             for (gLabel k = 0; k < i; k++) {
-                sum -= matrix(i, k) * matrix(k, j);
+                matrix(i, j) -= matrix(i, k) * matrix(k, j);
             }
-            matrix(i, j) = sum;
         }
 
         gLabel iMax = 0;
 
         gScalar largestCoeff = 0.0;
         for (gLabel i = j; i < m; i++) {
-            gScalar sum = matrix(i, j);
 
             for (gLabel k = 0; k < j; k++) {
-                sum -= matrix(i, k) * matrix(k, j);
+                matrix(i,j) -= matrix(i, k) * matrix(k, j);
             }
 
-            matrix(i, j) = sum;
-
-            gScalar temp = vv[i] * std::abs(sum);
+            gScalar temp = vv[i] * std::abs(matrix(i, j));
             if (temp >= largestCoeff) {
                 largestCoeff = temp;
                 iMax         = i;

@@ -13,9 +13,11 @@
 
 #ifdef __NVIDIA_COMPILER__
 
+
 using memoryResource_t = FoamGpu::gpuMemoryResource;
 
 #else
+
 
 using memoryResource_t = FoamGpu::cpuMemoryResource;
 
@@ -109,10 +111,13 @@ static inline double random_number(double LO, double HI){
 template<class T>
 static inline void fill_random(T& v, double LO = 0.0, double HI = 1.0)
 {
+
+
     for (auto& e : v)
     {
         e = random_number(LO, HI);
     }
+
 }
 
 

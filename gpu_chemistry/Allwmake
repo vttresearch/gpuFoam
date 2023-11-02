@@ -19,7 +19,7 @@ wmake src/gpuKernelEvaluator
 wmake src/gpuChemistryModels
 wmake catchMain
 wmake unittest
-wmake benchmark
+wmake all benchmark
 wmake profile
 
 # ----------------------------------------------------------------- end-of-file
