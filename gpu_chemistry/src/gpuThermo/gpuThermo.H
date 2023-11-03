@@ -218,7 +218,7 @@ public:
         const auto& a = coeffs(T);
 
         return (
-            (a[0] * (1 - log(T)) -
+            (a[0] * (1.0 - log(T)) -
              (((a[4] / 20.0 * T + a[3] / 12.0) * T + a[2] / 6.0) * T +
               a[1] / 2.0) *
                  T -

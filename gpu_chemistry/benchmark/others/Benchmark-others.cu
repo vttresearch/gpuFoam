@@ -523,6 +523,8 @@ TEST_CASE("gpuODESolver"){
 
     }
 
+
+
     {
 
         gpuRosenbrock23<gpuODESystem> solver(

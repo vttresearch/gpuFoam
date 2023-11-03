@@ -286,7 +286,6 @@ static inline void reactionTests(TestData::Mechanism mech)
             const auto  gpu =&(gpu_reactions[i]);
 
 
-
             REQUIRE
             (
                 eval([=](){return gpu->Kc(p, T);})
@@ -349,7 +348,9 @@ static inline void reactionTests(TestData::Mechanism mech)
             auto dkrdc_gpu = make_mdspan(dkrdc_gpu_temp, extents<1>{nSpecie});
 
 
-            eval([=](){gpu->dkrdc(p, T, c, dkfdc_gpu, 0.1, dkrdc_gpu); return 0;});
+            eval([=](){
+                gScalar Kc = max(gpu->RSMALL, gpu->Kc(p, T));
+                gpu->dkrdc(p, T, Kc, c, dkfdc_gpu, 0.1, dkrdc_gpu); return 0;});
             cpu.dkrdc(p, T, c_cpu, li, dkfdc_cpu, 0.1, dkrdc_cpu);
 
             REQUIRE_THAT
