@@ -129,6 +129,10 @@ TEST_CASE("gpuODESystem"){
 
 }
 
+TEST_CASE("gpuReactionRate"){
+
+}
+
 TEST_CASE("gpuReaction"){
 
     using namespace FoamGpu;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "cuda_math.H"
 #include "gpu_constants.H"
 #include "mdspan.H"
 
@@ -16,9 +17,9 @@ class gpuArrheniusReactionRate {
                                           const gScalar T) const {
         gScalar ak = A_;
 
-        if (fabs(beta_) > gpuVSmall) { ak *= pow(T, beta_); }
+        if (abs(beta_) > gpuVSmall) { ak *= pow(T, beta_); }
 
-        if (fabs(Ta_) > gpuVSmall) { ak *= exp(-Ta_ / T); }
+        if (abs(Ta_) > gpuVSmall) { ak *= exp(-Ta_ / T); }
 
         return ak;
     }
@@ -53,6 +54,8 @@ public:
                                  const gScalar                  T,
                                  const mdspan<const gScalar, 1> c,
                                  mdspan<gScalar, 1>             ddc) const {
+
+        //void) p; (void) T; (void) c; (void) ddc;
         for (gLabel i = 0; i < gLabel(ddc.size()); ++i) { ddc[i] = 0; }
     }
 };

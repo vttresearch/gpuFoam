@@ -833,6 +833,7 @@ computeReactionParameters(const gpuReaction&             r,
                           const gScalar                  T) {
     reactionParams ret;
 
+
     {
         ret.kf = r.kf(p, T, c);
 
@@ -841,6 +842,8 @@ computeReactionParameters(const gpuReaction&             r,
         ret.dCfdjs        = r.calcdCfdcj(lhsPow, ret.Cf, c);
         ret.dkfdT = r.dkfdT(p, T, c);
     }
+
+
 
     if (!r.isIrreversible()) {
         const gScalar Kc = max(r.Kc(p, T), r.RSMALL);
@@ -851,6 +854,7 @@ computeReactionParameters(const gpuReaction&             r,
         ret.dkrdT         = r.dkrdT(p, T, Kc, c, ret.dkfdT, ret.kr);
         ret.dCrdjs        = r.calcdCrdcj(rhsPow, ret.Cr, c);
     }
+
 
     return ret;
 }
