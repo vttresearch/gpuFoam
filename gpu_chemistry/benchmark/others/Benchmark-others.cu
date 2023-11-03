@@ -144,6 +144,7 @@ TEST_CASE("gpuReaction"){
     device_vector<gScalar> c = [=](){
         std::vector<gScalar> vals(nSpecie);
         assign_test_concentration(vals, mech);
+        //fill_random(vals);
         return device_vector<gScalar>(vals.begin(), vals.end());
     }();
 
@@ -207,6 +208,248 @@ TEST_CASE("gpuReaction"){
         return eval(op);
     };
 
+    BENCHMARK("jac_dCfdcj_contribution + jac_dCrdcj_contribution"){
+
+        auto op =
+        [
+            =,
+            c = make_mdspan(c, extents<1>{nSpecie}),
+            dJ = make_mdspan(J, extents<2>{nEqns, nEqns}),
+            reactions = make_mdspan(reactions, extents<1>{nReactions})
+        ]__device__(){
+
+            gScalar ret = 0.0;
+            for (int i = 0; i < nReactions; ++i){
+                const auto& reaction = reactions[i];
+                reactionParams params{};
+                reaction.jac_dCfdcj_contribution(params, dJ);
+                reaction.jac_dCrdcj_contribution(params, dJ);
+                ret += dJ(4,4);
+            }
+            return ret;
+
+        };
+
+        return eval(op);
+    };
+
+    BENCHMARK("jac_dCdT_contribution"){
+
+        auto op =
+        [
+            =,
+            c = make_mdspan(c, extents<1>{nSpecie}),
+            dJ = make_mdspan(J, extents<2>{nEqns, nEqns}),
+            reactions = make_mdspan(reactions, extents<1>{nReactions})
+        ]__device__(){
+
+            gScalar ret = 0.0;
+            for (int i = 0; i < nReactions; ++i){
+                const auto& reaction = reactions[i];
+                reactionParams params{};
+                reaction.jac_dCdT_contribution(params, nSpecie, dJ);
+                ret += dJ(4,4);
+            }
+            return ret;
+
+        };
+
+        return eval(op);
+    };
+
+    BENCHMARK("jac_dCdC_contribution"){
+
+        auto op =
+        [
+            =,
+            c = make_mdspan(c, extents<1>{nSpecie}),
+            work1 = make_mdspan(work1, extents<1>{nEqns}),
+            work2 = make_mdspan(work2, extents<1>{nEqns}),
+            dJ = make_mdspan(J, extents<2>{nEqns, nEqns}),
+            reactions = make_mdspan(reactions, extents<1>{nReactions})
+        ]__device__(){
+
+            gScalar ret = 0.0;
+            for (int i = 0; i < nReactions; ++i){
+                const auto& reaction = reactions[i];
+                reactionParams params{};
+                reaction.jac_dCdC_contribution(p, T, params, c, work1, work2, dJ);
+                ret += dJ(4,4);
+            }
+            return ret;
+
+        };
+
+        return eval(op);
+    };
+
+    BENCHMARK("computeReactionParams"){
+
+        auto op = [          =,
+                   c         = make_mdspan(c, extents<1>{nSpecie}),
+                   reactions = make_mdspan(reactions, extents<1>{nReactions})
+                  ] __device__() {
+            gScalar ret = 0.0;
+            for (int i = 0; i < nReactions; ++i) {
+                const auto& reaction = reactions[i];
+                auto        params = computeReactionParameters(reaction, c, p, T);
+
+                ret += params.Cf + params.Cr
+                            + params.dCfdjs[5]
+                            + params.dCrdjs[5]
+                            + params.dkfdT
+                            + params.dkrdT
+                            + params.kf
+                            + params.kr;
+            }
+            return ret;
+        };
+
+        return eval(op);
+    };
+
+    BENCHMARK("kf"){
+
+        auto op = [          =,
+                   c         = make_mdspan(c, extents<1>{nSpecie}),
+                   reactions = make_mdspan(reactions, extents<1>{nReactions})
+                  ] __device__() {
+            gScalar ret = 0.0;
+            for (int i = 0; i < nReactions; ++i) {
+                const auto& reaction = reactions[i];
+                gScalar kf = reaction.kf(p, T, c);
+                ret += kf;
+            }
+            return ret;
+        };
+
+        return eval(op);
+    };
+
+    BENCHMARK("kr"){
+
+        auto op = [          =,
+                   c         = make_mdspan(c, extents<1>{nSpecie}),
+                   reactions = make_mdspan(reactions, extents<1>{nReactions})
+                  ] __device__() {
+            gScalar ret = 0.0;
+            for (int i = 0; i < nReactions; ++i) {
+                const auto& reaction = reactions[i];
+                gScalar kf = 0.535654;
+                gScalar kr = reaction.kr(kf, p, T, c);
+                ret += kr;
+            }
+            return ret;
+        };
+
+        return eval(op);
+    };
+
+
+
+
+    BENCHMARK("dkfdT"){
+
+        auto op = [          =,
+                   c         = make_mdspan(c, extents<1>{nSpecie}),
+                   reactions = make_mdspan(reactions, extents<1>{nReactions})
+                  ] __device__() {
+            gScalar ret = 0.0;
+            for (int i = 0; i < nReactions; ++i) {
+                const auto& reaction = reactions[i];
+                gScalar dkfdT = reaction.dkfdT(p, T, c);
+                ret += dkfdT;
+            }
+            return ret;
+        };
+
+        return eval(op);
+    };
+
+    BENCHMARK("dkrdT"){
+
+        auto op = [          =,
+                   c         = make_mdspan(c, extents<1>{nSpecie}),
+                   reactions = make_mdspan(reactions, extents<1>{nReactions})
+                  ] __device__() {
+            gScalar ret = 0.0;
+            for (int i = 0; i < nReactions; ++i) {
+                const auto& reaction = reactions[i];
+                gScalar dkfdT = 0.543534;
+                gScalar kr = 534534.0;
+                gScalar dkrdT = reaction.dkrdT(p, T, c, dkfdT, kr);
+                ret += dkrdT;
+            }
+            return ret;
+        };
+
+        return eval(op);
+    };
+
+    BENCHMARK("Kc"){
+
+        auto op = [          =,
+                   reactions = make_mdspan(reactions, extents<1>{nReactions})
+                  ] __device__() {
+            gScalar ret = 0.0;
+            for (int i = 0; i < nReactions; ++i) {
+                const auto& reaction = reactions[i];
+
+                ret += reaction.Kc(p, T);
+            }
+            return ret;
+        };
+
+        return eval(op);
+    };
+
+
+    BENCHMARK("Cf + Cr"){
+
+        auto op = [          =,
+                   c         = make_mdspan(c, extents<1>{nSpecie}),
+                   reactions = make_mdspan(reactions, extents<1>{nReactions})
+                  ] __device__() {
+            gScalar ret = 0.0;
+            for (int i = 0; i < nReactions; ++i) {
+                const auto& reaction = reactions[i];
+
+                gScalar Cf = reaction.calcCf(reaction.lhsPowers(c));
+                gScalar Cr = reaction.calcCr(reaction.rhsPowers(c));
+                ret += Cf + Cr;
+            }
+            return ret;
+        };
+
+        return eval(op);
+    };
+
+    BENCHMARK("dCf + dCr"){
+
+        auto op = [          =,
+                   c         = make_mdspan(c, extents<1>{nSpecie}),
+                   reactions = make_mdspan(reactions, extents<1>{nReactions})
+                  ] __device__() {
+            gScalar ret = 0.0;
+            for (int i = 0; i < nReactions; ++i) {
+                const auto& reaction = reactions[i];
+
+                const auto lhsPow = reaction.lhsPowers(c);
+                gScalar Cf = 0.342423;
+                auto dCf = reaction.calcdCfdcj(lhsPow, Cf, c);
+
+                const auto rhsPow = reaction.rhsPowers(c);
+                gScalar Cr = 0.534653;
+                auto dCr = reaction.calcdCrdcj(rhsPow, Cr, c);
+
+                ret += dCf[3] + dCr[3];
+
+            }
+            return ret;
+        };
+
+        return eval(op);
+    };
 
 
 

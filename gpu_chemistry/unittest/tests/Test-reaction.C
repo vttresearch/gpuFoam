@@ -274,7 +274,7 @@ static inline void reactionTests(TestData::Mechanism mech)
 
 
 
-    SECTION("kf/kr/dkfdT/dkrdT")
+    SECTION("Kc/kf/kr/dkfdT/dkrdT")
     {
 
 
@@ -285,6 +285,13 @@ static inline void reactionTests(TestData::Mechanism mech)
             const auto& cpu = cpu_reactions[i];
             const auto  gpu =&(gpu_reactions[i]);
 
+
+
+            REQUIRE
+            (
+                eval([=](){return gpu->Kc(p, T);})
+                == Approx(cpu.Kc(p, T)).epsilon(errorTol)
+            );
 
             REQUIRE
             (
@@ -314,6 +321,8 @@ static inline void reactionTests(TestData::Mechanism mech)
                 eval([=](){return gpu->dkrdT(p, T, c, 0.1, 0.3);})
                 == Approx(cpu.dkrdT(p, T, c_cpu, li, 0.1, 0.3)).epsilon(errorTol)
             );
+
+
 
             Foam::scalarField dkfdc_cpu(nSpecie, 0.1);
             device_vector<gScalar> dkfdc_gpu_temp(nSpecie, 0.4);
