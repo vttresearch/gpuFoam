@@ -55,9 +55,9 @@ public:
                                const gScalar                  dx,
                                mdspan<gScalar, 1>             y,
                                gpuBuffer& buffer) const {
-        
+
         using namespace Rosenbrock12Coeffs;
-        
+
         auto dydx         = buffer.dydx();
         auto dfdx         = buffer.dfdx();
         auto pivotIndices = buffer.pivotIndices();
@@ -65,7 +65,7 @@ public:
 
         this->computeDecomposedJacobian(
             dx, gamma, y0, dfdx, a, pivotIndices, buffer);
-        
+
         // Calculate k1:
         auto k1 = buffer.k1();
         for (gLabel i = 0; i < this->nEqns(); ++i) {
@@ -99,7 +99,7 @@ public:
         return normaliseError(
             y0, y, err, this->absTol(), this->relTol());
 
-        
+
     }
 };
 

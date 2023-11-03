@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdexcept>
+#include <vector>
 #include "gpu_constants.H"
 
 namespace TestData {
@@ -73,6 +74,27 @@ static inline void assign_test_condition(T& f, Mechanism m) {
     } else {
         assign_h2(f);
     }
+}
+
+template<class T>
+static inline void assign_test_concentration(T& f, Mechanism m)
+{
+    gLabel nSpecie = speciesCount(m);
+    if (gLabel(f.size()) != nSpecie) {
+        throw std::logic_error("Field size not matching mechanism specie count");
+    }
+
+    std::vector<gScalar> temp(nSpecie + 2);
+    assign_test_condition(temp, m);
+
+    std::copy
+    (
+        temp.begin(),
+        temp.begin() + nSpecie,
+        f.begin()
+    );
+
+
 }
 
 
