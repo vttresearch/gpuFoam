@@ -336,7 +336,8 @@ TEST_CASE("gpuReaction"){
             for (int i = 0; i < nReactions; ++i) {
                 const auto& reaction = reactions[i];
                 gScalar kf = 0.535654;
-                gScalar kr = reaction.kr(kf, p, T, c);
+                gScalar Kc = 0.6546546;
+                gScalar kr = reaction.kr(kf, p, T, Kc, c);
                 ret += kr;
             }
             return ret;
@@ -377,7 +378,8 @@ TEST_CASE("gpuReaction"){
                 const auto& reaction = reactions[i];
                 gScalar dkfdT = 0.543534;
                 gScalar kr = 534534.0;
-                gScalar dkrdT = reaction.dkrdT(p, T, c, dkfdT, kr);
+                gScalar Kc = 0.765756;
+                gScalar dkrdT = reaction.dkrdT(p, T, Kc, c, dkfdT, kr);
                 ret += dkrdT;
             }
             return ret;

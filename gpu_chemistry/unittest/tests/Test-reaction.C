@@ -306,7 +306,10 @@ static inline void reactionTests(TestData::Mechanism mech)
 
             REQUIRE
             (
-                eval([=](){return gpu->kr(32.0, p, T, c);})
+                eval([=](){
+                    gScalar Kc = max(gpu->RSMALL, gpu->Kc(p, T));
+
+                    return gpu->kr(32.0, p, T, Kc, c);})
                 == Approx(cpu.kr(32.0, p, T, c_cpu, li)).epsilon(errorTol)
             );
 
@@ -318,7 +321,10 @@ static inline void reactionTests(TestData::Mechanism mech)
 
             REQUIRE
             (
-                eval([=](){return gpu->dkrdT(p, T, c, 0.1, 0.3);})
+                eval([=](){
+                    gScalar Kc = max(gpu->RSMALL, gpu->Kc(p, T));
+                    return gpu->dkrdT(p, T, Kc, c, 0.1, 0.3);
+                })
                 == Approx(cpu.dkrdT(p, T, c_cpu, li, 0.1, 0.3)).epsilon(errorTol)
             );
 

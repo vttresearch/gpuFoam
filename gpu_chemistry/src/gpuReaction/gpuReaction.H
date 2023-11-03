@@ -82,6 +82,8 @@ private:
     //- Temperature limits of applicability of gpuReaction rates
     gScalar Tlow_, Thigh_;
 
+public:
+
     gScalar RSMALL{sqrt(gpuSmall)};
 
 public:
@@ -215,12 +217,14 @@ public:
     /// @param kfwd Forward reaction rate contant.
     /// @param p Pressure.
     /// @param T Temperature.
+    /// @param Kc Precomputed eqilibrium constant.
     /// @param c A span of concentrations in a cell
     /// @return The reverse reaction rate constant of this reaction.
     inline CUDA_HOSTDEV gScalar
     kr(const gScalar                  kfwd,
        const gScalar                  p,
        const gScalar                  T,
+       const gScalar                  Kc,
        const mdspan<const gScalar, 1> c) const;
 
     /// @brief Computes the reverse reaction rate constant of this
@@ -249,6 +253,7 @@ public:
     /// rate.
     /// @param p Pressure.
     /// @param T Temperature.
+    /// @param Kc Precomputed eqilibrium constant.
     /// @param c A span of concentrations in a cell
     /// @param dkfdT Temperature derivative of the forward rate.
     /// @param kr The reverse rate constant.
@@ -256,6 +261,7 @@ public:
     inline CUDA_HOSTDEV gScalar
     dkrdT(const gScalar                  p,
           const gScalar                  T,
+          const gScalar                  Kc,
           const mdspan<const gScalar, 1> c,
           const gScalar                  dkfdT,
           const gScalar                  kr) const;
@@ -576,9 +582,10 @@ gpuReaction::omega(const gScalar                  p,
 
     const gScalar clippedT = min(max(T, this->Tlow()), this->Thigh());
 
+    const gScalar Kc = max(RSMALL, this->Kc(p, T));
     // Rate constants
     const gScalar kf = this->kf(p, clippedT, c);
-    const gScalar kr = this->kr(kf, p, clippedT, c);
+    const gScalar kr = this->kr(kf, p, clippedT, Kc, c);
 
     const gScalar Cf = calcCf(lhsPowers(c));
     const gScalar Cr = calcCr(rhsPowers(c));
@@ -628,10 +635,11 @@ inline CUDA_HOSTDEV gScalar
 gpuReaction::kr(const gScalar                  kfwd,
                 const gScalar                  p,
                 const gScalar                  T,
+                const gScalar                  Kc,
                 const mdspan<const gScalar, 1> c) const {
 
     if (isIrreversible()) { return 0.0; }
-    return kfwd / max(this->Kc(p, T), RSMALL);
+    return kfwd / Kc;
 }
 
 inline CUDA_HOSTDEV gScalar
@@ -639,7 +647,8 @@ gpuReaction::kr(const gScalar                  p,
                 const gScalar                  T,
                 const mdspan<const gScalar, 1> c) const {
     if (isIrreversible()) { return 0.0; }
-    return kr(kf(p, T, c), p, T, c);
+    const gScalar Kc = max(this->Kc(p, T), RSMALL);
+    return kr(kf(p, T, c), p, T, Kc, c);
 }
 
 inline CUDA_HOSTDEV gScalar
@@ -652,13 +661,14 @@ gpuReaction::dkfdT(const gScalar                  p,
 inline CUDA_HOSTDEV gScalar
 gpuReaction::dkrdT(const gScalar                  p,
                    const gScalar                  T,
+                   const gScalar                  Kc,
                    const mdspan<const gScalar, 1> c,
                    const gScalar                  dkfdT,
                    const gScalar                  kr) const {
 
 
     if (isIrreversible()) { return 0.0; }
-    const gScalar Kc = max(this->Kc(p, T), RSMALL);
+
 
     return dkfdT / Kc -
            (Kc > RSMALL ? kr * this->dKcdTbyKc(p, T) : 0.0);
@@ -822,10 +832,12 @@ computeReactionParameters(const gpuReaction&             r,
     }
 
     if (!r.isIrreversible()) {
-        ret.kr            = r.kr(ret.kf, p, T, c);
+        const gScalar Kc = max(r.Kc(p, T), r.RSMALL);
+
+        ret.kr            = r.kr(ret.kf, p, T, Kc, c);
         const auto rhsPow = r.rhsPowers(c);
         ret.Cr            = r.calcCr(rhsPow);
-        ret.dkrdT         = r.dkrdT(p, T, c, ret.dkfdT, ret.kr);
+        ret.dkrdT         = r.dkrdT(p, T, Kc, c, ret.dkfdT, ret.kr);
         ret.dCrdjs        = r.calcdCrdcj(rhsPow, ret.Cr, c);
     }
 
