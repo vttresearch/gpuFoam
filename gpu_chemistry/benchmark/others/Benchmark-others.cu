@@ -579,16 +579,11 @@ TEST_CASE("gpuReaction"){
             gScalar ret = 0.0;
             for (int i = 0; i < nReactions; ++i) {
                 const auto& reaction = reactions[i];
-                auto        params = computeReactionParameters(reaction, c, p, T, work1);
+                auto        params   = computeReactionParameters(
+                    reaction, c, p, T, work1);
 
-                ret += params.Cf + params.Cr
-                            + params.dCfdjs[5]
-                            + params.dCrdjs[5]
-                            + params.dkfdT
-                            + params.dkrdT
-                            + params.kf
-                            + params.kr
-                            + params.ddc[4];
+                ret += params.kf + params.kr + params.dCrdjs[5] +
+                       params.ddc[4];
             }
             return ret;
         };
