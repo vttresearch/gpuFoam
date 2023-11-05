@@ -131,6 +131,290 @@ TEST_CASE("gpuODESystem"){
 
 TEST_CASE("gpuReactionRate"){
 
+    using namespace FoamGpu;
+
+    const gLabel nSpecie = TestData::speciesCount(mech);
+    const gScalar p = 1E5;
+    const gScalar T = 900.0;
+
+
+    device_vector<gScalar> c(nSpecie, 0.43);
+    device_vector<gScalar> ddc(nSpecie, 0.43);
+
+    //SECTION("gpuArrheniusReactionRate")
+    {
+        gpuArrheniusReactionRate r(0.32, 0.43, 0.54);
+
+
+        auto op1 = [=, c = make_mdspan(c, extents<1>{nSpecie})] __device__ () {
+            return r(p, T, c);
+        };
+
+        auto op2 = [=, c = make_mdspan(c, extents<1>{nSpecie})] __device__ () {
+            return r.ddT(p, T, c);
+        };
+
+        auto op3 = [
+                =,
+                c = make_mdspan(c, extents<1>{nSpecie}),
+                ddc = make_mdspan(ddc, extents<1>{nSpecie})
+                ] __device__ () {
+
+            r.ddc(p, T, c, ddc);
+            return ddc[3] + ddc[5] + ddc[7];
+        };
+
+        BENCHMARK("Arrhenius::operator()"){
+            return eval(op1);
+        };
+
+        BENCHMARK("Arrhenius::ddT()"){
+            return eval(op2);
+        };
+
+        BENCHMARK("Arrhenius::ddc()"){
+
+            return eval(op3);
+        };
+
+    }
+
+    //SECTION("gpuThirdBodyArrheniusReactionRate")
+    {
+        typename gpuThirdBodyEfficiencies::effArray efficiencies{};
+        fill_random(efficiencies);
+        gpuThirdBodyEfficiencies tbes(nSpecie, efficiencies);
+        gpuThirdBodyArrheniusReactionRate r(0.32, 0.43, 0.54, tbes);
+
+
+        auto op1 = [=, c = make_mdspan(c, extents<1>{nSpecie})] __device__ () {
+            return r(p, T, c);
+        };
+
+        auto op2 = [=, c = make_mdspan(c, extents<1>{nSpecie})] __device__ () {
+            return r.ddT(p, T, c);
+        };
+
+        auto op3 = [
+                =,
+                c = make_mdspan(c, extents<1>{nSpecie}),
+                ddc = make_mdspan(ddc, extents<1>{nSpecie})
+                ] __device__ () {
+
+            r.ddc(p, T, c, ddc);
+            return ddc[3] + ddc[5] + ddc[7];
+        };
+
+        BENCHMARK("gpuThirdBodyArrheniusReactionRate::operator()"){
+            return eval(op1);
+        };
+
+        BENCHMARK("gpuThirdBodyArrheniusReactionRate::ddT()"){
+            return eval(op2);
+        };
+
+        BENCHMARK("gpuThirdBodyArrheniusReactionRate::ddc()"){
+
+            return eval(op3);
+        };
+
+    }
+
+    //SECTION("reversibleArrheniusLindemannFallOff")
+    {
+        typename gpuThirdBodyEfficiencies::effArray efficiencies{};
+        fill_random(efficiencies);
+        gpuThirdBodyEfficiencies tbes(nSpecie, efficiencies);
+
+        gpuArrheniusReactionRate arrhenius1(0.43, 0.54, 0.56);
+        gpuArrheniusReactionRate arrhenius2(0.65, 0.65, 313.0);
+        gpuLindemannFallOffFunction F;
+
+        using ArrheniusLindemannFallOff =
+        gpuFallOffReactionRate<gpuArrheniusReactionRate,
+                            gpuLindemannFallOffFunction>;
+
+        ArrheniusLindemannFallOff r(arrhenius1, arrhenius2, F, tbes );
+
+        //gpuThirdBodyArrheniusReactionRate r(0.32, 0.43, 0.54, tbes);
+
+
+        auto op1 = [=, c = make_mdspan(c, extents<1>{nSpecie})] __device__ () {
+            return r(p, T, c);
+        };
+
+        auto op2 = [=, c = make_mdspan(c, extents<1>{nSpecie})] __device__ () {
+            return r.ddT(p, T, c);
+        };
+
+        auto op3 = [
+                =,
+                c = make_mdspan(c, extents<1>{nSpecie}),
+                ddc = make_mdspan(ddc, extents<1>{nSpecie})
+                ] __device__ () {
+
+            r.ddc(p, T, c, ddc);
+            return ddc[3] + ddc[5] + ddc[7];
+        };
+
+        BENCHMARK("reversibleArrheniusLindemannFallOff::operator()"){
+            return eval(op1);
+        };
+
+        BENCHMARK("reversibleArrheniusLindemannFallOff::ddT()"){
+            return eval(op2);
+        };
+
+        BENCHMARK("reversibleArrheniusLindemannFallOff::ddc()"){
+
+            return eval(op3);
+        };
+
+    }
+
+    //SECTION("reversibleArrheniusTroeFallOff")
+    {
+        typename gpuThirdBodyEfficiencies::effArray efficiencies{};
+        fill_random(efficiencies);
+        gpuThirdBodyEfficiencies tbes(nSpecie, efficiencies);
+
+        gpuArrheniusReactionRate arrhenius1(0.43, 0.54, 0.56);
+        gpuArrheniusReactionRate arrhenius2(0.65, 0.65, 313.0);
+        gpuTroeFallOffFunction F(0.54, 0.43534, 0.6767, 0.6576);
+
+        using ArrheniusTroeFallOff =
+        gpuFallOffReactionRate<gpuArrheniusReactionRate,
+                            gpuTroeFallOffFunction>;
+
+        ArrheniusTroeFallOff r(arrhenius1, arrhenius2, F, tbes );
+
+        //gpuThirdBodyArrheniusReactionRate r(0.32, 0.43, 0.54, tbes);
+
+
+        auto op1 = [=, c = make_mdspan(c, extents<1>{nSpecie})] __device__ () {
+            return r(p, T, c);
+        };
+
+        auto op2 = [=, c = make_mdspan(c, extents<1>{nSpecie})] __device__ () {
+            return r.ddT(p, T, c);
+        };
+
+        auto op3 = [
+                =,
+                c = make_mdspan(c, extents<1>{nSpecie}),
+                ddc = make_mdspan(ddc, extents<1>{nSpecie})
+                ] __device__ () {
+
+            r.ddc(p, T, c, ddc);
+            return ddc[3] + ddc[5] + ddc[7];
+        };
+
+        BENCHMARK("reversibleArrheniusTroeFallOff::operator()"){
+            return eval(op1);
+        };
+
+        BENCHMARK("reversibleArrheniusTroeFallOff::ddT()"){
+            return eval(op2);
+        };
+
+        BENCHMARK("reversibleArrheniusTroeFallOff::ddc()"){
+
+            return eval(op3);
+        };
+
+    }
+
+
+    {
+
+        auto reactions = toDeviceVector(makeGpuReactions(mech));
+        gLabel nReactions = reactions.size();
+
+        auto op1 = [
+                =,
+                c = make_mdspan(c, extents<1>{nSpecie}),
+                ddc = make_mdspan(ddc, extents<1>{nSpecie}),
+                reactions = make_mdspan(reactions, extents<1>{nReactions})
+                ] __device__ () {
+
+            gScalar ret = 0.0;
+            for (int i = 0; i < nReactions; ++i){
+                ret += reactions[i].k_(p, T, c);
+            }
+            return ret;
+        };
+
+        auto op2 = [
+                =,
+                c = make_mdspan(c, extents<1>{nSpecie}),
+                ddc = make_mdspan(ddc, extents<1>{nSpecie}),
+                reactions = make_mdspan(reactions, extents<1>{nReactions})
+                ] __device__ () {
+
+            gScalar ret = 0.0;
+            for (int i = 0; i < nReactions; ++i){
+                ret += reactions[i].k_.ddT(p, T, c);
+            }
+            return ret;
+        };
+
+        auto op3 = [
+                =,
+                c = make_mdspan(c, extents<1>{nSpecie}),
+                ddc = make_mdspan(ddc, extents<1>{nSpecie}),
+                reactions = make_mdspan(reactions, extents<1>{nReactions})
+                ] __device__ () {
+
+            gScalar ret = 0.0;
+            for (int i = 0; i < nReactions; ++i){
+                if (reactions[i].k_.hasDdc()){
+                    reactions[i].k_.ddc(p, T, c, ddc);
+                    ret += ddc[0] + ddc[5] + ddc[7];
+                }
+            }
+            return ret;
+        };
+
+        auto op4 = [
+                =,
+                c = make_mdspan(c, extents<1>{nSpecie}),
+                ddc = make_mdspan(ddc, extents<1>{nSpecie}),
+                reactions = make_mdspan(reactions, extents<1>{nReactions})
+                ] __device__ () {
+
+            gScalar ret = 0.0;
+            for (int i = 0; i < nReactions; ++i){
+
+                auto pair = reactions[i].k_.everything(p, T, c, ddc);
+                ret += std::get<0>(pair);
+                ret += std::get<1>(pair);
+                ret += ddc[0] + ddc[5] + ddc[7];
+
+            }
+            return ret;
+        };
+
+
+        BENCHMARK("All reactions operator()"){
+
+            return eval(op1);
+        };
+        BENCHMARK("All reactions ddT()"){
+
+            return eval(op2);
+        };
+        BENCHMARK("All reactions ddc()"){
+
+            return eval(op3);
+        };
+
+        BENCHMARK("All reactions everything"){
+
+            return eval(op4);
+        };
+    }
+
+
 }
 
 TEST_CASE("gpuReaction"){
@@ -181,8 +465,7 @@ TEST_CASE("gpuReaction"){
     };
 
 
-    device_vector<gScalar> work1(nEqns);
-    device_vector<gScalar> work2(nEqns);
+    device_vector<gScalar> work1(nSpecie);
     device_vector<gScalar> J(nEqns * nEqns);
 
     BENCHMARK("ddNdtByVdcTp"){
@@ -191,8 +474,7 @@ TEST_CASE("gpuReaction"){
         [
             =,
             c = make_mdspan(c, extents<1>{nSpecie}),
-            work1 = make_mdspan(work1, extents<1>{nEqns}),
-            work2 = make_mdspan(work2, extents<1>{nEqns}),
+            work1 = make_mdspan(work1, extents<1>{nSpecie}),
             dJ = make_mdspan(J, extents<2>{nEqns, nEqns}),
             reactions = make_mdspan(reactions, extents<1>{nReactions})
         ]__device__(){
@@ -200,8 +482,8 @@ TEST_CASE("gpuReaction"){
             gScalar ret = 0.0;
             for (int i = 0; i < nReactions; ++i){
                 const auto& reaction = reactions[i];
-                auto params = computeReactionParameters(reaction, c, p, T);
-                reaction.ddNdtByVdcTp( p, T, c, dJ, work1, work2, params);
+                auto params = computeReactionParameters(reaction, c, p, T, work1);
+                reaction.ddNdtByVdcTp( p, T, c, dJ, params);
 
                 ret += dJ(4,4);
             }
@@ -267,8 +549,7 @@ TEST_CASE("gpuReaction"){
         [
             =,
             c = make_mdspan(c, extents<1>{nSpecie}),
-            work1 = make_mdspan(work1, extents<1>{nEqns}),
-            work2 = make_mdspan(work2, extents<1>{nEqns}),
+            work1 = make_mdspan(work1, extents<1>{nSpecie}),
             dJ = make_mdspan(J, extents<2>{nEqns, nEqns}),
             reactions = make_mdspan(reactions, extents<1>{nReactions})
         ]__device__(){
@@ -277,7 +558,8 @@ TEST_CASE("gpuReaction"){
             for (int i = 0; i < nReactions; ++i){
                 const auto& reaction = reactions[i];
                 reactionParams params{};
-                reaction.jac_dCdC_contribution(p, T, params, c, work1, work2, dJ);
+                params.ddc = work1;
+                reaction.jac_dCdC_contribution(p, T, params, c, dJ);
                 ret += dJ(4,4);
             }
             return ret;
@@ -291,12 +573,13 @@ TEST_CASE("gpuReaction"){
 
         auto op = [          =,
                    c         = make_mdspan(c, extents<1>{nSpecie}),
+                    work1 = make_mdspan(work1, extents<1>{nSpecie}),
                    reactions = make_mdspan(reactions, extents<1>{nReactions})
                   ] __device__() {
             gScalar ret = 0.0;
             for (int i = 0; i < nReactions; ++i) {
                 const auto& reaction = reactions[i];
-                auto        params = computeReactionParameters(reaction, c, p, T);
+                auto        params = computeReactionParameters(reaction, c, p, T, work1);
 
                 ret += params.Cf + params.Cr
                             + params.dCfdjs[5]
@@ -304,7 +587,8 @@ TEST_CASE("gpuReaction"){
                             + params.dkfdT
                             + params.dkrdT
                             + params.kf
-                            + params.kr;
+                            + params.kr
+                            + params.ddc[4];
             }
             return ret;
         };

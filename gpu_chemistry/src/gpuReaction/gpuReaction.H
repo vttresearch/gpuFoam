@@ -24,6 +24,7 @@ struct reactionParams {
 
     std::array<gScalar, MAX_REACTION_WIDTH> dCfdjs{};
     std::array<gScalar, MAX_REACTION_WIDTH> dCrdjs{};
+    mdspan<gScalar, 1>                      ddc;
 };
 
 struct gpuSpecieCoeffs {
@@ -56,7 +57,6 @@ public:
     static constexpr gScalar ThighDefault =
         std::numeric_limits<double>::max() / 10;
 
-private:
     //- LHS specie coefficients
     specieCoeffArray lhs_;
 
@@ -82,8 +82,6 @@ private:
 
     //- Temperature limits of applicability of gpuReaction rates
     gScalar Tlow_, Thigh_;
-
-public:
 
     gScalar RSMALL{sqrt(gpuSmall)};
 
@@ -303,8 +301,6 @@ public:
                  const gScalar                  T,
                  const mdspan<const gScalar, 1> c,
                  mdspan<gScalar, 2>             ddNdtByVdcTp,
-                 mdspan<gScalar, 1>             cTpWork0,
-                 mdspan<gScalar, 1>             cTpWork1,
                  const reactionParams&          r) const {
 
         jac_dCfdcj_contribution(r, ddNdtByVdcTp);
@@ -315,8 +311,7 @@ public:
 
         jac_dCdT_contribution(r, Tsi, ddNdtByVdcTp);
 
-        jac_dCdC_contribution(
-            p, T, r, c, cTpWork0, cTpWork1, ddNdtByVdcTp);
+        jac_dCdC_contribution(p, T, r, c, ddNdtByVdcTp);
     }
 
     /// @brief Checks if the LHS specie coefficients contain small (<
@@ -419,13 +414,11 @@ public:
                           mdspan<gScalar, 2>    ddNdtByVdcTp) const;
 
     inline CUDA_HOSTDEV void
-    jac_dCdC_contribution(const gScalar                  p,
-                          const gScalar                  T,
-                          const reactionParams&          r,
+    jac_dCdC_contribution(const gScalar         p,
+                          const gScalar         T,
+                          const reactionParams& r,
                           const mdspan<const gScalar, 1> c,
-                          mdspan<gScalar, 1>             cTpWork0,
-                          mdspan<gScalar, 1>             cTpWork1,
-                          mdspan<gScalar, 2> ddNdtByVdcTp) const;
+                         mdspan<gScalar, 2> ddNdtByVdcTp) const;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -510,7 +503,7 @@ inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
         }
     */
 
-    (void) Cf;
+    (void)Cf;
 
     const auto llhs = lhs();
     for (size_t j = 0; j < llhs.size(); ++j) {
@@ -521,16 +514,14 @@ inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
             const auto& si = llhs[i].index;
             if (i == j) {
                 dCfdcj *=
-                    el *
-                    speciePow(c[si],
-                                el - gpuSpecieExponent(gLabel(1)));
+                    el * speciePow(c[si],
+                                   el - gpuSpecieExponent(gLabel(1)));
             } else {
                 dCfdcj *= lhsPow[i];
             }
         }
         ret[j] = dCfdcj;
     }
-
 
     return ret;
 }
@@ -553,7 +544,7 @@ inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
     }
     */
 
-    (void) Cr;
+    (void)Cr;
 
     const auto rrhs = rhs();
     for (size_t j = 0; j < rrhs.size(); ++j) {
@@ -564,9 +555,8 @@ inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
             const auto& si = rrhs[i].index;
             if (i == j) {
                 dCrdcj *=
-                    er *
-                    speciePow(c[si],
-                                er - gpuSpecieExponent(gLabel(1)));
+                    er * speciePow(c[si],
+                                   er - gpuSpecieExponent(gLabel(1)));
             } else {
                 dCrdcj *= rhsPow[i];
             }
@@ -574,11 +564,8 @@ inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
         ret[j] = dCrdcj;
     }
 
-
     return ret;
 }
-
-
 
 inline CUDA_HOSTDEV gScalar
 gpuReaction::omega(const gScalar                  p,
@@ -671,9 +658,7 @@ gpuReaction::dkrdT(const gScalar                  p,
                    const gScalar                  dkfdT,
                    const gScalar                  kr) const {
 
-
     if (isIrreversible()) { return 0.0; }
-
 
     return dkfdT / Kc -
            (Kc > RSMALL ? kr * this->dKcdTbyKc(p, T) : 0.0);
@@ -715,7 +700,6 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCfdcj_contribution(
     const auto llhs = lhs();
     const auto rrhs = rhs();
 
-
     for (size_t j = 0; j < llhs.size(); ++j) {
 
         const gScalar dCfdcj_kf = r.dCfdjs[j] * r.kf;
@@ -732,7 +716,6 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCfdcj_contribution(
             ddNdtByVdcTp(si, sj) += sr * dCfdcj_kf;
         }
     }
-
 }
 
 inline CUDA_HOSTDEV void gpuReaction::jac_dCrdcj_contribution(
@@ -757,10 +740,6 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCrdcj_contribution(
             ddNdtByVdcTp(si, sj) -= sr * dCrcj_kr;
         }
     }
-
-
-
-
 }
 
 inline CUDA_HOSTDEV void gpuReaction::jac_dCdT_contribution(
@@ -785,24 +764,14 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCdT_contribution(
 }
 
 inline CUDA_HOSTDEV void gpuReaction::jac_dCdC_contribution(
-    const gScalar                  p,
-    const gScalar                  T,
-    const reactionParams&          r,
+    const gScalar         p,
+    const gScalar         T,
+    const reactionParams& r,
     const mdspan<const gScalar, 1> c,
-    mdspan<gScalar, 1>             cTpWork0,
-    mdspan<gScalar, 1>             cTpWork1,
-    mdspan<gScalar, 2>             ddNdtByVdcTp) const {
+    mdspan<gScalar, 2> ddNdtByVdcTp) const {
+
     if (hasDkdc()) {
-        auto& dkfdc = cTpWork0;
-        auto& dkrdc = cTpWork1;
-
-        this->dkfdc(p, T, c, dkfdc);
-        this->dkrdc(p, T, r.Kc, c, dkfdc, r.kr, dkrdc);
-
-        // Do the compute here once and reuse the first work array
-        for (gLabel j = 0; j < gLabel(c.size()); ++j) {
-            dkfdc[j] = dkfdc[j] * r.Cf - dkrdc[j] * r.Cr;
-        }
+        const auto& dkfdc = r.ddc;
 
         const auto llhs = lhs();
 
@@ -830,23 +799,24 @@ static inline CUDA_HOSTDEV reactionParams
 computeReactionParameters(const gpuReaction&             r,
                           const mdspan<const gScalar, 1> c,
                           const gScalar                  p,
-                          const gScalar                  T) {
+                          const gScalar                  T,
+                          mdspan<gScalar, 1>             ddc) {
     reactionParams ret;
 
-
     {
-        ret.kf = r.kf(p, T, c);
+        const auto pair = r.k_.everything(p, T, c, ddc);
+
+        ret.kf = std::get<0>(pair);
 
         const auto lhsPow = r.lhsPowers(c);
         ret.Cf            = r.calcCf(lhsPow);
         ret.dCfdjs        = r.calcdCfdcj(lhsPow, ret.Cf, c);
-        ret.dkfdT = r.dkfdT(p, T, c);
+        ret.dkfdT         = std::get<1>(pair);
+
     }
 
-
-
     if (!r.isIrreversible()) {
-        const gScalar Kc = max(r.Kc(p, T), r.RSMALL);
+        const gScalar Kc  = max(r.Kc(p, T), r.RSMALL);
         ret.Kc            = Kc;
         ret.kr            = r.kr(ret.kf, p, T, Kc, c);
         const auto rhsPow = r.rhsPowers(c);
@@ -855,6 +825,20 @@ computeReactionParameters(const gpuReaction&             r,
         ret.dCrdjs        = r.calcdCrdcj(rhsPow, ret.Cr, c);
     }
 
+    if (r.hasDkdc()) {
+
+        if (!r.isIrreversible()) {
+            for (gLabel j = 0; j < gLabel(c.size()); ++j) {
+                ddc[j] = ddc[j] * ret.Cf - (ret.Cr / ret.Kc) * ddc[j];
+            }
+        } else {
+            for (gLabel j = 0; j < gLabel(c.size()); ++j) {
+                ddc[j] = ddc[j] * ret.Cf;
+            }
+        }
+    }
+
+    ret.ddc = ddc;
 
     return ret;
 }

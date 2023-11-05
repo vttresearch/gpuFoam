@@ -59,6 +59,25 @@ public:
             ddc[i] = thirdBodyEfficiencies_.dMdc(c)[i] * k;
         }
     }
+
+    inline CUDA_HOSTDEV std::pair<gScalar, gScalar>
+                        everything(const gScalar                  p,
+                                   const gScalar                  T,
+                                   const mdspan<const gScalar, 1> c,
+                                   mdspan<gScalar, 1>             ddc) const {
+
+        auto pair = gpuArrheniusReactionRate::everything(p, T, c, ddc);
+        const gScalar k = std::get<0>(pair);
+        const gScalar ddT = std::get<1>(pair);
+
+        for (gLabel i = 0; i < gLabel(ddc.size()); ++i) {
+            ddc[i] = thirdBodyEfficiencies_.dMdc(c)[i] * k;
+        }
+
+        const gScalar M = thirdBodyEfficiencies_.M(c);
+        return std::make_pair(M * k, M * ddT);
+
+    }
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

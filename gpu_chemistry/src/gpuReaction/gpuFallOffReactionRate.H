@@ -22,19 +22,21 @@ public:
     gpuFallOffReactionRate() = default;
 
     //- Construct from components
-    inline gpuFallOffReactionRate(const ReactionRate&             k0,
-                                  const ReactionRate&             kInf,
-                                  const FallOffFunction&          F,
-                                  const gpuThirdBodyEfficiencies& tbes)
+    inline gpuFallOffReactionRate(
+        const ReactionRate&             k0,
+        const ReactionRate&             kInf,
+        const FallOffFunction&          F,
+        const gpuThirdBodyEfficiencies& tbes)
         : k0_(k0)
         , kInf_(kInf)
         , F_(F)
         , thirdBodyEfficiencies_(tbes) {}
 
     //- Return the rate
-    inline CUDA_HOSTDEV gScalar operator()(const gScalar                  p,
-                                           const gScalar                  T,
-                                           const mdspan<const gScalar, 1> c) const {
+    inline CUDA_HOSTDEV gScalar
+    operator()(const gScalar                  p,
+               const gScalar                  T,
+               const mdspan<const gScalar, 1> c) const {
         const gScalar k0   = k0_(p, T, c);
         const gScalar kInf = kInf_(p, T, c);
         const gScalar M    = thirdBodyEfficiencies_.M(c);
@@ -45,9 +47,10 @@ public:
     }
 
     //- The derivative of the rate w.r.t. temperature
-    inline CUDA_HOSTDEV gScalar ddT(const gScalar                  p,
-                                    const gScalar                  T,
-                                    const mdspan<const gScalar, 1> c) const {
+    inline CUDA_HOSTDEV gScalar
+    ddT(const gScalar                  p,
+        const gScalar                  T,
+        const mdspan<const gScalar, 1> c) const {
         const gScalar k0   = k0_(p, T, c);
         const gScalar kInf = kInf_(p, T, c);
         const gScalar M    = thirdBodyEfficiencies_.M(c);
@@ -66,7 +69,7 @@ public:
     inline CUDA_HOSTDEV void ddc(const gScalar                  p,
                                  const gScalar                  T,
                                  const mdspan<const gScalar, 1> c,
-                                 mdspan<gScalar, 1>             ddc) const {
+                                 mdspan<gScalar, 1> ddc) const {
 
         const gScalar k0   = k0_(p, T, c);
         const gScalar kInf = kInf_(p, T, c);
@@ -79,6 +82,32 @@ public:
         for (gLabel i = 0; i < gLabel(ddc.size()); ++i) {
             ddc[i] *= (Pr / (1.0 + Pr)) * F;
         }
+    }
+
+    //- The derivative of the rate w.r.t. concentration
+    inline CUDA_HOSTDEV std::pair<gScalar, gScalar>
+    everything(const gScalar                  p,
+               const gScalar                  T,
+               const mdspan<const gScalar, 1> c,
+               mdspan<gScalar, 1>             ddc) const {
+
+        const gScalar k0   = k0_(p, T, c);
+        const gScalar kInf = kInf_(p, T, c);
+        const gScalar M    = thirdBodyEfficiencies_.M(c);
+        const gScalar Pr   = k0 / kInf * M;
+        const gScalar F    = F_(T, Pr);
+
+        const gScalar temp    = (Pr / (1.0 + Pr)) * F;
+        const gScalar k       = kInf * temp;
+        const gScalar dkInfdT = kInf_.ddT(p, T, c);
+        const gScalar ddT     = dkInfdT * temp;
+
+        kInf_.ddc(p, T, c, ddc);
+
+        for (gLabel i = 0; i < gLabel(ddc.size()); ++i) {
+            ddc[i] *= temp;
+        }
+        return std::make_pair(k, ddT);
     }
 };
 

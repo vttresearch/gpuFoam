@@ -34,16 +34,18 @@ public:
         , beta_(beta)
         , Ta_(Ta) {}
 
-    inline CUDA_HOSTDEV gScalar operator()(const gScalar                  p,
-                                           const gScalar                  T,
-                                           const mdspan<const gScalar, 1> c) const {
+    inline CUDA_HOSTDEV gScalar
+    operator()(const gScalar                  p,
+               const gScalar                  T,
+               const mdspan<const gScalar, 1> c) const {
         (void)c;
         return computeAk(p, T);
     }
 
-    inline CUDA_HOSTDEV gScalar ddT(const gScalar                  p,
-                                    const gScalar                  T,
-                                    const mdspan<const gScalar, 1> c) const {
+    inline CUDA_HOSTDEV gScalar
+    ddT(const gScalar                  p,
+        const gScalar                  T,
+        const mdspan<const gScalar, 1> c) const {
         (void)c;
         return computeAk(p, T) * (beta_ + Ta_ / T) / T;
     }
@@ -53,10 +55,24 @@ public:
     inline CUDA_HOSTDEV void ddc(const gScalar                  p,
                                  const gScalar                  T,
                                  const mdspan<const gScalar, 1> c,
-                                 mdspan<gScalar, 1>             ddc) const {
+                                 mdspan<gScalar, 1> ddc) const {
 
-        //void) p; (void) T; (void) c; (void) ddc;
-        for (gLabel i = 0; i < gLabel(ddc.size()); ++i) { ddc[i] = 0; }
+        // void) p; (void) T; (void) c; (void) ddc;
+        for (gLabel i = 0; i < gLabel(ddc.size()); ++i) {
+            ddc[i] = 0;
+        }
+    }
+
+    inline CUDA_HOSTDEV std::pair<gScalar, gScalar>
+                        everything(const gScalar                  p,
+                                   const gScalar                  T,
+                                   const mdspan<const gScalar, 1> c,
+                                   mdspan<gScalar, 1>             ddc) const {
+        this->ddc(p, T, c, ddc);
+
+        const auto Ak = computeAk(p, T);
+        const auto dT = Ak * (beta_ + Ta_ / T) / T;
+        return std::make_pair(Ak, dT);
     }
 };
 

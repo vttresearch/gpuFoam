@@ -354,7 +354,7 @@ public:
         const gScalar T = y[nSpecie];
         const gScalar p = y[nSpecie + 1];
 
-        
+
         const gScalar rhoM = rhoMixture(y, p, T);
         const gScalar CpM  = CpMixture(y, p, T);
 
@@ -363,31 +363,32 @@ public:
         //this->derivatives(y, dfdx, buffer, c, CpM, rhoM);
 
         auto tempField1 = buffer.tempField1();
-        auto tempField2 = buffer.tempField2();
+
+        auto ddc = mdspan<gScalar, 1>(&tempField1[0], extents<1>{nSpecie});
 
         for (gLabel ri = 0; ri < nReactions(); ++ri) {
 
+
             const auto& reaction = reactions()[ri];
 
-            auto params = computeReactionParameters(reaction, c, p, T);
+            //auto params = computeReactionParameters(reaction, c, p, T);
+            auto params = computeReactionParameters(reaction, c, p, T, ddc);
 
             reaction.dNdtByV(params, dfdx);
-            
+
             reaction.ddNdtByVdcTp(p,
                                     T,
                                     c,
                                     dfdy,
-                                    tempField1,
-                                    tempField2,
                                     params);
-            
+
         }
 
 
 
         dYdT(dfdx, rhoM);
 
-        
+
         // Temporary array to allow for re-using dfdy
         auto temp = buffer.tempField1();
 
@@ -403,7 +404,7 @@ public:
         absoluteEnthalpy(Ha, p, T);
 
         dfdx[nSpecie] = dTdt(dfdx, Ha, CpM);
-    
+
         ////////////////////////////////
 
         // d(dTdt)/dY

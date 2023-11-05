@@ -425,7 +425,6 @@ static inline void reactionTests(TestData::Mechanism mech)
             );
 
         auto cTpWork0_gpu = toDeviceVector(cTpWork0_cpu);
-        auto cTpWork1_gpu = toDeviceVector(cTpWork1_cpu);
 
         for (gLabel i = 0; i < cpu_reactions.size(); ++i)
         {
@@ -453,12 +452,11 @@ static inline void reactionTests(TestData::Mechanism mech)
                 =,
                 c = make_mdspan(c_gpu, extents<1>{nSpecie}),
                 ddNdtByVdcTp = make_mdspan(ddNdtByVdcTp_gpu, extents<2>{nEqns, nEqns}),
-                cTpWork0 = make_mdspan(cTpWork0_gpu, extents<1>{nSpecie}),
-                cTpWork1 = make_mdspan(cTpWork1_gpu, extents<1>{nSpecie})
+                cTpWork0 = make_mdspan(cTpWork0_gpu, extents<1>{nSpecie})
             ]
             ()
             {
-                auto params = computeReactionParameters(*gpu, c, p, T);
+                auto params = computeReactionParameters(*gpu, c, p, T, cTpWork0);
 
                 gpu->ddNdtByVdcTp
                 (
@@ -466,8 +464,6 @@ static inline void reactionTests(TestData::Mechanism mech)
                     T,
                     c,
                     ddNdtByVdcTp,
-                    cTpWork0,
-                    cTpWork1,
                     params
 
                 );
@@ -517,7 +513,7 @@ static inline void reactionTests(TestData::Mechanism mech)
             );
 
         auto cTpWork0_gpu = toDeviceVector(cTpWork0_cpu);
-        auto cTpWork1_gpu = toDeviceVector(cTpWork1_cpu);
+
 
 
         for (gLabel i = 0; i < cpu_reactions.size(); ++i)
@@ -546,12 +542,11 @@ static inline void reactionTests(TestData::Mechanism mech)
                 =,
                 c = make_mdspan(c_gpu2, extents<1>{nSpecie}),
                 ddNdtByVdcTp = make_mdspan(ddNdtByVdcTp_gpu, extents<2>{nEqns, nEqns}),
-                cTpWork0 = make_mdspan(cTpWork0_gpu, extents<1>{nSpecie}),
-                cTpWork1 = make_mdspan(cTpWork1_gpu, extents<1>{nSpecie})
+                cTpWork0 = make_mdspan(cTpWork0_gpu, extents<1>{nSpecie})
             ]
             ()
             {
-                auto params = computeReactionParameters(*gpu, c, p, T);
+                auto params = computeReactionParameters(*gpu, c, p, T, cTpWork0);
 
                 gpu->ddNdtByVdcTp
                 (
@@ -559,8 +554,6 @@ static inline void reactionTests(TestData::Mechanism mech)
                     T,
                     c,
                     ddNdtByVdcTp,
-                    cTpWork0,
-                    cTpWork1,
                     params
                 );
 
