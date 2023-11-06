@@ -109,6 +109,11 @@ public:
                 ddc[i] *= temp;
             }
         }
+        else {
+            for (gLabel i = 0; i < gLabel(ddc.size()); ++i) {
+                ddc[i] = gScalar(0);
+            }
+        }
 
         return std::make_pair(k, ddT);
     }

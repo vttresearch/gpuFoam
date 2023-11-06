@@ -55,17 +55,7 @@ public:
     inline CUDA_HOSTDEV void ddc(const gScalar                  p,
                                  const gScalar                  T,
                                  const mdspan<const gScalar, 1> c,
-                                 mdspan<gScalar, 1> ddc) const {
-
-        // void) p; (void) T; (void) c; (void) ddc;
-
-        //TODO: This should be a no-op.
-        for (gLabel i = 0; i < gLabel(ddc.size()); ++i) {
-            ddc[i] = 0;
-        }
-
-
-    }
+                                 mdspan<gScalar, 1> ddc) const {}
 
     inline CUDA_HOSTDEV std::pair<gScalar, gScalar>
                         everything(const gScalar                  p,

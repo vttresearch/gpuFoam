@@ -225,6 +225,8 @@ public:
         auto ddc =
             mdspan<gScalar, 1>(&tempField1[0], extents<1>{nSpecie});
 
+
+
         for (gLabel ri = 0; ri < nReactions(); ++ri) {
 
             const auto& reaction = reactions()[ri];
