@@ -707,14 +707,16 @@ computeReactionParameters(const gpuReaction&             r,
     gScalar Cr = 0.0;
     gScalar Kc = 1.0;
     if (!r.isIrreversible()) {
-        Kc  = max(r.Kc(p, T), r.RSMALL);
+
+        const auto [Kc_t, dKcdTbyV] = r.KcAnddKcTbyKc(p, T);
+        Kc  = max(Kc_t, r.RSMALL);
         const auto kr     = kf / Kc;
 
         const auto rhsPow = r.rhsPowers(c);
         Cr            = r.calcCr(rhsPow);
 
         const auto dkrdT = ddT / Kc -
-           (Kc > r.RSMALL ? kr * r.dKcdTbyKc(p, T) : 0.0);
+           (Kc > r.RSMALL ? kr * dKcdTbyV : 0.0);
 
         ret.dwdT          -= Cr * dkrdT;
         ret.omega         -= Cr * kr;

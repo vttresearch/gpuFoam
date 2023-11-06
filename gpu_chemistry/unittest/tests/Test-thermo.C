@@ -200,6 +200,18 @@ TEST_CASE("Test gpuThermo properties")
             REQUIRE(eval([=](){return gpu->Kc(p, T);}) == Approx(cpu.Kc(p, T)).epsilon(errorTol));
             REQUIRE(eval([=](){return gpu->dKcdTbyKc(p, T);}) == Approx(cpu.dKcdTbyKc(p, T)).epsilon(errorTol));
 
+            auto gpu_op = [=](){
+                auto pair = gpu->KcAnddKcTbyKc(p, T);
+                return std::get<0>(pair) + std::get<1>(pair);
+            };
+            auto cpu_op = [&](){
+                return cpu.Kc(p, T) + cpu.dKcdTbyKc(p, T);
+            };
+
+            REQUIRE(eval(gpu_op) == Approx(cpu_op()).epsilon(errorTol));
+
+
+
         }
     }
 
@@ -237,6 +249,16 @@ TEST_CASE("Test gpuThermo properties")
             REQUIRE(eval([=](){return gpu->Kp(p, T);}) == Approx(cpu.Kp(p, T)).epsilon(errorTol));
             REQUIRE(eval([=](){return gpu->Kc(p, T);}) == Approx(cpu.Kc(p, T)).epsilon(errorTol));
             REQUIRE(eval([=](){return gpu->dKcdTbyKc(p, T);}) == Approx(cpu.dKcdTbyKc(p, T)).epsilon(errorTol));
+
+            auto gpu_op = [=](){
+                auto pair = gpu->KcAnddKcTbyKc(p, T);
+                return std::get<0>(pair) + std::get<1>(pair);
+            };
+            auto cpu_op = [&](){
+                return cpu.Kc(p, T) + cpu.dKcdTbyKc(p, T);
+            };
+
+            REQUIRE(eval(gpu_op) == Approx(cpu_op()).epsilon(errorTol));
 
         }
     }

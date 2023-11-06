@@ -131,16 +131,53 @@ public:
         return dKcdTbyKc - nm / T;
     }
 
+    /// @brief Computs the equilibrium constant (Kc) and derivative of
+    /// B w.r.t. temperature more efficiently than the individual
+    /// calls to functions Kc and dKcTbyKc.
+    /// @param p Pressure.
+    /// @param T Temperature.
+    /// @return A pair of scalars [Kc, dKcTbyKc].
+    inline CUDA_HOSTDEV std::pair<gScalar, gScalar>
+    KcAnddKcTbyKc(const gScalar p, const gScalar T) const {
+
+        // const gScalar nm = this->Y() / this->W();
+        const gScalar nm            = this->Y() / this->W();
+        const gScalar logT = log(T);
+        const gScalar Gstd          = this->Gstd(T, logT);
+        const bool    nm_is_small   = abs(nm - gpuSmall) < gpuVSmall;
+        const gScalar gpuRR_times_T = gpuRR * T;
+
+        const gScalar K = [&]() {
+            const gScalar arg = -this->Y() * Gstd / gpuRR_times_T;
+            if (arg < 600) { return exp(arg); }
+            return sqrt(gpuVGreat);
+        }();
+
+        const gScalar Kc = [&]() {
+            if (nm_is_small) { return K; }
+            return K * pow(gpuPstd / gpuRR_times_T, nm);
+        }();
+
+        const gScalar dKcdTbyKc = [&]() {
+            const gScalar S = this->S(gpuPstd, T, logT);
+            const gScalar ret =
+                (S + Gstd / T) * this->Y() / gpuRR_times_T;
+            if (nm_is_small) { return ret; }
+            return ret - nm / T;
+        }();
+
+        return std::make_pair(Kc, dKcdTbyKc);
+    }
+
     /// @brief Computes the heat capacity [J/kg/K] at constant
     /// pressure.
     /// @param p Pressure.
     /// @param T Temperature.
     /// @param a The janaf polynomial coefficients
     /// @return Heat capacity at constant pressure.
-    inline CUDA_HOSTDEV gScalar Cp(const gScalar p,
-                                   const gScalar T,
+    inline CUDA_HOSTDEV gScalar Cp(const gScalar  p,
+                                   const gScalar  T,
                                    const gScalar* a) const {
-
 
         return ((((a[4] * T + a[3]) * T + a[2]) * T + a[1]) * T +
                 a[0]) +
@@ -157,8 +194,6 @@ public:
         return Cp(p, T, coeffs(T));
     }
 
-
-
     /// @brief Computes the heat capacity [J/kg/K] at constant volume.
     /// @param p Pressure.
     /// @param T Temperature.
@@ -173,8 +208,8 @@ public:
     /// @param T Temperature.
     /// @param a The janaf polynomial coefficients
     /// @return The absolute enthalpy.
-    inline CUDA_HOSTDEV gScalar Ha(const gScalar p,
-                                   const gScalar T,
+    inline CUDA_HOSTDEV gScalar Ha(const gScalar  p,
+                                   const gScalar  T,
                                    const gScalar* a) const {
         return (((((a[4] / 5.0 * T + a[3] / 4.0) * T + a[2] / 3.0) *
                       T +
@@ -185,7 +220,6 @@ public:
                 a[5]) +
                EquationOfState::H(p, T);
     }
-
 
     /// @brief Computes the absolute enthalpy [J/kg].
     /// @param p Pressure.
@@ -223,16 +257,46 @@ public:
     /// @brief Computes the entropy [J/kg/K].
     /// @param p Pressure.
     /// @param T Temperature.
+    /// @param logT Precomputed log(T).
     /// @return The entropy.
     inline CUDA_HOSTDEV gScalar S(const gScalar p,
-                                  const gScalar T) const {
+                                  const gScalar T,
+                                  const gScalar logT) const {
         const auto& a = coeffs(T);
         return ((((a[4] / 4.0 * T + a[3] / 3.0) * T + a[2] / 2.0) *
                      T +
                  a[1]) *
                     T +
-                a[0] * log(T) + a[6]) +
+                a[0] * logT + a[6]) +
                EquationOfState::Sp(p, T);
+    }
+
+    /// @brief Computes the entropy [J/kg/K].
+    /// @param p Pressure.
+    /// @param T Temperature.
+    /// @return The entropy.
+    inline CUDA_HOSTDEV gScalar S(const gScalar p,
+                                  const gScalar T) const {
+        return S(p, T, log(T));
+    }
+
+
+    /// @brief Computes the Gibbs free energy [J/kg] of the mixture in
+    /// the standard state.
+    /// @param T Temperature.
+    /// @param logT Precomputed log(T)
+    /// @return The Gibbs free energy.
+    inline CUDA_HOSTDEV gScalar Gstd(const gScalar T, const gScalar logT) const {
+        const auto& a = coeffs(T);
+
+        return (
+            (a[0] * (1.0 - logT) -
+             (((a[4] / 20.0 * T + a[3] / 12.0) * T + a[2] / 6.0) * T +
+              a[1] / 2.0) *
+                 T -
+             a[6]) *
+                T +
+            a[5]);
     }
 
     /// @brief Computes the Gibbs free energy [J/kg] of the mixture in
@@ -240,16 +304,7 @@ public:
     /// @param T Temperature.
     /// @return The Gibbs free energy.
     inline CUDA_HOSTDEV gScalar Gstd(const gScalar T) const {
-        const auto& a = coeffs(T);
-
-        return (
-            (a[0] * (1.0 - log(T)) -
-             (((a[4] / 20.0 * T + a[3] / 12.0) * T + a[2] / 6.0) * T +
-              a[1] / 2.0) *
-                 T -
-             a[6]) *
-                T +
-            a[5]);
+        return Gstd(T, log(T));
     }
 
     /// @brief Computes the sensible internal energy [J/kg].
@@ -276,8 +331,8 @@ public:
     /// @param T Temperature.
     /// @param a The janaf polynomial coefficients.
     /// @return Derivative of heat capacity at constant pressure.
-    inline CUDA_HOSTDEV gScalar dCpdT(const gScalar p,
-                                      const gScalar T,
+    inline CUDA_HOSTDEV gScalar dCpdT(const gScalar  p,
+                                      const gScalar  T,
                                       const gScalar* a) const {
         return (((4.0 * a[4] * T + 3.0 * a[3]) * T + 2.0 * a[2]) * T +
                 a[1]);
