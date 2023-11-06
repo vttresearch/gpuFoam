@@ -44,23 +44,23 @@ struct gpuMixture {
         gScalar alphav = 0.0;
 
         for (gLabel i = 0; i < nSpecie; ++i) {
-            const gScalar yi   = max(y[i], 0.0);
-            const gScalar rhoi = specieThermos()[i].rho(p, T);
-            const gScalar vi   = 1.0 / rhoi;
+            const gScalar    yi     = max(y[i], 0.0);
+            const gpuThermo& thermo = specieThermos()[i];
+            const gScalar    rhoi   = thermo.rho(p, T);
+            const gScalar    vi     = 1.0 / rhoi;
 
-            const gScalar* coeffs = specieThermos()[i].coeffs(T);
-            const gScalar  Cpi = specieThermos()[i].Cp(p, T, coeffs);
-            const gScalar  Hai = specieThermos()[i].Ha(p, T, coeffs);
-            const gScalar  dCpMdTi =
-                specieThermos()[i].dCpdT(p, T, coeffs);
+            const gScalar* coeffs  = thermo.coeffs(T);
+            const gScalar  Cpi     = thermo.Cp(p, T, coeffs);
+            const gScalar  Hai     = thermo.Ha(p, T, coeffs);
+            const gScalar  dCpMdTi = thermo.dCpdT(p, T, coeffs);
 
             rhoM += yi / rhoi;
             CpM += yi * Cpi;
             dCpMdT += yi * dCpMdTi;
-            alphav += yi * vi * specieThermos()[i].alphav(p, T);
+            alphav += yi * vi * thermo.alphav(p, T);
             Cp[i] = Cpi;
             Ha[i] = Hai;
-            c[i]  = yi / specieThermos()[i].W();
+            c[i]  = yi / thermo.W();
         }
         rhoM_   = 1.0 / rhoM;
         CpM_    = CpM;
