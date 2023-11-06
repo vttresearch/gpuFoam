@@ -8,7 +8,7 @@
 #include "gpuThermo.H"
 #include "gpu_constants.H"
 #include "mdspan.H"
-
+#include "gpuMixture.H"
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 // * * * //
 
@@ -349,20 +349,26 @@ public:
             }
         }
 
+
         const gLabel nSpecie = nEqns() - 2;
 
         const gScalar T = y[nSpecie];
         const gScalar p = y[nSpecie + 1];
 
-
-        const gScalar rhoM = rhoMixture(y, p, T);
-        const gScalar CpM  = CpMixture(y, p, T);
-
+        gpuMixture mixture(thermos_, nSpecie);
+        auto Cp = buffer.tempField1();
+        auto Ha = buffer.tempField2();
         auto c = buffer.c();
-        concentration(y, c, rhoM);
+        mixture.computeAll(y, p, T, Cp, Ha, c);
+
+
+        const gScalar rhoM = mixture.rhoM(); //rhoMixture(y, p, T);
+        const gScalar CpM  = mixture.CpM();
+
+
         //this->derivatives(y, dfdx, buffer, c, CpM, rhoM);
 
-        auto tempField1 = buffer.tempField1();
+        auto tempField1 = buffer.k4();
 
         auto ddc = mdspan<gScalar, 1>(&tempField1[0], extents<1>{nSpecie});
 
@@ -390,18 +396,14 @@ public:
 
 
         // Temporary array to allow for re-using dfdy
-        auto temp = buffer.tempField1();
+        auto temp = buffer.k4();
 
         // Evaluate the mixture thermal expansion coefficient
-        const gScalar alphavM = alphavMixture(y, p, T, rhoM);
+        const gScalar alphavM = mixture.alphav();
 
         ddY_dcdY(dfdy, dfdx, c, temp, rhoM, alphavM, p, T);
 
-        auto Cp = buffer.tempField2();
-        heatCapacity(Cp, p, T);
 
-        auto Ha = buffer.tempField1();
-        absoluteEnthalpy(Ha, p, T);
 
         dfdx[nSpecie] = dTdt(dfdx, Ha, CpM);
 
@@ -411,7 +413,7 @@ public:
         ddT_dtdY(dfdy, dfdx, Cp, Ha, CpM);
 
         // d(dTdt)/dT
-        const gScalar dCpMdT = dCpMdTMixture(y, p, T);
+        const gScalar dCpMdT = mixture.dCpMdT(); //dCpMdTMixture(y, p, T);
         ddT_dtdT(dfdy, dfdx, Cp, Ha, CpM, dCpMdT);
 
 
