@@ -58,9 +58,13 @@ public:
                                  mdspan<gScalar, 1> ddc) const {
 
         // void) p; (void) T; (void) c; (void) ddc;
+
+        //TODO: This should be a no-op.
         for (gLabel i = 0; i < gLabel(ddc.size()); ++i) {
             ddc[i] = 0;
         }
+
+
     }
 
     inline CUDA_HOSTDEV std::pair<gScalar, gScalar>

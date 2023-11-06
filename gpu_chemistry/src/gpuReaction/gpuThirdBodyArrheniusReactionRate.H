@@ -6,8 +6,9 @@
 
 namespace FoamGpu {
 
-class gpuThirdBodyArrheniusReactionRate : gpuArrheniusReactionRate {
+class gpuThirdBodyArrheniusReactionRate {
 
+    gpuArrheniusReactionRate k_;
     gpuThirdBodyEfficiencies thirdBodyEfficiencies_;
 
 public:
@@ -20,21 +21,21 @@ public:
         const gScalar                   beta,
         const gScalar                   Ta,
         const gpuThirdBodyEfficiencies& tbes)
-        : gpuArrheniusReactionRate(A, beta, Ta)
+        : k_(A, beta, Ta)
         , thirdBodyEfficiencies_(tbes) {}
 
     //- Construct from components
     inline gpuThirdBodyArrheniusReactionRate(
         const gpuArrheniusReactionRate& arhenius,
         const gpuThirdBodyEfficiencies& tbes)
-        : gpuArrheniusReactionRate(arhenius)
+        : k_(arhenius)
         , thirdBodyEfficiencies_(tbes) {}
 
     inline CUDA_HOSTDEV gScalar operator()(const gScalar                  p,
                                            const gScalar                  T,
                                            const mdspan<const gScalar, 1> c) const {
         return thirdBodyEfficiencies_.M(c) *
-               gpuArrheniusReactionRate::operator()(p, T, c);
+               k_.operator()(p, T, c);
     }
 
     //- The derivative of the rate w.r.t. temperature
@@ -42,7 +43,7 @@ public:
                                     const gScalar                  T,
                                     const mdspan<const gScalar, 1> c) const {
         return thirdBodyEfficiencies_.M(c) *
-               gpuArrheniusReactionRate::ddT(p, T, c);
+               k_.ddT(p, T, c);
     }
 
     //- Is the rate a function of concentration?
@@ -53,7 +54,7 @@ public:
                                  const gScalar                  T,
                                  const mdspan<const gScalar, 1> c,
                                  mdspan<gScalar, 1>             ddc) const {
-        const gScalar k = gpuArrheniusReactionRate::operator()(p, T, c);
+        const gScalar k = k_.operator()(p, T, c);
 
         for (gLabel i = 0; i < gLabel(ddc.size()); ++i) {
             ddc[i] = thirdBodyEfficiencies_.dMdc(c)[i] * k;
@@ -66,7 +67,7 @@ public:
                                    const mdspan<const gScalar, 1> c,
                                    mdspan<gScalar, 1>             ddc) const {
 
-        auto pair = gpuArrheniusReactionRate::everything(p, T, c, ddc);
+        auto pair = k_.everything(p, T, c, ddc);
         const gScalar k = std::get<0>(pair);
         const gScalar ddT = std::get<1>(pair);
 

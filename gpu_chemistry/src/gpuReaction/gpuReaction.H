@@ -14,14 +14,9 @@ namespace FoamGpu {
 
 struct reactionParams {
 
-    gScalar kf    = 0.0;
-    gScalar kr    = 0.0;
-    gScalar Cf    = 0.0;
-    gScalar Cr    = 0.0;
-    gScalar dkfdT = 0.0;
-    gScalar dkrdT = 0.0;
-    gScalar Kc    = 0.0;
 
+    gScalar omega = 0.0;
+    gScalar dwdT   = 0.0;
     std::array<gScalar, MAX_REACTION_WIDTH> dCfdjs{};
     std::array<gScalar, MAX_REACTION_WIDTH> dCrdjs{};
     mdspan<gScalar, 1>                      ddc;
@@ -183,8 +178,8 @@ public:
     inline CUDA_HOSTDEV void
     dNdtByV(const reactionParams& r,
             mdspan<gScalar, 1>    dNdtByV) const {
-        gScalar omega = r.kf * r.Cf - r.kr * r.Cr;
-        this->dNdtByV(omega, dNdtByV);
+
+        this->dNdtByV(r.omega, dNdtByV);
     }
 
     /// @brief Computes and assigns the net reaction rate for each
@@ -237,64 +232,6 @@ public:
        const gScalar                  T,
        const mdspan<const gScalar, 1> c) const;
 
-    /// @brief Computes the temperature derivative of the forward
-    /// rate.
-    /// @param p Pressure.
-    /// @param T Temperature.
-    /// @param c A span of concentrations in a cell
-    /// @return The temperature derivative of the forward rate.
-    inline CUDA_HOSTDEV gScalar
-    dkfdT(const gScalar                  p,
-          const gScalar                  T,
-          const mdspan<const gScalar, 1> c) const;
-
-    /// @brief Computes the temperature derivative of the reverse
-    /// rate.
-    /// @param p Pressure.
-    /// @param T Temperature.
-    /// @param Kc Precomputed eqilibrium constant.
-    /// @param c A span of concentrations in a cell
-    /// @param dkfdT Temperature derivative of the forward rate.
-    /// @param kr The reverse rate constant.
-    /// @return The temperature derivative of the reverse rate.
-    inline CUDA_HOSTDEV gScalar
-    dkrdT(const gScalar                  p,
-          const gScalar                  T,
-          const gScalar                  Kc,
-          const mdspan<const gScalar, 1> c,
-          const gScalar                  dkfdT,
-          const gScalar                  kr) const;
-
-    /// @brief Computes the concentration derivative of the forward
-    /// rate.
-    /// @param p Pressure
-    /// @param T Temperature
-    /// @param c A span of concentrations in a cell
-    /// @param dkfdc A span of concentation derivatives to be
-    /// modified.
-    inline CUDA_HOSTDEV void dkfdc(const gScalar                  p,
-                                   const gScalar                  T,
-                                   const mdspan<const gScalar, 1> c,
-                                   mdspan<gScalar, 1> dkfdc) const;
-
-    /// @brief Computes the concentration derivative of the reverse
-    /// rate.
-    /// @param p Pressure
-    /// @param T Temperature
-    /// @param Kc Precomputed eqilibrium constant.
-    /// @param c A span of concentrations in a cell
-    /// @param dkfdc Concentration derivatives of the forward rate.
-    /// @param kr The reverse rate constant.
-    /// @param dkrdc A span of concentation derivatives to be
-    /// modified.
-    inline CUDA_HOSTDEV void
-    dkrdc(const gScalar                  p,
-          const gScalar                  T,
-          const gScalar                  Kc,
-          const mdspan<const gScalar, 1> c,
-          const mdspan<const gScalar, 1> dkfdc,
-          const gScalar                  kr,
-          mdspan<gScalar, 1>             dkrdc) const;
 
     inline CUDA_HOSTDEV void
     ddNdtByVdcTp(const gScalar                  p,
@@ -643,56 +580,7 @@ gpuReaction::kr(const gScalar                  p,
     return kr(kf(p, T, c), p, T, Kc, c);
 }
 
-inline CUDA_HOSTDEV gScalar
-gpuReaction::dkfdT(const gScalar                  p,
-                   const gScalar                  T,
-                   const mdspan<const gScalar, 1> c) const {
-    return k_.ddT(p, T, c);
-}
 
-inline CUDA_HOSTDEV gScalar
-gpuReaction::dkrdT(const gScalar                  p,
-                   const gScalar                  T,
-                   const gScalar                  Kc,
-                   const mdspan<const gScalar, 1> c,
-                   const gScalar                  dkfdT,
-                   const gScalar                  kr) const {
-
-    if (isIrreversible()) { return 0.0; }
-
-    return dkfdT / Kc -
-           (Kc > RSMALL ? kr * this->dKcdTbyKc(p, T) : 0.0);
-}
-
-inline CUDA_HOSTDEV void
-gpuReaction::dkfdc(const gScalar                  p,
-                   const gScalar                  T,
-                   const mdspan<const gScalar, 1> c,
-                   mdspan<gScalar, 1>             dkfdc) const {
-    k_.ddc(p, T, c, dkfdc);
-}
-
-inline CUDA_HOSTDEV void
-gpuReaction::dkrdc(const gScalar                  p,
-                   const gScalar                  T,
-                   const gScalar                  Kc,
-                   const mdspan<const gScalar, 1> c,
-                   const mdspan<const gScalar, 1> dkfdc,
-                   const gScalar                  kr,
-                   mdspan<gScalar, 1>             dkrdc) const {
-
-    if (isIrreversible()) {
-
-        for (gLabel i = 0; i < gLabel(dkrdc.size()); ++i) {
-            dkrdc[i] = 0.0;
-        }
-    } else {
-
-        for (gLabel i = 0; i < gLabel(dkrdc.size()); ++i) {
-            dkrdc[i] = dkfdc[i] / Kc;
-        }
-    }
-}
 
 inline CUDA_HOSTDEV void gpuReaction::jac_dCfdcj_contribution(
     const reactionParams& r, mdspan<gScalar, 2> ddNdtByVdcTp) const {
@@ -702,18 +590,18 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCfdcj_contribution(
 
     for (size_t j = 0; j < llhs.size(); ++j) {
 
-        const gScalar dCfdcj_kf = r.dCfdjs[j] * r.kf;
+        //const gScalar dCfdcj_kf = r.dCfdjs[j] * r.kf;
         const gLabel  sj        = llhs[j].index;
 
         for (size_t i = 0; i < llhs.size(); ++i) {
             const gLabel  si = llhs[i].index;
             const gScalar sl = llhs[i].stoichCoeff;
-            ddNdtByVdcTp(si, sj) -= sl * dCfdcj_kf;
+            ddNdtByVdcTp(si, sj) -= sl * r.dCfdjs[j];
         }
         for (size_t i = 0; i < rrhs.size(); ++i) {
             const gLabel  si = rrhs[i].index;
             const gScalar sr = rrhs[i].stoichCoeff;
-            ddNdtByVdcTp(si, sj) += sr * dCfdcj_kf;
+            ddNdtByVdcTp(si, sj) += sr * r.dCfdjs[j];
         }
     }
 }
@@ -726,18 +614,18 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCrdcj_contribution(
 
     for (size_t j = 0; j < rrhs.size(); ++j) {
 
-        const gScalar dCrcj_kr = r.dCrdjs[j] * r.kr;
+        //const gScalar dCrcj_kr = r.dCrdjs[j] * r.kr;
         const gLabel  sj       = rrhs[j].index;
 
         for (size_t i = 0; i < llhs.size(); ++i) {
             const gLabel  si = llhs[i].index;
             const gScalar sl = llhs[i].stoichCoeff;
-            ddNdtByVdcTp(si, sj) += sl * dCrcj_kr;
+            ddNdtByVdcTp(si, sj) += sl * r.dCrdjs[j];
         }
         for (size_t i = 0; i < rrhs.size(); ++i) {
             const gLabel  si = rrhs[i].index;
             const gScalar sr = rrhs[i].stoichCoeff;
-            ddNdtByVdcTp(si, sj) -= sr * dCrcj_kr;
+            ddNdtByVdcTp(si, sj) -= sr * r.dCrdjs[j];
         }
     }
 }
@@ -747,19 +635,18 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCdT_contribution(
     const gLabel          Tsi,
     mdspan<gScalar, 2>    ddNdtByVdcTp) const {
 
-    const gScalar dwdT = r.dkfdT * r.Cf - r.dkrdT * r.Cr;
 
     const auto llhs = lhs();
     for (size_t i = 0; i < llhs.size(); ++i) {
         const gLabel  si = llhs[i].index;
         const gScalar sl = llhs[i].stoichCoeff;
-        ddNdtByVdcTp(si, Tsi) -= sl * dwdT;
+        ddNdtByVdcTp(si, Tsi) -= sl * r.dwdT;
     }
     const auto rrhs = rhs();
     for (size_t i = 0; i < rrhs.size(); ++i) {
         const gLabel  si = rrhs[i].index;
         const gScalar sr = rrhs[i].stoichCoeff;
-        ddNdtByVdcTp(si, Tsi) += sr * dwdT;
+        ddNdtByVdcTp(si, Tsi) += sr * r.dwdT;
     }
 }
 
@@ -771,7 +658,6 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCdC_contribution(
     mdspan<gScalar, 2> ddNdtByVdcTp) const {
 
     if (hasDkdc()) {
-        const auto& dkfdc = r.ddc;
 
         const auto llhs = lhs();
 
@@ -780,7 +666,7 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCdC_contribution(
             const gScalar sl = llhs[i].stoichCoeff;
 
             for (gLabel j = 0; j < gLabel(c.size()); ++j) {
-                ddNdtByVdcTp(si, j) -= sl * dkfdc[j];
+                ddNdtByVdcTp(si, j) -= sl * r.ddc[j];
             }
         }
 
@@ -789,7 +675,7 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCdC_contribution(
             const gLabel  si = rrhs[i].index;
             const gScalar sr = rrhs[i].stoichCoeff;
             for (gLabel j = 0; j < gLabel(c.size()); ++j) {
-                ddNdtByVdcTp(si, j) += sr * dkfdc[j];
+                ddNdtByVdcTp(si, j) += sr * r.ddc[j];
             }
         }
     }
@@ -803,39 +689,51 @@ computeReactionParameters(const gpuReaction&             r,
                           mdspan<gScalar, 1>             ddc) {
     reactionParams ret;
 
-    {
-        const auto pair = r.k_.everything(p, T, c, ddc);
 
-        ret.kf = std::get<0>(pair);
+    const auto [kf, ddT] = r.k_.everything(p, T, c, ddc);
 
-        const auto lhsPow = r.lhsPowers(c);
-        ret.Cf            = r.calcCf(lhsPow);
-        ret.dCfdjs        = r.calcdCfdcj(lhsPow, ret.Cf, c);
-        ret.dkfdT         = std::get<1>(pair);
 
+    const auto lhsPow = r.lhsPowers(c);
+    const auto Cf     = r.calcCf(lhsPow);
+    ret.dCfdjs        = r.calcdCfdcj(lhsPow, Cf, c);
+    ret.dwdT          = Cf * ddT;
+    ret.omega         = Cf * kf;
+
+    for (auto& e : ret.dCfdjs){
+        e *= kf;
     }
 
+
+    gScalar Cr = 0.0;
+    gScalar Kc = 1.0;
     if (!r.isIrreversible()) {
-        const gScalar Kc  = max(r.Kc(p, T), r.RSMALL);
-        ret.Kc            = Kc;
-        ret.kr            = r.kr(ret.kf, p, T, Kc, c);
+        Kc  = max(r.Kc(p, T), r.RSMALL);
+        const auto kr     = kf / Kc;
+
         const auto rhsPow = r.rhsPowers(c);
-        ret.Cr            = r.calcCr(rhsPow);
-        ret.dkrdT         = r.dkrdT(p, T, Kc, c, ret.dkfdT, ret.kr);
-        ret.dCrdjs        = r.calcdCrdcj(rhsPow, ret.Cr, c);
+        Cr            = r.calcCr(rhsPow);
+
+        const auto dkrdT = ddT / Kc -
+           (Kc > r.RSMALL ? kr * r.dKcdTbyKc(p, T) : 0.0);
+
+        ret.dwdT          -= Cr * dkrdT;
+        ret.omega         -= Cr * kr;
+        ret.dCrdjs        = r.calcdCrdcj(rhsPow, Cr, c);
+
+
+        for (auto& e : ret.dCrdjs){
+            e *= kr;
+        }
+
     }
+
 
     if (r.hasDkdc()) {
-
-        if (!r.isIrreversible()) {
-            for (gLabel j = 0; j < gLabel(c.size()); ++j) {
-                ddc[j] = ddc[j] * ret.Cf - (ret.Cr / ret.Kc) * ddc[j];
-            }
-        } else {
-            for (gLabel j = 0; j < gLabel(c.size()); ++j) {
-                ddc[j] = ddc[j] * ret.Cf;
-            }
+        const gScalar temp = (Cf - Cr/Kc);
+        for (gLabel j = 0; j < gLabel(c.size()); ++j) {
+            ddc[j] *= temp;
         }
+
     }
 
     ret.ddc = ddc;

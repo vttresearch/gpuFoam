@@ -582,7 +582,7 @@ TEST_CASE("gpuReaction"){
                 auto        params   = computeReactionParameters(
                     reaction, c, p, T, work1);
 
-                ret += params.kf + params.kr + params.dCrdjs[5] +
+                ret += params.omega + params.dwdT + params.dCrdjs[5] +
                        params.ddc[4];
             }
             return ret;
@@ -631,45 +631,6 @@ TEST_CASE("gpuReaction"){
 
 
 
-
-    BENCHMARK("dkfdT"){
-
-        auto op = [          =,
-                   c         = make_mdspan(c, extents<1>{nSpecie}),
-                   reactions = make_mdspan(reactions, extents<1>{nReactions})
-                  ] __device__() {
-            gScalar ret = 0.0;
-            for (int i = 0; i < nReactions; ++i) {
-                const auto& reaction = reactions[i];
-                gScalar dkfdT = reaction.dkfdT(p, T, c);
-                ret += dkfdT;
-            }
-            return ret;
-        };
-
-        return eval(op);
-    };
-
-    BENCHMARK("dkrdT"){
-
-        auto op = [          =,
-                   c         = make_mdspan(c, extents<1>{nSpecie}),
-                   reactions = make_mdspan(reactions, extents<1>{nReactions})
-                  ] __device__() {
-            gScalar ret = 0.0;
-            for (int i = 0; i < nReactions; ++i) {
-                const auto& reaction = reactions[i];
-                gScalar dkfdT = 0.543534;
-                gScalar kr = 534534.0;
-                gScalar Kc = 0.765756;
-                gScalar dkrdT = reaction.dkrdT(p, T, Kc, c, dkfdT, kr);
-                ret += dkrdT;
-            }
-            return ret;
-        };
-
-        return eval(op);
-    };
 
     BENCHMARK("Kc"){
 

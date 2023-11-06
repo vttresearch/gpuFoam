@@ -102,11 +102,14 @@ public:
         const gScalar dkInfdT = kInf_.ddT(p, T, c);
         const gScalar ddT     = dkInfdT * temp;
 
-        kInf_.ddc(p, T, c, ddc);
+        if (kInf_.hasDdc()){
+            kInf_.ddc(p, T, c, ddc);
 
-        for (gLabel i = 0; i < gLabel(ddc.size()); ++i) {
-            ddc[i] *= temp;
+            for (gLabel i = 0; i < gLabel(ddc.size()); ++i) {
+                ddc[i] *= temp;
+            }
         }
+
         return std::make_pair(k, ddT);
     }
 };
