@@ -13,7 +13,6 @@ static inline CUDA_HOSTDEV void LUDecompose(mdspan<gScalar, 2> matrix,
     const gLabel m = static_cast<gLabel>(matrix.extents().extent(1));
 
     // gLabel sign = 1;
-
     for (gLabel i = 0; i < m; i++) {
         gScalar largestCoeff = 0.0;
 
