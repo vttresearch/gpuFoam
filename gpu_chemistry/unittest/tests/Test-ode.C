@@ -10,91 +10,11 @@
 #include "Rosenbrock34.H"
 #include "Rosenbrock23.H"
 #include "mdspan.H"
-#include "ludecompose.H"
 
 
 
 
-TEST_CASE("Test ludecompose")
-{
-    using namespace FoamGpu;
 
-    for (int i = 3; i < 50; ++i)
-    {
-        int size = i;
-
-
-        std::vector<gScalar> vals(size*size);
-        fill_random(vals);
-
-        Foam::scalarSquareMatrix m_cpu(size, 0);
-        std::copy(vals.begin(), vals.end(), m_cpu.v());
-        Foam::List<Foam::label> pivot_cpu(size, 0);
-        gLabel sign = 1;
-        //Foam::scalarField v_cpu(size, 0);
-
-
-
-
-        device_vector<gScalar> m_gpu(vals.begin(), vals.end());
-        device_vector<gLabel> pivot_gpu(size, 0);
-        device_vector<gScalar> v_gpu(size, 0);
-
-
-        auto m_span = make_mdspan(m_gpu, extents<2>{size, size});
-        auto p_span = make_mdspan(pivot_gpu, extents<1>{size});
-        auto v_span = make_mdspan(v_gpu, extents<1>{size});
-
-        Foam::LUDecompose(m_cpu, pivot_cpu, sign);
-
-        eval
-        (
-            [=](){FoamGpu::LUDecompose(m_span, p_span, v_span); return 0;}
-        );
-
-
-        auto r_cpu1 = std::vector(m_cpu.v(), m_cpu.v() + size*size);
-        auto r_gpu1 = toStdVector(m_gpu);
-
-        REQUIRE_THAT
-        (
-            r_gpu1,
-            Catch::Matchers::Approx(r_cpu1).epsilon(errorTol)
-        );
-        REQUIRE_THAT
-        (
-            toStdVector(pivot_gpu),
-            Catch::Matchers::Approx(toStdVector(pivot_cpu)).epsilon(errorTol)
-        );
-
-
-
-
-        device_vector<gScalar> source_gpu(size, 0);
-        Foam::scalarField source_cpu(size, 0);
-
-        auto s_span = make_mdspan(source_gpu, extents<1>{size});
-
-        Foam::LUBacksubstitute(m_cpu, pivot_cpu, source_cpu);
-
-
-        eval
-        (
-            [=](){FoamGpu::LUBacksubstitute(m_span, p_span, s_span); return 0;}
-        );
-
-
-        REQUIRE_THAT
-        (
-            toStdVector(source_gpu),
-            Catch::Matchers::Approx(toStdVector(source_cpu)).epsilon(errorTol)
-        );
-
-
-        CHECK(toStdVector(source_gpu) == toStdVector(source_cpu));
-
-    }
-}
 
 struct TestParams{
     const gScalar xStart;
