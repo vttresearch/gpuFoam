@@ -19,8 +19,8 @@ struct gpuODESystem {
 private:
     gLabel             nEqns_;
     gLabel             nReactions_;
-    const gpuThermo*   thermos_;
-    const gpuReaction* reactions_;
+    const gpuThermo* __restrict__   thermos_;
+    const gpuReaction* __restrict__ reactions_;
 
     /// @brief Get a pointer to the species thermos.
     /// @return A pointer to the specie thermos.
