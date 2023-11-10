@@ -661,12 +661,15 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCdC_contribution(
 
         const auto llhs = lhs();
 
+        const gScalar* __restrict__ ddc = &r.ddc[0];
+
         for (size_t i = 0; i < llhs.size(); ++i) {
             const gLabel  si = llhs[i].index;
             const gScalar sl = llhs[i].stoichCoeff;
+            gScalar* __restrict__ ddN_si = &ddNdtByVdcTp(si, 0);
 
             for (gLabel j = 0; j < gLabel(c.size()); ++j) {
-                ddNdtByVdcTp(si, j) -= sl * r.ddc[j];
+                ddN_si[j] -= sl * ddc[j];
             }
         }
 
@@ -674,8 +677,10 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCdC_contribution(
         for (size_t i = 0; i < rrhs.size(); ++i) {
             const gLabel  si = rrhs[i].index;
             const gScalar sr = rrhs[i].stoichCoeff;
+            gScalar* __restrict__ ddN_si = &ddNdtByVdcTp(si, 0);
+
             for (gLabel j = 0; j < gLabel(c.size()); ++j) {
-                ddNdtByVdcTp(si, j) += sr * r.ddc[j];
+                ddN_si[j] += sr * ddc[j];
             }
         }
     }
