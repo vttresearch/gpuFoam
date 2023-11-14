@@ -34,7 +34,7 @@ EXE_LIBS = \
     -lmulticomponentThermophysicalModels \
     -lfiniteVolume \
     -lchemistryModel \
-    -lblockMesh \
+    -lblockMesh
     #-L$(GSL_ROOT) \
     #-lgsl \
     #-lblas

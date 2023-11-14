@@ -65,7 +65,7 @@ inline auto call_lu_cpu(const std::vector<gScalar>& m_vals, const std::vector<gS
     Foam::LUBacksubstitute(matrix, pivot, source);
 
 
-    auto m_ret = std::vector(matrix.v(), matrix.v() + size*size);
+    auto m_ret = std::vector<gScalar>(matrix.v(), matrix.v() + size*size);
     auto p_ret = toStdVector(pivot);
     auto s_ret = toStdVector(source);
 

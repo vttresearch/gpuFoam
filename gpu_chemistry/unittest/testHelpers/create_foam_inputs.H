@@ -24,6 +24,6 @@ Foam::PtrList<FoamThermoType> makeCpuThermos(TestData::Mechanism m);
 
 Foam::dictionary makeReactionDict(TestData::Mechanism m);
 
-const Foam::ReactionList<FoamThermoType>
+Foam::ReactionList<FoamThermoType>
 makeCpuReactions(TestData::Mechanism m);
 } // namespace TestData

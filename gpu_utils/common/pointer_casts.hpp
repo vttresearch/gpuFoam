@@ -20,12 +20,12 @@ template <class T> static constexpr inline auto make_device_pointer(T p) {
 #else
 
 template <class T> static constexpr inline auto make_raw_pointer(T p) {
-    static_assert(std::is_pointer_v<T>, "Not a pointer type.");
+    static_assert(std::is_pointer<T>::value, "Not a pointer type.");
     return p;
 }
 
 template <class T> static constexpr inline auto make_device_pointer(T p) {
-    static_assert(std::is_pointer_v<T>, "Not a pointer type.");
+    static_assert(std::is_pointer<T>::value, "Not a pointer type.");
     return p;
 }
 #endif

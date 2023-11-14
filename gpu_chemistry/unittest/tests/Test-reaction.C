@@ -215,7 +215,15 @@ static inline void reactionTests(TestData::Mechanism mech)
 
     using namespace FoamGpu;
 
-    auto cpu_reactions = makeCpuReactions(mech);
+    
+    const Foam::ReactionList<FoamThermoType> cpu_reactions(
+        TestData::makeSpeciesTable(mech),
+        TestData::makeCpuThermos(mech),
+        TestData::makeReactionDict(mech)
+    );
+    
+
+    //auto cpu_reactions = TestData::makeCpuReactions(mech);
     auto gpu_reactions_temp = makeGpuReactions(mech);
 
     const gLabel nSpecie = TestData::speciesCount(mech);

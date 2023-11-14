@@ -244,7 +244,7 @@ public:
 
         jac_dCrdcj_contribution(r, ddNdtByVdcTp);
 
-        const gLabel Tsi = static_cast<gLabel>(std::size(c));
+        const gLabel Tsi = static_cast<gLabel>(c.size());
 
         jac_dCdT_contribution(r, Tsi, ddNdtByVdcTp);
 

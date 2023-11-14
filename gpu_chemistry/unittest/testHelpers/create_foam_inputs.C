@@ -62,7 +62,7 @@ Foam::dictionary makeReactionDict(TestData::Mechanism m) {
     return reactionDict;
 }
 
-const Foam::ReactionList<FoamThermoType>
+Foam::ReactionList<FoamThermoType>
 makeCpuReactions(TestData::Mechanism m) {
 
     auto thermos      = makeCpuThermos(m);
