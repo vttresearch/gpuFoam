@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Version:  gpu
+    \\  /    A nd           | Version:  owngpu
      \\/     M anipulation  |
 \*---------------------------------------------------------------------------*/
 FoamFile
@@ -10,28 +10,52 @@ FoamFile
     version         2;
     format          ascii;
     class           dictionary;
-    location        "constant";
-    object          chemistryProperties;
+    location        "system";
+    object          controlDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-chemistry       on;
+application     foamRun;
 
-initialChemicalTimeStep 1;
+solver          multicomponentFluid;
 
-chemistryType
+startFrom       latestTime;
+
+startTime       0;
+
+stopAt          nextWrite;
+
+endTime         1;
+
+deltaT          1e-07;
+
+writeControl    timeStep;
+
+writeInterval   1;
+
+purgeWrite      0;
+
+writeFormat     binary;
+
+writePrecision  9;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   9;
+
+runTimeModifiable true;
+
+adjustTimeStep  yes;
+
+maxCo           0.7;
+
+functions
 {
-    solver          ode;
 }
 
-odeCoeffs
-{
-    solver          Rosenbrock34;
-    absTol          1e-08;
-    relTol          0.1;
-}
-
-#include        "reactionsH2"
+libs            ( "libGpuChemistryModel.so" );
 
 
 // ************************************************************************* //

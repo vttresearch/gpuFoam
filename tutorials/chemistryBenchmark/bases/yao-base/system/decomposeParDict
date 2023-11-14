@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Version:  dev
+    \\  /    A nd           | Version:  owngpu
      \\/     M anipulation  |
 \*---------------------------------------------------------------------------*/
 FoamFile
@@ -10,29 +10,14 @@ FoamFile
     version         2;
     format          ascii;
     class           dictionary;
-    location        "constant";
-    object          chemistryProperties;
+    location        "system";
+    object          decomposeParDict;
 }
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-chemistryType
-{
-    solver          ode;
-}
+numberOfSubdomains 10;
 
-chemistry       on;
+method          scotch;
 
-loadBalancing   on;
-
-initialChemicalTimeStep 1e-07;
-
-odeCoeffs
-{
-    //solver          seulex;
-    solver          Rosenbrock34;
-    absTol          1e-8;
-    relTol          0.1;
-}
-
-#include "reactionsGRI"
 
 // ************************************************************************* //

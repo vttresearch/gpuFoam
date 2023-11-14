@@ -1,0 +1,123 @@
+#!/bin/bash
+
+cd ${0%/*} || exit 1    # Run from this directory
+
+# Source tutorial run functions
+. $WM_PROJECT_DIR/bin/tools/RunFunctions
+
+
+changeModel()
+{
+    MODEL=$1
+
+    if [ "$MODEL" = "cpu" ]; then
+        MODEL_STR="{solver ode;}"
+    else
+        MODEL_STR="{solver none; method gpuChemistryModel;}"
+    fi
+
+
+    runApplication -a foamDictionary \
+        -entry chemistryType \
+        -set "$MODEL_STR" \
+        constant/chemistryProperties
+}
+
+changeOde()
+{
+    ODE=$1
+    
+    ODE_STR="{solver $ODE; absTol 1E-08; relTol 0.1;}"
+
+    runApplication -a foamDictionary \
+        -entry odeCoeffs \
+        -set "$ODE_STR" \
+        constant/chemistryProperties
+
+}
+
+changeDecomp()
+{
+    NPROC=$1
+
+    runApplication -a foamDictionary \
+        -entry numberOfSubdomains \
+        -set "$NPROC" \
+        system/decomposeParDict
+}
+
+changeResolution()
+{
+    CELLCOUNT=$1
+    RESOLUTION="hex (0 1 2 3 4 5 6 7) ("$CELLCOUNT" "$CELLCOUNT" "$CELLCOUNT") simpleGrading (1 1 1)"
+    
+    runApplication -a foamDictionary \
+        -entry blocks \
+        -set "($RESOLUTION)" \
+        system/blockMeshDict
+}
+
+runCase()
+{
+    NPROC=$1
+    runApplication blockMesh
+
+    if [ "$DECOMP_NUMBER" = "1" ]; then
+        runApplication $(getApplication)
+    else
+        runApplication decomposePar
+        #mpirun -np $DECOMP_NUMBER ./multigpu_run.sh > log.foamRun&
+        #wait
+        runParallel $(getApplication)
+    fi
+
+}
+
+changeSteps()
+{
+    NSTEPS=$1
+    runApplication -a foamDictionary \
+        -entry writeInterval \
+        -set "$NSTEPS" \
+        system/controlDict
+}
+
+
+MODELS=("gpu" "cpu")
+ODES=("Rosenbrock23")
+NPROCS=(10 20 40 80)
+NSTEPS=100
+MECHS=("h2" "gri") 
+NCELLS=(50)
+
+
+for NCELL in ${NCELLS[@]};
+do
+    for MECH in ${MECHS[@]};
+    do    
+        for ODE in ${ODES[@]};
+        do
+            for MODEL in ${MODELS[@]};
+            do
+                for NPROC in ${NPROCS[@]};
+                do
+                    BASE=bases/$MECH-base
+                    CASE="$MODEL-$MECH-$ODE-$NPROC-$NCELL"
+                    cp -r $BASE $CASE
+                    cd $CASE
+
+                    changeSteps $NSTEPS
+                    changeModel $MODEL
+                    changeOde $ODE
+                    changeDecomp $NPROC
+                    changeResolution $NCELL
+                    runCase $NPROC
+
+                    cd ..
+                done
+            done
+        done
+    done
+done
+#------------------------------------------------------------------------------
+

@@ -5,7 +5,7 @@ cd "${0%/*}" || exit 1
 
 
 
-echo "#ncores    t-cpu   t-gpu      mechanism       ode"
+echo "#ncores    t-cpu   t-gpu      mechanism       ode     ncells"
 
 for d in cpu-*; do
     arr=(${d//-/ })
@@ -13,13 +13,14 @@ for d in cpu-*; do
     MECH=${arr[1]}
     ODE=${arr[2]}
     CORES=${arr[3]}
+    CELLS=${arr[4]}
 
-    LOG_CPU="cpu-$MECH-$ODE-$CORES/log.foamRun"
-    LOG_GPU="gpu-$MECH-$ODE-$CORES/log.foamRun"
+    LOG_CPU="cpu-$MECH-$ODE-$CORES-$CELLS/log.foamRun"
+    LOG_GPU="gpu-$MECH-$ODE-$CORES-$CELLS/log.foamRun"
     RUNTIME_CPU=$(sed -n -e '/^ExecutionTime/p' $LOG_CPU | tail -1 | sed -e 's/[^0-9. ]*//g' -e  's/ \+/ /g' | awk '{print $1;}')
     RUNTIME_GPU=$(sed -n -e '/^ExecutionTime/p' $LOG_GPU | tail -1 | sed -e 's/[^0-9. ]*//g' -e  's/ \+/ /g' | awk '{print $1;}')
 
-    echo "$CORES   $RUNTIME_CPU    $RUNTIME_GPU    $MECH   $ODE"
+    echo "$CORES   $RUNTIME_CPU    $RUNTIME_GPU    $MECH   $ODE     $CELLS"
 
 done
 

@@ -1,0 +1,9 @@
+#ncores    t-cpu   t-gpu      mechanism       ode     ncells
+10   278.805176    110.465644    gri   Rosenbrock23     50
+20   143.131874    95.346479    gri   Rosenbrock23     50
+40   76.432961    92.950405    gri   Rosenbrock23     50
+80   43.457326    63.516201    gri   Rosenbrock23     50
+10   32.49243    19.380386    h2   Rosenbrock23     50
+20   18.895891    14.191458    h2   Rosenbrock23     50
+40   11.84661    13.625852    h2   Rosenbrock23     50
+80   8.645564    13.255238    h2   Rosenbrock23     50
