@@ -11,6 +11,5 @@ wmake src/gpuChemistryModels
 wmake catchMain
 wmake all unittest
 wmake all benchmark
-wmake profile
 
 # ----------------------------------------------------------------- end-of-file
