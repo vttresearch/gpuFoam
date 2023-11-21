@@ -57,21 +57,6 @@ changeResolution()
         system/blockMeshDict
 }
 
-runCase()
-{
-    NPROC=$1
-    runApplication blockMesh
-
-    if [ "$DECOMP_NUMBER" = "1" ]; then
-        runApplication $(getApplication)
-    else
-        runApplication decomposePar
-        #mpirun -np $DECOMP_NUMBER ./multigpu_run.sh > log.foamRun&
-        #wait
-        runParallel $(getApplication)
-    fi
-
-}
 
 changeSteps()
 {
@@ -82,13 +67,36 @@ changeSteps()
         system/controlDict
 }
 
+runCase()
+{
+    NPROC=$1
+	MODEL=$2
+    runApplication blockMesh
+
+    if [ "$DECOMP_NUMBER" = "1" ]; then
+        runApplication $(getApplication)
+    else
+        runApplication decomposePar
+        
+        if ["$MODEL" = "gpu"]; then 
+            mpirun -np $NPROC ./multigpu_run.sh > log.foamRun&
+            wait
+        else
+            runParallel $(getApplication)
+        fi
+    fi
+
+}
+
+
 
 MODELS=("gpu" "cpu")
+#MODELS=("gpu")
 ODES=("Rosenbrock23")
 NPROCS=(10 20 40 80)
-NSTEPS=100
+NSTEPS=2000
 MECHS=("h2" "gri") 
-NCELLS=(50)
+NCELLS=(100)
 
 
 for NCELL in ${NCELLS[@]};
@@ -111,7 +119,7 @@ do
                     changeOde $ODE
                     changeDecomp $NPROC
                     changeResolution $NCELL
-                    runCase $NPROC
+                    runCase $NPROC $MODEL
 
                     cd ..
                 done

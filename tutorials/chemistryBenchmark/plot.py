@@ -4,8 +4,40 @@ import pandas as pd
 
 def main():
 
-    dat = read()
-    print(dat)
+    df = read()
+
+    gri = df[df["mech"] == "gri"]
+    h2 = df[df["mech"] == "h2"]
+    
+    fig, ax = pl.subplots()
+    plotMechanism(ax, gri)
+    pl.legend(loc="best")
+    pl.show()
+
+    fix, ax = pl.subplots()
+    plotMechanism(ax, h2)
+    pl.legend(loc="best")
+    pl.show()
+
+
+def plotMechanism(ax, mech):
+
+    procs = np.array(mech["proc"])
+    tgpu = np.array(mech["tgpu"], dtype=float)
+    tcpu = np.array(mech["tcpu"], dtype=float)
+
+    #print(procs)
+    #print(tgpu)
+    #print(tcpu)
+
+    ax.plot(procs, tgpu, marker="x", label="gpu", color="black")
+    ax.plot(procs, tcpu, marker="x", label="cpu", color="red")
+
+    #ax.set_ylim(0, 1000)
+
+    #print(procs)
+
+
 
 def read():
 
