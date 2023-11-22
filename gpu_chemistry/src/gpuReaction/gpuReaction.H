@@ -10,6 +10,11 @@
 #include "gpu_constants.H"
 #include "mdspan.H"
 
+
+
+#define MAX_REACTION_WIDTH 10
+
+
 namespace FoamGpu {
 
 struct reactionParams {

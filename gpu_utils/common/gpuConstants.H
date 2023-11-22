@@ -37,6 +37,3 @@ using gScalar = double;
 
 #define gpuLogTen double(2.302585092994046)
 
-#define SPECIE_MAX 55
-
-#define MAX_REACTION_WIDTH 10

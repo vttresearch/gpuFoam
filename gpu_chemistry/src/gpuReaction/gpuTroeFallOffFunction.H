@@ -13,11 +13,9 @@ class gpuTroeFallOffFunction {
     gScalar Tsss_, Ts_, Tss_;
 
 public:
-    // Constructors
 
     gpuTroeFallOffFunction() = default;
 
-    //- Construct from components
     inline CUDA_HOSTDEV gpuTroeFallOffFunction(const gScalar alpha,
                                                const gScalar Tsss,
                                                const gScalar Ts,
@@ -27,7 +25,6 @@ public:
         , Ts_(Ts)
         , Tss_(Tss) {}
 
-    // Member Functions
 
     inline CUDA_HOSTDEV gScalar operator()(const gScalar T,
                                            const gScalar Pr) const {

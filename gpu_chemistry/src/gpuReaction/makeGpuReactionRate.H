@@ -14,39 +14,54 @@ static gpu::Arrhenius make_Arrhenius(const Foam::dictionary& dict) {
 }
 
 static gpuThirdBodyEfficiencies
-make_thirdBodyEfficiencies(gLabel nSpecie, const Foam::dictionary& dict) {
+make_thirdBodyEfficiencies(gLabel                  nSpecie,
+                           const Foam::dictionary& dict) {
     using namespace Foam;
 
     using eff_type = typename gpuThirdBodyEfficiencies::effArray;
 
     eff_type efficiencies{};
 
+    if (nSpecie > gLabel(efficiencies.size())) {
+        std::string str =
+            std::string("Only up to ") +
+            std::to_string(efficiencies.size()) +
+            std::string(
+                " species supported in ThirdBodyEfficiencies.");
+        throw std::logic_error(str);
+    }
+
     if (dict.found("coeffs")) {
         List<Tuple2<word, scalar>> coeffs(dict.lookup("coeffs"));
 
         if (nSpecie != coeffs.size()) {
-            throw std::logic_error("Number of efficiencies is not equal to the "
-                                   "number of species.");
+            throw std::logic_error(
+                "Number of efficiencies is not equal to the "
+                "number of species.");
         }
 
         forAll(coeffs, i) { efficiencies[i] = coeffs[i].second(); }
     } else {
         scalar defaultEff = dict.lookup<scalar>("defaultEfficiency");
-        for (label i = 0; i < nSpecie; ++i) { efficiencies[i] = defaultEff; }
+        for (label i = 0; i < nSpecie; ++i) {
+            efficiencies[i] = defaultEff;
+        }
     }
 
     return gpuThirdBodyEfficiencies(nSpecie, efficiencies);
 }
 
 static gpu::ThirdBodyArrhenius
-make_thirdBodyArrhenius(gLabel nSpecie, const Foam::dictionary& dict) {
+make_thirdBodyArrhenius(gLabel                  nSpecie,
+                        const Foam::dictionary& dict) {
     auto arhenius = make_Arrhenius(dict);
     auto tbes     = make_thirdBodyEfficiencies(nSpecie, dict);
     return gpu::ThirdBodyArrhenius(arhenius, tbes);
 }
 
 static gpu::ArrheniusLindemannFallOff
-make_ArrheniusLindemannFallOff(gLabel nSpecie, const Foam::dictionary& dict) {
+make_ArrheniusLindemannFallOff(gLabel                  nSpecie,
+                               const Foam::dictionary& dict) {
     auto k0   = make_Arrhenius(dict.subDict("k0"));
     auto kInf = make_Arrhenius(dict.subDict("kInf"));
     auto tbes = make_thirdBodyEfficiencies(
@@ -56,7 +71,8 @@ make_ArrheniusLindemannFallOff(gLabel nSpecie, const Foam::dictionary& dict) {
 }
 
 static gpu::ArrheniusTroeFallOff
-make_ArrheniusTroeFallOff(gLabel nSpecie, const Foam::dictionary& dict) {
+make_ArrheniusTroeFallOff(gLabel                  nSpecie,
+                          const Foam::dictionary& dict) {
     using namespace Foam;
 
     auto k0   = make_Arrhenius(dict.subDict("k0"));
@@ -80,8 +96,8 @@ make_reaction_rate(const Foam::speciesTable& species,
 
     const Foam::word& temp = dict.lookup("type");
 
-    // Allow for typenames where the substring "Reaction" has been subtracted.
-    // This is likely some backwards compatibility thing.
+    // Allow for typenames where the substring "Reaction" has been
+    // subtracted. This is likely some backwards compatibility thing.
     std::string reactionTypeName = [=]() {
         auto pos = temp.find("Reaction");
         if (pos != std::string::npos) {
@@ -98,18 +114,21 @@ make_reaction_rate(const Foam::speciesTable& species,
     }
     if (reactionTypeName == "reversibleThirdBodyArrhenius") {
         // auto rate = make_thirdBodyArrhenius(species.size(), dict);
-        return gpuReactionRate(make_thirdBodyArrhenius(species.size(), dict),
-                               false);
+        return gpuReactionRate(
+            make_thirdBodyArrhenius(species.size(), dict), false);
     }
     if (reactionTypeName == "reversibleArrheniusLindemannFallOff") {
-        // auto rate = make_ArrheniusLindemannFallOff(species.size(), dict);
+        // auto rate = make_ArrheniusLindemannFallOff(species.size(),
+        // dict);
         return gpuReactionRate(
-            make_ArrheniusLindemannFallOff(species.size(), dict), false);
+            make_ArrheniusLindemannFallOff(species.size(), dict),
+            false);
     }
     if (reactionTypeName == "reversibleArrheniusTroeFallOff") {
-        // auto rate = make_ArrheniusTroeFallOff(species.size(), dict);
-        return gpuReactionRate(make_ArrheniusTroeFallOff(species.size(), dict),
-                               false);
+        // auto rate = make_ArrheniusTroeFallOff(species.size(),
+        // dict);
+        return gpuReactionRate(
+            make_ArrheniusTroeFallOff(species.size(), dict), false);
     }
 
     std::string msg = "Invalid reaction type: " + temp;

@@ -13,22 +13,33 @@ struct gpuMixture {
     const gpuThermo* thermos_;
 
     CUDA_HOSTDEV gpuMixture(const gpuThermo* thermos)
-        : thermos_(thermos) {
-    }
+        : thermos_(thermos) {}
 
     CUDA_HOSTDEV const gpuThermo* specieThermos() const {
         return thermos_;
     }
 
-    CUDA_HOSTDEV auto
-    computeJacobianRequired(const mdspan<const gScalar, 1> y,
-                            const gScalar                  p,
-                            const gScalar                  T,
-                            mdspan<gScalar, 1>             Cp,
-                            mdspan<gScalar, 1>             Ha,
-                            mdspan<gScalar, 1>             c) {
+    /// @brief Computes the mixture properties required by the
+    /// Jacobian calculation.
+    /// @param y [IN] A span containing specie mass fractions,
+    /// temperature and pressure.
+    /// @param Cp [OUT] A span containing the species heat capacities.
+    /// @param Ha [OUT] A span containing the species absolute
+    /// enthalpies.
+    /// @param c [OUT] A span containing the species concetrations.
+    /// @return std::tuple<gScalar, gScalar, gScalar, gScalar> a tuple
+    /// tuple of mixture density, heat capacity, derivative of heat
+    /// capacity w.r.t temperature and volumetric coefficient of
+    /// thermal expansion, respectively.
+    CUDA_HOSTDEV std::tuple<gScalar, gScalar, gScalar, gScalar>
+                 computeJacobianRequired(const mdspan<const gScalar, 1> y,
+                                         mdspan<gScalar, 1>             Cp,
+                                         mdspan<gScalar, 1>             Ha,
+                                         mdspan<gScalar, 1>             c) {
 
-        const gLabel nSpecie = y.size() - 2;
+        const gLabel  nSpecie = y.size() - 2;
+        const gScalar T       = y[nSpecie];
+        const gScalar p       = y[nSpecie + 1];
 
         gScalar rhoM   = 0.0;
         gScalar CpM    = 0.0;
@@ -66,14 +77,23 @@ struct gpuMixture {
         // alphav_ *= rhoM_;
     }
 
+    /// @brief Computes the mixture properties required by the
+    /// derivative calculation.
+    /// @param y [IN] A span containing specie mass fractions,
+    /// temperature and pressure.
+    /// @param Ha [OUT] A span containing the species absolute
+    /// enthalpies.
+    /// @param c [OUT] A span containing the species concetrations.
+    /// @return std::pair<gScalar, gScalar> a pair containing mixture
+    /// density and specific heat, respectively.
     CUDA_HOSTDEV std::pair<gScalar, gScalar>
-    computeDerivativeRequired(const mdspan<const gScalar, 1> y,
-                              const gScalar                  p,
-                              const gScalar                  T,
-                              mdspan<gScalar, 1>             Ha,
-                              mdspan<gScalar, 1>             c) {
+                 computeDerivativeRequired(const mdspan<const gScalar, 1> y,
+                                           mdspan<gScalar, 1>             Ha,
+                                           mdspan<gScalar, 1>             c) {
 
-        const gLabel nSpecie = y.size() - 2;
+        const gLabel  nSpecie = y.size() - 2;
+        const gScalar T       = y[nSpecie];
+        const gScalar p       = y[nSpecie + 1];
 
         gScalar rhoM = 0.0;
         gScalar CpM  = 0.0;
@@ -100,7 +120,6 @@ struct gpuMixture {
 
         // alphav_ *= rhoM_;
     }
-
 };
 
 } // namespace FoamGpu

@@ -6,7 +6,6 @@ namespace FoamGpu {
 
 template <class ReactionRate, class FallOffFunction>
 class gpuFallOffReactionRate {
-    // Private Data
 
     ReactionRate k0_;
 
@@ -17,11 +16,8 @@ class gpuFallOffReactionRate {
     gpuThirdBodyEfficiencies thirdBodyEfficiencies_;
 
 public:
-    // Constructors
-
     gpuFallOffReactionRate() = default;
 
-    //- Construct from components
     inline gpuFallOffReactionRate(
         const ReactionRate&             k0,
         const ReactionRate&             kInf,
@@ -32,7 +28,14 @@ public:
         , F_(F)
         , thirdBodyEfficiencies_(tbes) {}
 
-    //- Return the rate
+    ///
+    ///@brief Computes the the reaction rate.
+    ///
+    ///@param p Pressure.
+    ///@param T Temperature.
+    ///@param c Concentration.
+    ///@return gScalar The reaction rate.
+    ///
     inline CUDA_HOSTDEV gScalar
     operator()(const gScalar                  p,
                const gScalar                  T,
@@ -46,7 +49,16 @@ public:
         return kInf * (Pr / (1.0 + Pr)) * F;
     }
 
-    //- The derivative of the rate w.r.t. temperature
+    ///
+    ///@brief Computes the derivative of the reaction rate w.r.t
+    /// temperature.
+    ///
+    ///@param p Pressure.
+    ///@param T Temperature.
+    ///@param c Concentration
+    ///@return gScalar Derivative of the reaction rate w.r.t
+    /// temperature.
+    ///
     inline CUDA_HOSTDEV gScalar
     ddT(const gScalar                  p,
         const gScalar                  T,
@@ -62,10 +74,22 @@ public:
         return dkInfdT * (Pr / (1.0 + Pr)) * F;
     }
 
-    //- Is the rate a function of concentration?
+    ///
+    ///@brief Determines if the rate is a function of concentration.
+    ///
+    ///@return True.
+    ///
     inline CUDA_HOSTDEV bool hasDdc() const { return true; }
 
-    //- The derivative of the rate w.r.t. concentration
+    ///
+    ///@brief Compute the derivative of the rate w.r.t concentration.
+    ///
+    ///@param p Pressure.
+    ///@param T Temperature.
+    ///@param c Concentration.
+    ///@param ddc A span of at least size nSpcecie where the
+    /// derivative is put.
+    ///
     inline CUDA_HOSTDEV void ddc(const gScalar                  p,
                                  const gScalar                  T,
                                  const mdspan<const gScalar, 1> c,
@@ -84,12 +108,26 @@ public:
         }
     }
 
-    //- The derivative of the rate w.r.t. concentration
+    ///
+    ///@brief Computes the reaction rate, the derivative of reaction
+    /// rate w.r.t temperature and concentration. This function allows
+    /// for re-use of temporaries for the different fields in the
+    /// Jacobian calculation.
+    ///
+    ///@param p Pressure.
+    ///@param T Temperature.
+    ///@param c Concentration.
+    ///@param ddc A span of at least size nSpcecie where the
+    /// derivative is put.
+    ///@return std::pair<gScalar, gScalar> A pair of scalars where the
+    /// first value is the reaction rate and second value is the
+    /// derivative w.r.t temperature.
+    ///
     inline CUDA_HOSTDEV std::pair<gScalar, gScalar>
-    everything(const gScalar                  p,
-               const gScalar                  T,
-               const mdspan<const gScalar, 1> c,
-               mdspan<gScalar, 1>             ddc) const {
+                        everything(const gScalar                  p,
+                                   const gScalar                  T,
+                                   const mdspan<const gScalar, 1> c,
+                                   mdspan<gScalar, 1>             ddc) const {
 
         const gScalar k0   = k0_(p, T, c);
         const gScalar kInf = kInf_(p, T, c);
@@ -102,14 +140,13 @@ public:
         const gScalar dkInfdT = kInf_.ddT(p, T, c);
         const gScalar ddT     = dkInfdT * temp;
 
-        if (kInf_.hasDdc()){
+        if (kInf_.hasDdc()) {
             kInf_.ddc(p, T, c, ddc);
 
             for (gLabel i = 0; i < gLabel(ddc.size()); ++i) {
                 ddc[i] *= temp;
             }
-        }
-        else {
+        } else {
             for (gLabel i = 0; i < gLabel(ddc.size()); ++i) {
                 ddc[i] = gScalar(0);
             }

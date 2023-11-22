@@ -178,7 +178,7 @@ public:
         auto       c  = buffer.c();
 
         const auto [rhoM, CpM] =
-            mixture.computeDerivativeRequired(y, p, T, Ha, c);
+            mixture.computeDerivativeRequired(y, Ha, c);
 
         for (gLabel ri = 0; ri < nReactions(); ++ri) {
             reactions()[ri].dNdtByV(p, T, c, dydx);
@@ -218,7 +218,7 @@ public:
         auto       c  = buffer.c();
 
         const auto [rhoM, CpM, dCpMdT, alphavM] =
-            mixture.computeJacobianRequired(y, p, T, Cp, Ha, c);
+            mixture.computeJacobianRequired(y, Cp, Ha, c);
 
         auto tempField1 = buffer.k4();
 

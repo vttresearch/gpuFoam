@@ -7,12 +7,9 @@ namespace FoamGpu {
 class gpuLindemannFallOffFunction {
 
 public:
-    // Constructors
 
-    //- Construct null
     gpuLindemannFallOffFunction() = default;
 
-    // Member Functions
 
     inline CUDA_HOSTDEV gScalar operator()(const gScalar T,
                                            const gScalar Pr) const {

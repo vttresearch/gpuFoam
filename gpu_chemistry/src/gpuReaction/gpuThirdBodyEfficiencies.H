@@ -7,7 +7,7 @@ namespace FoamGpu {
 
 class gpuThirdBodyEfficiencies {
 public:
-    using effArray = std::array<gScalar, SPECIE_MAX>;
+    using effArray = std::array<gScalar, 300>;
 
     gLabel   nSpecie_;
     effArray efficiencies_{};
@@ -19,15 +19,24 @@ public:
         : nSpecie_(nSpecie)
         , efficiencies_(efficiencies) {}
 
-    //- Calculate and return M, the concentration of the third-bodies
+    ///
+    ///@brief Computes the concentration of the third-bodies.
+    ///
+    ///@param c Concentration.
+    ///@return gScalar The concentration of the third-bodies.
+    ///
     inline CUDA_HOSTDEV gScalar M(const mdspan<const gScalar, 1> c) const {
         gScalar M = 0;
         for (gLabel i = 0; i < nSpecie_; ++i) { M += efficiencies_[i] * c[i]; }
         return M;
     }
 
-    //- Calculate and return the derivative of M, w.r.t. the species
-    //  concentrations
+    ///
+    ///@brief Calculates the derivative of M w.r.t concentrations.
+    ///
+    ///@param c Concentration.
+    ///@return std::array<gScalar, 300> The derivative of M w.r.t concentrations. 
+    ///
     inline CUDA_HOSTDEV const effArray&
     dMdc(const mdspan<const gScalar, 1> c) const {
         (void)c;

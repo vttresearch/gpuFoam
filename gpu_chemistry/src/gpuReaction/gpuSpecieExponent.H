@@ -36,16 +36,11 @@ inline CUDA_HOSTDEV gScalar integerPow(const gScalar x,
 }
 
 struct gpuSpecieExponent {
-    // Private Data
-
-    //- Marker value to indicate that there is no possible integer
-    //  representation of this exponent
+    
     gLabel noIntegerExponent_ = gpuLabelMax;
 
-    //- Integer exponent
     gLabel integerExponent_;
 
-    //- Scalar exponent
     gScalar scalarExponent_;
 
     inline CUDA_HOSTDEV gpuSpecieExponent()
@@ -89,7 +84,6 @@ struct gpuSpecieExponent {
         }
     }
 
-    
     inline CUDA_HOSTDEV friend gpuSpecieExponent
     operator+(const gpuSpecieExponent& a,
               const gpuSpecieExponent& b) {
@@ -105,12 +99,10 @@ struct gpuSpecieExponent {
               const gpuSpecieExponent& b) {
         return a + (-b);
     }
-
 };
 
-//- Compute the power of a number to a specie exponent
 inline CUDA_HOSTDEV gScalar speciePow(const gScalar            x,
-                                const gpuSpecieExponent& e) {
+                                      const gpuSpecieExponent& e) {
     if (e.hasIntegerExponent()) {
         return integerPow(x, e.integerExponent_);
     } else {

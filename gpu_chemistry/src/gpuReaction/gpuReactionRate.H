@@ -39,10 +39,10 @@ std::variant
 */
 } // namespace gpu
 
-struct my_visitor1 {
+struct RRVisitor {
 
     CUDA_HOSTDEV
-    my_visitor1(gScalar pp, gScalar TT, mdspan<const gScalar, 1> cc)
+    RRVisitor(gScalar pp, gScalar TT, mdspan<const gScalar, 1> cc)
         : p(pp)
         , Temperature(TT)
         , c(cc) {}
@@ -57,9 +57,9 @@ struct my_visitor1 {
     }
 };
 
-struct my_visitor2 {
+struct hasDdcVisitor {
 
-    my_visitor2() = default;
+    hasDdcVisitor() = default;
 
     template <class T>
     CUDA_HOSTDEV bool operator()(const T& i) const {
@@ -67,13 +67,13 @@ struct my_visitor2 {
     }
 };
 
-struct my_visitor3 {
+struct ddcVisitor {
 
     CUDA_HOSTDEV
-    my_visitor3(gScalar                  pp,
-                gScalar                  TT,
-                mdspan<const gScalar, 1> cc,
-                mdspan<gScalar, 1>       ddkfdc)
+    ddcVisitor(gScalar                  pp,
+               gScalar                  TT,
+               mdspan<const gScalar, 1> cc,
+               mdspan<gScalar, 1>       ddkfdc)
         : p(pp)
         , Temperature(TT)
         , c(cc)
@@ -90,10 +90,10 @@ struct my_visitor3 {
     }
 };
 
-struct my_visitor4 {
+struct ddTVisitor {
 
     CUDA_HOSTDEV
-    my_visitor4(gScalar pp, gScalar TT, mdspan<const gScalar, 1> cc)
+    ddTVisitor(gScalar pp, gScalar TT, mdspan<const gScalar, 1> cc)
         : p(pp)
         , Temperature(TT)
         , c(cc) {}
@@ -108,13 +108,13 @@ struct my_visitor4 {
     }
 };
 
-struct my_visitor5 {
+struct everythingVisitor {
 
     CUDA_HOSTDEV
-    my_visitor5(gScalar                  pp,
-                gScalar                  TT,
-                mdspan<const gScalar, 1> cc,
-                mdspan<gScalar, 1>       ddkfdc)
+    everythingVisitor(gScalar                  pp,
+                      gScalar                  TT,
+                      mdspan<const gScalar, 1> cc,
+                      mdspan<gScalar, 1>       ddkfdc)
         : p(pp)
         , Temperature(TT)
         , c(cc)
@@ -126,7 +126,8 @@ struct my_visitor5 {
     mdspan<gScalar, 1>       dkfdc;
 
     template <class T>
-    CUDA_HOSTDEV std::pair<gScalar, gScalar> operator()(const T& i) const {
+    CUDA_HOSTDEV std::pair<gScalar, gScalar>
+                 operator()(const T& i) const {
         return i.everything(p, Temperature, c, dkfdc);
     }
 };
@@ -142,72 +143,105 @@ struct gpuReactionRate {
         : rate_(rate)
         , irreversible_(irreversible) {}
 
+    ///
+    ///@brief Determines if the underlying reaction is irreversible or
+    ///not.
+    ///
+    ///@return bool True if is irreversible, false otherwise.
+    ///
     inline CUDA_HOSTDEV bool isIrreversible() const {
         return irreversible_;
     }
 
+    ///
+    ///@brief Computes the the reaction rate.
+    ///
+    ///@param p Pressure.
+    ///@param T Temperature.
+    ///@param c Concentration.
+    ///@return gScalar The reaction rate.
+    ///
     inline CUDA_HOSTDEV gScalar
     operator()(const gScalar                  p,
                const gScalar                  T,
                const mdspan<const gScalar, 1> c) const {
         using namespace gpu;
 
-        my_visitor1 v(p, T, c);
-
-        // auto v = [=] CUDA_HOSTDEV (const auto& i){return
-        // i.operator()(p, T, c, li);};
+        RRVisitor v(p, T, c);
 
         return variant::apply_visitor(v, rate_);
     }
 
+    ///
+    ///@brief Determines if the rate is a function of concentration.
+    ///
+    ///@return True if is a function of concentration, false
+    ///otherwise.
+    ///
     inline CUDA_HOSTDEV bool hasDdc() const {
-        /*
-        auto visitor = [] CUDA_HOSTDEV (const auto& i){
-            return i.hasDdc();
-        };
-        return variant::apply_visitor(visitor, rate_);
-        */
-        return variant::apply_visitor(my_visitor2(), rate_);
-        // return
-        // std::visit(my_visitor2(), rate_);
+
+        return variant::apply_visitor(hasDdcVisitor(), rate_);
     }
 
+    ///
+    ///@brief Compute the derivative of the rate w.r.t concentration.
+    ///
+    ///@param p Pressure.
+    ///@param T Temperature.
+    ///@param c Concentration.
+    ///@param ddc A span of at least size nSpcecie where the
+    /// derivative is put.
+    ///
     inline CUDA_HOSTDEV void ddc(const gScalar                  p,
                                  const gScalar                  T,
                                  const mdspan<const gScalar, 1> c,
                                  mdspan<gScalar, 1> dkfdc) const {
-        my_visitor3 v(p, T, c, dkfdc);
+        ddcVisitor v(p, T, c, dkfdc);
         variant::apply_visitor(v, rate_);
-        // std::visit(v, rate_);
     }
 
+    ///
+    ///@brief Computes the derivative of the reaction rate w.r.t
+    /// temperature.
+    ///
+    ///@param p Pressure.
+    ///@param T Temperature.
+    ///@param c Concentration
+    ///@return gScalar Derivative of the reaction rate w.r.t
+    /// temperature.
+    ///
     inline CUDA_HOSTDEV gScalar
     ddT(const gScalar                  p,
         const gScalar                  T,
         const mdspan<const gScalar, 1> c) const {
 
-        my_visitor4 v(p, T, c);
+        ddTVisitor v(p, T, c);
         return variant::apply_visitor(v, rate_);
-        // return std::visit(v, rate_);
-        // return
-        // std::visit([&](auto&& arg){return arg.ddT(p, T, c, li);},
-        // rate_);
     }
 
+    ///
+    ///@brief Computes the reaction rate, the derivative of reaction
+    /// rate w.r.t temperature and concentration. This function allows
+    /// for re-use of temporaries for the different fields in the
+    /// Jacobian calculation.
+    ///
+    ///@param p Pressure.
+    ///@param T Temperature.
+    ///@param c Concentration.
+    ///@param dkfdc A span of at least size nSpcecie where the
+    /// derivative is put.
+    ///@return std::pair<gScalar, gScalar> A pair of scalars where the
+    /// first value is the reaction rate and second value is the
+    /// derivative w.r.t temperature.
+    ///
     inline CUDA_HOSTDEV std::pair<gScalar, gScalar>
                         everything(const gScalar                  p,
                                    const gScalar                  T,
                                    const mdspan<const gScalar, 1> c,
                                    mdspan<gScalar, 1>             dkfdc) const {
-        /*
-        auto k   = this->operator()(p, T, c);
-        auto ddT = this->ddT(p, T, c);
-        if (this->hasDdc()) { this->ddc(p, T, c, dkfdc); }
-        return std::make_pair(k, ddT);
-        */
-        my_visitor5 v(p, T, c, dkfdc);
-        return variant::apply_visitor(v, rate_);
 
+        everythingVisitor v(p, T, c, dkfdc);
+        return variant::apply_visitor(v, rate_);
     }
 };
 
