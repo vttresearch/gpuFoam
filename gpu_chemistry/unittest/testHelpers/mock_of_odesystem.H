@@ -97,7 +97,7 @@ public:
         // dT/dt
         scalar& dTdt = dYTpdt[nSpecie_];
         for (label i = 0; i < nSpecie_; i++) {
-            dTdt -= dYTpdt[i] * specieThermos_[sToc(i)].Ha(p, T);
+            dTdt -= dYTpdt[i] * specieThermos_[sToc(i)].ha(p, T);
         }
         dTdt /= CpM;
 
@@ -253,7 +253,7 @@ public:
         scalarField& Ha   = YTpWork_[4];
         scalar&      dTdt = dYTpdt[nSpecie_];
         for (label i = 0; i < nSpecie_; i++) {
-            Ha[sToc(i)] = specieThermos_[sToc(i)].Ha(p, T);
+            Ha[sToc(i)] = specieThermos_[sToc(i)].ha(p, T);
             dTdt -= dYTpdt[i] * Ha[sToc(i)];
         }
         dTdt /= CpM;

@@ -6,33 +6,48 @@ def main():
 
     df = read()
 
-    gri = df[df["mech"] == "gri"]
-    h2 = df[df["mech"] == "h2"]
+    
+
+    #gri = df[df["mech"] == "gri"]
+    #h2 = df[df["mech"] == "h2"]
     
     fig, ax = pl.subplots()
-    plotMechanism(ax, gri)
+    plotMechanism(ax,df, "gri")
     pl.legend(loc="best")
     pl.show()
 
     fix, ax = pl.subplots()
-    plotMechanism(ax, h2)
+    plotMechanism(ax,df, "h2")
     pl.legend(loc="best")
     pl.show()
 
 
-def plotMechanism(ax, mech):
+def plotMechanism(ax, df, mech_name):
 
-    procs = np.array(mech["proc"])
+    mech = df[df["mech"] == mech_name]
+
+    procs = np.array(mech["proc"],dtype=int)
     tgpu = np.array(mech["tgpu"], dtype=float)
     tcpu = np.array(mech["tcpu"], dtype=float)
 
-    #print(procs)
-    #print(tgpu)
-    #print(tcpu)
+    idx = np.argsort(procs)
+    procs = procs[idx]
+    tgpu = tgpu[idx]
+    tcpu = tcpu[idx]
 
     ax.plot(procs, tgpu, marker="x", label="gpu", color="black")
     ax.plot(procs, tcpu, marker="x", label="cpu", color="red")
 
+
+    if (mech_name=="gri"):
+        ax.set_title("Diesel combustion, 53 species, 324 reactions")
+
+    if (mech_name=="h2"):
+        ax.set_title("H2 combustion, 10 species, 26 reactions")
+
+
+    ax.set_xlabel("CPU process count")
+    ax.set_ylabel("Runtime")
     #ax.set_ylim(0, 1000)
 
     #print(procs)

@@ -184,16 +184,16 @@ TEST_CASE("Test gpuThermo properties")
             REQUIRE(eval([=](){return gpu->Y();}) == Approx(cpu.Y()));
             REQUIRE(eval([=](){return gpu->R();}) == Approx(cpu.R()));
             REQUIRE(eval([=](){return gpu->Cp(p, T);}) == Approx(cpu.Cp(p, T)).epsilon(errorTol));
-            REQUIRE(eval([=](){return gpu->Ha(p, T);}) == Approx(cpu.Ha(p, T)).epsilon(errorTol));
-            REQUIRE(eval([=](){return gpu->Hs(p, T);}) == Approx(cpu.Hs(p, T)).epsilon(errorTol));
-            REQUIRE(eval([=](){return gpu->Hf(    );}) == Approx(cpu.Hf(    )).epsilon(errorTol));
-            REQUIRE(eval([=](){return gpu->S(p, T);}) == Approx(cpu.S(p, T)).epsilon(errorTol));
-            REQUIRE(eval([=](){return gpu->Gstd(T);}) == Approx(cpu.Gstd(T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Ha(p, T);}) == Approx(cpu.ha(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Hs(p, T);}) == Approx(cpu.hs(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Hf(    );}) == Approx(cpu.hf(    )).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->S(p, T);}) == Approx(cpu.s(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Gstd(T);}) == Approx(cpu.gStd(T)).epsilon(errorTol));
             REQUIRE(eval([=](){return gpu->dCpdT(p, T);}) == Approx(cpu.dCpdT(p, T)).epsilon(errorTol));
 
             REQUIRE(eval([=](){return gpu->Cv(p, T);}) == Approx(cpu.Cv(p, T)).epsilon(errorTol));
-            REQUIRE(eval([=](){return gpu->Es(p, T);}) == Approx(cpu.Es(p, T)).epsilon(errorTol));
-            REQUIRE(eval([=](){return gpu->Ea(p, T);}) == Approx(cpu.Ea(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Es(p, T);}) == Approx(cpu.es(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Ea(p, T);}) == Approx(cpu.ea(p, T)).epsilon(errorTol));
 
             REQUIRE(eval([=](){return gpu->K(p, T);}) == Approx(cpu.K(p, T)).epsilon(errorTol));
             REQUIRE(eval([=](){return gpu->Kp(p, T);}) == Approx(cpu.Kp(p, T)).epsilon(errorTol));
@@ -234,16 +234,16 @@ TEST_CASE("Test gpuThermo properties")
             REQUIRE(eval([=](){return gpu->Y();}) == Approx(cpu.Y()));
             REQUIRE(eval([=](){return gpu->R();}) == Approx(cpu.R()));
             REQUIRE(eval([=](){return gpu->Cp(p, T);}) == Approx(cpu.Cp(p, T)).epsilon(errorTol));
-            REQUIRE(eval([=](){return gpu->Ha(p, T);}) == Approx(cpu.Ha(p, T)).epsilon(errorTol));
-            REQUIRE(eval([=](){return gpu->Hs(p, T);}) == Approx(cpu.Hs(p, T)).epsilon(errorTol));
-            REQUIRE(eval([=](){return gpu->Hf(    );}) == Approx(cpu.Hf(    )).epsilon(errorTol));
-            REQUIRE(eval([=](){return gpu->S(p, T);}) == Approx(cpu.S(p, T)).epsilon(errorTol));
-            REQUIRE(eval([=](){return gpu->Gstd(T);}) == Approx(cpu.Gstd(T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Ha(p, T);}) == Approx(cpu.ha(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Hs(p, T);}) == Approx(cpu.hs(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Hf(    );}) == Approx(cpu.hf(    )).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->S(p, T);}) == Approx(cpu.s(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Gstd(T);}) == Approx(cpu.gStd(T)).epsilon(errorTol));
             REQUIRE(eval([=](){return gpu->dCpdT(p, T);}) == Approx(cpu.dCpdT(p, T)).epsilon(errorTol));
 
             REQUIRE(eval([=](){return gpu->Cv(p, T);}) == Approx(cpu.Cv(p, T)).epsilon(errorTol));
-            REQUIRE(eval([=](){return gpu->Es(p, T);}) == Approx(cpu.Es(p, T)).epsilon(errorTol));
-            REQUIRE(eval([=](){return gpu->Ea(p, T);}) == Approx(cpu.Ea(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Es(p, T);}) == Approx(cpu.es(p, T)).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Ea(p, T);}) == Approx(cpu.ea(p, T)).epsilon(errorTol));
 
             REQUIRE(eval([=](){return gpu->K(p, T);}) == Approx(cpu.K(p, T)).epsilon(errorTol));
             REQUIRE(eval([=](){return gpu->Kp(p, T);}) == Approx(cpu.Kp(p, T)).epsilon(errorTol));

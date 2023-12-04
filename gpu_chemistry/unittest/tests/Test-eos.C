@@ -67,11 +67,11 @@ TEST_CASE("Test perfectGas"){
 
         CHECK(eval([=](){return gpu.R();}) == Approx(cpu.R()).epsilon(errorTol));
         CHECK(eval([=](){return gpu.rho(p, T);}) == Approx(cpu.rho(p, T)).epsilon(errorTol));
-        CHECK(eval([=](){return gpu.H(p, T);}) == Approx(cpu.H(p, T)).epsilon(errorTol));
+        CHECK(eval([=](){return gpu.H(p, T);}) == Approx(cpu.h(p, T)).epsilon(errorTol));
         CHECK(eval([=](){return gpu.Cp(p, T);}) == Approx(cpu.Cp(p, T)).epsilon(errorTol));
-        CHECK(eval([=](){return gpu.E(p, T);}) == Approx(cpu.E(p, T)).epsilon(errorTol));
+        CHECK(eval([=](){return gpu.E(p, T);}) == Approx(cpu.e(p, T)).epsilon(errorTol));
         CHECK(eval([=](){return gpu.Cv(p, T);}) == Approx(cpu.Cv(p, T)).epsilon(errorTol));
-        CHECK(eval([=](){return gpu.Sp(p, T);}) == Approx(cpu.Sp(p, T)).epsilon(errorTol));
+        CHECK(eval([=](){return gpu.Sp(p, T);}) == Approx(cpu.sp(p, T)).epsilon(errorTol));
         //CHECK(eval([=](){return gpu.Sv(p, T);}) == cpu.Sv(p, T)); //throws
         CHECK(eval([=](){return gpu.psi(p, T);}) == Approx(cpu.psi(p, T)).epsilon(errorTol));
         CHECK(eval([=](){return gpu.Z(p, T);}) == Approx(cpu.Z(p, T)).epsilon(errorTol));

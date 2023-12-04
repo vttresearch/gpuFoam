@@ -357,7 +357,7 @@ tmp<volScalarField> gpuChemistryModel::Qdot() const {
 
     forAll(Yvf, i) {
         forAll(Qdot, celli) {
-            const scalar hi = specieThermos_[i].Hf();
+            const scalar hi = specieThermos_[i].hf();
             Qdot[celli] -= hi * RR_[i][celli];
         }
     }
