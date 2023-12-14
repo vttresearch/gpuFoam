@@ -73,17 +73,19 @@ runCase()
 	MODEL=$2
     runApplication blockMesh
 
-    if [ "$DECOMP_NUMBER" = "1" ]; then
+    if [ "$NPROC" = "1" ]; then
         runApplication $(getApplication)
     else
         runApplication decomposePar
+        runParallel $(getApplication)
         
-        if ["$MODEL" = "gpu"]; then 
-            mpirun -np $NPROC ./multigpu_run.sh > log.foamRun&
-            wait
-        else
-            runParallel $(getApplication)
-        fi
+        #For slurm jobs, uncomment these
+        #if ["$MODEL" = "gpu"]; then 
+            #srun --exclusive --ntasks=$NPROC --gpu-bind=single:1 foamRun -solver multicomponentFluid -parallel > log.foamRun
+        #else
+            #srun --ntasks=$NPROC foamRun -solver multicomponentFluid -parallel > log.foamRun
+        #fi
+
     fi
 
 }
@@ -93,10 +95,10 @@ runCase()
 MODELS=("gpu" "cpu")
 #MODELS=("gpu")
 ODES=("Rosenbrock23")
-NPROCS=(10 20 40 80)
-NSTEPS=2000
+NPROCS=(1 4 8 16)
+NSTEPS=400
 MECHS=("h2" "gri") 
-NCELLS=(100)
+NCELLS=(30)
 
 
 for NCELL in ${NCELLS[@]};

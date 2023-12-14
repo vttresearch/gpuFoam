@@ -56,7 +56,8 @@ def plotMechanism(ax, df, mech_name):
 
 def read():
 
-    f = open("results.dat", "r")
+    #f = open("results_a100.dat", "r")
+    f = open("results_rtx3080ti.dat", "r")
     
     proc = []
     tcpu = []
