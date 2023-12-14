@@ -1,6 +1,6 @@
 #pragma once
 #include "cuda_math.H"
-#include "gpuConstants.H"
+#include "gpu_constants.H"
 #include "mdspan.H"
 namespace FoamGpu{
 

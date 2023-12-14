@@ -2,7 +2,7 @@
 
 #include "arrays.H"
 #include "check_ptr.H"
-#include "gpuConstants.H"
+#include "gpu_constants.H"
 #include "mdspan.H"
 //#include "timer.H"
 

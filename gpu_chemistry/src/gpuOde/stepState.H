@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gpuConstants.H"
+#include "gpu_constants.H"
 
 
 namespace FoamGpu {

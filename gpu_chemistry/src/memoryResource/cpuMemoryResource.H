@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gpuBuffer.H"
-#include "gpuConstants.H"
+#include "gpu_constants.H"
 #include "memoryResource.H"
 #include "pointer_casts.hpp"
 #include <array>
