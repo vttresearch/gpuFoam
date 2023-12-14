@@ -10,18 +10,14 @@
 #include "gpu_constants.H"
 #include "mdspan.H"
 
-
-
 #define MAX_REACTION_WIDTH 10
-
 
 namespace FoamGpu {
 
 struct reactionParams {
 
-
-    gScalar omega = 0.0;
-    gScalar dwdT   = 0.0;
+    gScalar                                 omega = 0.0;
+    gScalar                                 dwdT  = 0.0;
     std::array<gScalar, MAX_REACTION_WIDTH> dCfdjs{};
     std::array<gScalar, MAX_REACTION_WIDTH> dCrdjs{};
     mdspan<gScalar, 1>                      ddc;
@@ -76,10 +72,6 @@ public:
     //- The underlying gpuReactionRate object.
     gpuReactionRate k_;
 
-    // Flags if the specie coeffs contain small (< 1)  exponents
-    bool small_lhs_exp_;
-    bool small_rhs_exp_;
-
     //- Temperature limits of applicability of gpuReaction rates
     gScalar Tlow_, Thigh_;
 
@@ -104,23 +96,7 @@ public:
         , rhs_size_(rhs_size)
         , k_(k)
         , Tlow_(Tlow)
-        , Thigh_(Thigh) {
-
-        small_lhs_exp_ = false;
-        for (gLabel i = 0; i < lhs_size; ++i) {
-            if (lhs[i].exponent < gScalar(1)) {
-                small_lhs_exp_ = true;
-                break;
-            }
-        }
-        small_rhs_exp_ = false;
-        for (gLabel i = 0; i < rhs_size; ++i) {
-            if (rhs[i].exponent < gScalar(1)) {
-                small_rhs_exp_ = true;
-                break;
-            }
-        }
-    }
+        , Thigh_(Thigh) {}
 
     /// @brief Returns a span to the LHS specie coeffcients.
     /// @return A span to the LHS specie coefficients.
@@ -237,7 +213,6 @@ public:
        const gScalar                  T,
        const mdspan<const gScalar, 1> c) const;
 
-
     inline CUDA_HOSTDEV void
     ddNdtByVdcTp(const gScalar                  p,
                  const gScalar                  T,
@@ -254,22 +229,6 @@ public:
         jac_dCdT_contribution(r, Tsi, ddNdtByVdcTp);
 
         jac_dCdC_contribution(p, T, r, c, ddNdtByVdcTp);
-    }
-
-    /// @brief Checks if the LHS specie coefficients contain small (<
-    /// 1) exponents.
-    /// @return Returns true if the LHS species of the reaction
-    /// contain less than unity exponents. Returns false otherwise.
-    inline CUDA_HOSTDEV bool lhsSmallExp() const {
-        return small_lhs_exp_;
-    }
-
-    /// @brief Checks if the RHS specie coefficients contain small (<
-    /// 1) exponents.
-    /// @return Returns true if the RHS species of the reaction
-    /// contain less than unity exponents. Returns false otherwise.
-    inline CUDA_HOSTDEV bool rhsSmallExp() const {
-        return small_rhs_exp_;
     }
 
     /// @brief Checks if any of the species involved in the LHS of
@@ -356,11 +315,11 @@ public:
                           mdspan<gScalar, 2>    ddNdtByVdcTp) const;
 
     inline CUDA_HOSTDEV void
-    jac_dCdC_contribution(const gScalar         p,
-                          const gScalar         T,
-                          const reactionParams& r,
+    jac_dCdC_contribution(const gScalar                  p,
+                          const gScalar                  T,
+                          const reactionParams&          r,
                           const mdspan<const gScalar, 1> c,
-                         mdspan<gScalar, 2> ddNdtByVdcTp) const;
+                          mdspan<gScalar, 2> ddNdtByVdcTp) const;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -585,8 +544,6 @@ gpuReaction::kr(const gScalar                  p,
     return kr(kf(p, T, c), p, T, Kc, c);
 }
 
-
-
 inline CUDA_HOSTDEV void gpuReaction::jac_dCfdcj_contribution(
     const reactionParams& r, mdspan<gScalar, 2> ddNdtByVdcTp) const {
 
@@ -595,8 +552,8 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCfdcj_contribution(
 
     for (size_t j = 0; j < llhs.size(); ++j) {
 
-        //const gScalar dCfdcj_kf = r.dCfdjs[j] * r.kf;
-        const gLabel  sj        = llhs[j].index;
+        // const gScalar dCfdcj_kf = r.dCfdjs[j] * r.kf;
+        const gLabel sj = llhs[j].index;
 
         for (size_t i = 0; i < llhs.size(); ++i) {
             const gLabel  si = llhs[i].index;
@@ -619,8 +576,8 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCrdcj_contribution(
 
     for (size_t j = 0; j < rrhs.size(); ++j) {
 
-        //const gScalar dCrcj_kr = r.dCrdjs[j] * r.kr;
-        const gLabel  sj       = rrhs[j].index;
+        // const gScalar dCrcj_kr = r.dCrdjs[j] * r.kr;
+        const gLabel sj = rrhs[j].index;
 
         for (size_t i = 0; i < llhs.size(); ++i) {
             const gLabel  si = llhs[i].index;
@@ -640,7 +597,6 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCdT_contribution(
     const gLabel          Tsi,
     mdspan<gScalar, 2>    ddNdtByVdcTp) const {
 
-
     const auto llhs = lhs();
     for (size_t i = 0; i < llhs.size(); ++i) {
         const gLabel  si = llhs[i].index;
@@ -656,11 +612,11 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCdT_contribution(
 }
 
 inline CUDA_HOSTDEV void gpuReaction::jac_dCdC_contribution(
-    const gScalar         p,
-    const gScalar         T,
-    const reactionParams& r,
+    const gScalar                  p,
+    const gScalar                  T,
+    const reactionParams&          r,
     const mdspan<const gScalar, 1> c,
-    mdspan<gScalar, 2> ddNdtByVdcTp) const {
+    mdspan<gScalar, 2>             ddNdtByVdcTp) const {
 
     if (hasDkdc()) {
 
@@ -669,8 +625,8 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCdC_contribution(
         const gScalar* __restrict__ ddc = &r.ddc[0];
 
         for (size_t i = 0; i < llhs.size(); ++i) {
-            const gLabel  si = llhs[i].index;
-            const gScalar sl = llhs[i].stoichCoeff;
+            const gLabel  si             = llhs[i].index;
+            const gScalar sl             = llhs[i].stoichCoeff;
             gScalar* __restrict__ ddN_si = &ddNdtByVdcTp(si, 0);
 
             for (gLabel j = 0; j < gLabel(c.size()); ++j) {
@@ -680,8 +636,8 @@ inline CUDA_HOSTDEV void gpuReaction::jac_dCdC_contribution(
 
         const auto rrhs = rhs();
         for (size_t i = 0; i < rrhs.size(); ++i) {
-            const gLabel  si = rrhs[i].index;
-            const gScalar sr = rrhs[i].stoichCoeff;
+            const gLabel  si             = rrhs[i].index;
+            const gScalar sr             = rrhs[i].stoichCoeff;
             gScalar* __restrict__ ddN_si = &ddNdtByVdcTp(si, 0);
 
             for (gLabel j = 0; j < gLabel(c.size()); ++j) {
@@ -699,9 +655,7 @@ computeReactionParameters(const gpuReaction&             r,
                           mdspan<gScalar, 1>             ddc) {
     reactionParams ret;
 
-
     const auto [kf, ddT] = r.k_.everything(p, T, c, ddc);
-
 
     const auto lhsPow = r.lhsPowers(c);
     const auto Cf     = r.calcCf(lhsPow);
@@ -709,43 +663,34 @@ computeReactionParameters(const gpuReaction&             r,
     ret.dwdT          = Cf * ddT;
     ret.omega         = Cf * kf;
 
-    for (auto& e : ret.dCfdjs){
-        e *= kf;
-    }
-
+    for (auto& e : ret.dCfdjs) { e *= kf; }
 
     gScalar Cr = 0.0;
     gScalar Kc = 1.0;
     if (!r.isIrreversible()) {
 
         const auto [Kc_t, dKcdTbyV] = r.KcAnddKcTbyKc(p, T);
-        Kc  = max(Kc_t, r.RSMALL);
-        const auto kr     = kf / Kc;
+        Kc                          = max(Kc_t, r.RSMALL);
+        const auto kr               = kf / Kc;
 
         const auto rhsPow = r.rhsPowers(c);
-        Cr            = r.calcCr(rhsPow);
+        Cr                = r.calcCr(rhsPow);
 
-        const auto dkrdT = ddT / Kc -
-           (Kc > r.RSMALL ? kr * dKcdTbyV : 0.0);
+        const auto dkrdT =
+            ddT / Kc - (Kc > r.RSMALL ? kr * dKcdTbyV : 0.0);
 
-        ret.dwdT          -= Cr * dkrdT;
-        ret.omega         -= Cr * kr;
-        ret.dCrdjs        = r.calcdCrdcj(rhsPow, Cr, c);
+        ret.dwdT -= Cr * dkrdT;
+        ret.omega -= Cr * kr;
+        ret.dCrdjs = r.calcdCrdcj(rhsPow, Cr, c);
 
-
-        for (auto& e : ret.dCrdjs){
-            e *= kr;
-        }
-
+        for (auto& e : ret.dCrdjs) { e *= kr; }
     }
 
-
     if (r.hasDkdc()) {
-        const gScalar temp = (Cf - Cr/Kc);
+        const gScalar temp = (Cf - Cr / Kc);
         for (gLabel j = 0; j < gLabel(c.size()); ++j) {
             ddc[j] *= temp;
         }
-
     }
 
     ret.ddc = ddc;
