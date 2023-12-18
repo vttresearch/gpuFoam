@@ -9,7 +9,6 @@ on:
 
 
 jobs:
-
   build:
     name: Build code base
     runs-on: "ubuntu-22.04"
