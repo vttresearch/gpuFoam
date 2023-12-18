@@ -19,8 +19,8 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN}}
     steps:
-    - name: Print something
-      run: ls . && pwd
+    - name: Source OpenFOAM
+      run: source /home/foam/OpenFOAM-dev/etc/bashrc
 
 
 
