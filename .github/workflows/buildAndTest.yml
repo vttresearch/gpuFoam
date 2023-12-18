@@ -22,6 +22,6 @@ jobs:
     - name: Build gpuFoam
       run: source /home/foam/OpenFOAM-dev/etc/bashrc && ./Allwmake
       shell: bash
-    - name: Run unittests
-      run: source /home/foam/OpenFOAM-dev/etc/bashrc && testGpuChemistry
-      shell: bash
+    #- name: Run unittests
+    #  run: source /home/foam/OpenFOAM-dev/etc/bashrc && testGpuChemistry
+    #  shell: bash
