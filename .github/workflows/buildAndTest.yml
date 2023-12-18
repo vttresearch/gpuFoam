@@ -21,9 +21,8 @@ jobs:
     steps:
     - name: Checkout gpuFoam
       uses: actions/checkout@v3
-    - name: Source OpenFOAM
-      #run: source /home/foam/OpenFOAM-dev/etc/bashrc && ./Allwmake
-      run: ls
+    - name: Build gpuFoam
+      run: source /home/foam/OpenFOAM-dev/etc/bashrc && ./Allwmake
       shell: bash
 
 
