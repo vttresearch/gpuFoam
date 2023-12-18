@@ -9,36 +9,56 @@ on:
 
 
 jobs:
+
   build:
-    runs-on: ubuntu-22.04
+  name: Build code base
+  runs-on: "ubuntu-22.04"
+  needs: [of_dev_build]
+  container:
+    image: hamsteri15/of_dev_build:latest
+    credentials:
+      username: ${{ secrets.DOCKERHUB_USERNAME }}
+      password: ${{ secrets.DOCKERHUB_TOKEN}}
+  steps:
+  - name: Print something
+    run: echo "Testing build"
+
+
+
+  #build:
+    #runs-on: ubuntu-22.04
     #runs-on: ubuntu-latest
 
-    steps:
-    - uses: actions/checkout@v3
-    - uses: Jimver/cuda-toolkit@v0.2.11
-      id: cuda-toolkit
-      with:
-        cuda: '12.1.0'
-        method: 'network'
+
+
+
+    #steps:
+
+    #- uses: actions/checkout@v3
+    #- uses: Jimver/cuda-toolkit@v0.2.11
+    #  id: cuda-toolkit
+    #  with:
+    #    cuda: '12.1.0'
+    #    method: 'network'
 
 
     #Test GCC
-    - name: Test gcc
-      run: g++ --version && whereis g++
+    #- name: Test gcc
+    #  run: g++ --version && whereis g++
 
     #OpenFOAM-dev (Foundation set-up)
-    - name: Set up OpenFOAM-dev
-      run: |
-        sudo sh -c "wget -O - https://dl.openfoam.org/gpg.key > /etc/apt/trusted.gpg.d/openfoam.asc"
-        sudo add-apt-repository http://dl.openfoam.org/ubuntu
-        sudo add-apt-repository "http://dl.openfoam.org/ubuntu dev"
-        sudo apt-get update
-        sudo apt-get -y install openfoam-dev
+    #- name: Set up OpenFOAM-dev
+    #  run: |
+    #    sudo sh -c "wget -O - https://dl.openfoam.org/gpg.key > /etc/apt/trusted.gpg.d/openfoam.asc"
+    #    sudo add-apt-repository http://dl.openfoam.org/ubuntu
+    #    sudo add-apt-repository "http://dl.openfoam.org/ubuntu dev"
+    #    sudo apt-get update
+    #    sudo apt-get -y install openfoam-dev
 
 
     #gpuFoam compilation
-    - name: Compile gpuFoam
-      run: source /opt/openfoam-dev/etc/bashrc && ./Allwmake
+    #- name: Compile gpuFoam
+    #  run: source /opt/openfoam-dev/etc/bashrc && ./Allwmake
 
 
     #unittests
