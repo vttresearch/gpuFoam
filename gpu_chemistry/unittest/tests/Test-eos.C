@@ -15,13 +15,11 @@ TEST_CASE("Test gpuConstans")
     SECTION("Physical")
     {
 
-
         CHECK(eval([](){return gpuRR;}) == Foam::constant::thermodynamic::RR);
         CHECK(eval([](){return gpuPstd;}) == Foam::constant::thermodynamic::Pstd);
         CHECK(eval([](){return gpuTstd;}) == Foam::constant::thermodynamic::Tstd);
         CHECK(eval([](){return gpuNA;}) == Foam::constant::physicoChemical::NA.value());
         CHECK(eval([](){return gpuk;}) == Foam::constant::physicoChemical::k.value());
-        CHECK(eval([](){return gpuR;}) == Foam::constant::physicoChemical::R.value());
 
     }
 

@@ -10,14 +10,12 @@ using gScalar = double;
 // Check OpenFOAM/OpenFOAM-gpu/etc/controlDict SI
 
 // Avagadro number
-#define gpuNA double(6.0221417930e+23)
+#define gpuNA double(6.02214e+26)
 
 // Boltzman constant
 #define gpuk double(1.38065e-23)
 
-#define gpuR double(gpuNA * gpuk)
-
-#define gpuRR double(1.0E3 * gpuR)
+#define gpuRR double(gpuNA * gpuk)
 
 // Standard pressure
 #define gpuPstd double(1e5)
