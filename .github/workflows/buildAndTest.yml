@@ -21,6 +21,7 @@ jobs:
     steps:
     - name: Source OpenFOAM
       run: source /home/foam/OpenFOAM-dev/etc/bashrc && ./Allwmake
+      shell: bash
 
 
 
