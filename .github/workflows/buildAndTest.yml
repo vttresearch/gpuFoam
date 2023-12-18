@@ -20,7 +20,7 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN}}
     steps:
     - name: Print something
-      run: echo "Testing build"
+      run: ls . && pwd
 
 
 
