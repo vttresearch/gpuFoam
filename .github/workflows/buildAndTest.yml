@@ -12,7 +12,7 @@ jobs:
   build:
     name: Build code base
     runs-on: "ubuntu-22.04"
-    needs: [of_dev_build]
+    #needs: [of_dev_build]
     container:
       image: hamsteri15/of_dev_build:latest
       credentials:
