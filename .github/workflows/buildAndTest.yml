@@ -24,3 +24,4 @@ jobs:
       shell: bash
     - name: Run unittests
       run: source /home/foam/OpenFOAM-dev/etc/bashrc && testGpuChemistry
+      shell: bash
