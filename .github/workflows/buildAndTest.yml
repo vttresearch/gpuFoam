@@ -20,9 +20,9 @@ jobs:
       options: --user root
     steps:
     - name: Checkout gpuFoam
-      uses: actions/checkout@v3   
-    - name: Build gpuFoam      
+      uses: actions/checkout@v3
+    - name: Build gpuFoam
       run: source /home/foam/OpenFOAM-dev/etc/bashrc && ./Allwmake
       shell: bash
     - name: Run unittests
-      run: testGpuChemistry
+      run: source /home/foam/OpenFOAM-dev/etc/bashrc && testGpuChemistry
