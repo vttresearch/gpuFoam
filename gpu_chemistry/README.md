@@ -11,6 +11,11 @@ nvcc --version
 
 ## Performance
 
+**Note!** When running the gpuChemistryModel using multiple mpi-processes, make sure to enable nvidia-cuda-mps to ensure that the cpu processes use gpu resources concurrently. The scheduler can be launched without root use privileges by:
+```
+nvidia-cuda-mps-control -f > my_mps_output.log&
+```
+
 Some performance results are presented below. The results are from ```../tutorials/scalingTest``` which solves a simple shear layer combustion case in a cubic domain. The cell count in the test case is N=100^3 for the HPC node test and N=30^3 in the desktop PC case. As can be seen, the GPU implementation is faster, especially, when the number of cells per mpi process is high.
 
 ##### On a HPC node: 2 x AMD Rome 7H12 CPU (128 CPU cores) with 4 x A100 GPU
