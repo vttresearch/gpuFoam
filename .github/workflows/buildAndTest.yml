@@ -20,7 +20,7 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN}}
     steps:
     - name: Source OpenFOAM
-      run: ls /home/foam
+      run: source /home/foam/OpenFOAM-dev/etc/bashrc && ./Allwmake
 
 
 
