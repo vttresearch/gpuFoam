@@ -11,11 +11,7 @@ jobs:
     name: Build code base
     runs-on: "ubuntu-22.04"
     container:
-      #image: hamsteri15/of_dev_build:latest
       image: niemiti/ofdevcuda:latest
-      #credentials:
-      #  username: ${{ secrets.DOCKERHUB_USERNAME }}
-      #  password: ${{ secrets.DOCKERHUB_TOKEN}}
       options: --user root
     steps:
     - name: Checkout gpuFoam
@@ -24,5 +20,5 @@ jobs:
       run: source /opt/OpenFOAM/OpenFOAM-dev/etc/bashrc && ./Allwmake
       shell: bash
     #- name: Run unittests
-    #  run: source /home/foam/OpenFOAM-dev/etc/bashrc && testGpuChemistry
+    #  run: source /opt/OpenFOAM/OpenFOAM-dev/etc/bashrc && testGpuChemistry
     #  shell: bash
