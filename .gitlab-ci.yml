@@ -1,0 +1,35 @@
+stages:
+  - build
+  - test
+
+default:
+  tags:
+    - cuda
+
+build-job:   
+  stage: build
+  script:
+    - echo "Compiling the code..."
+    - ./Allwmake -j 8
+    - echo "Compile complete."
+  after_script:
+    - mkdir -p build $FOAM_USER_APPBIN $FOAM_USER_LIBBIN
+    - cp -r $FOAM_USER_APPBIN build
+    - cp -r $FOAM_USER_LIBBIN build
+
+  artifacts:
+    paths:
+      - build/bin
+      - build/lib
+    when: always
+    expire_in: 8 hours
+
+unit-test-job:  
+  stage: test  
+  before_script:
+    - mkdir -p build/bin build/lib $FOAM_USER_APPBIN $FOAM_USER_LIBBIN
+    - cp -r build/bin/. $FOAM_USER_APPBIN
+    - cp -r build/lib/. $FOAM_USER_LIBBIN
+  script:
+    - testGpuChemistry
+    - echo "Tests done."
