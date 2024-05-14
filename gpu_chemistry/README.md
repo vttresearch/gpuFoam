@@ -30,21 +30,21 @@ Some performance results are presented below. The results are from ```../tutoria
 Not everything from the official OpenFOAM release is supported. If you need more support for features, please make a feature request.
 
 #### Supported thermo models
-Currently, only the following thermodynamics model combination is supported.
+Currently, the following thermodynamics model combination is supported.
 
 ```
 thermoType
 {
-    type            heRhoThermo;
-    mixture         multicomponentMixture;
-    transport       sutherland;
+    type            heRhoThermo / hePsiThermo;
+    mixture         <SomeMultiComponentMixture>;
+    transport       <SomeTransportType>;
     thermo          janaf;
     energy          sensibleEnthalpy;
     equationOfState perfectGas;
     specie          specie;
 }
 ```
-This solves the energy equation for sensible enthalpy and the transport properties (vicosity and conductivity) are computed using Sutherland's law. Heat capacity is taken from Janaf polynomials and the ideal gas law is assumed for the density.
+This solves the energy equation for sensible enthalpy and the transport properties are computed based on any of the available transport models in stock OpenFOAM. Heat capacity is taken from Janaf polynomials and the ideal gas law is assumed for the density.
 
 
 #### Supported ODE solvers
