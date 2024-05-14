@@ -1,7 +1,7 @@
 #pragma once
 
 #include "mechanisms.H"
-#include "validThermoType.H"
+#include "testThermoType.H"
 
 #include "speciesTable.H"
 
@@ -12,7 +12,7 @@
 #include "sutherlandTransport.H"
 #include "thermo.H"
 
-using FoamThermoType = FoamGpu::validThermoType;
+using FoamThermoType = FoamGpu::testThermoType1;
 
 namespace TestData {
 

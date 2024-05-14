@@ -3,7 +3,8 @@
 
 namespace Foam {
 
-std::vector<gScalar> gpuChemistryModel::getRho0() const {
+template<class cpuThermoType>
+std::vector<gScalar> gpuChemistryModel<cpuThermoType>::getRho0() const {
     const volScalarField& rho = this->mesh()
                                     .template lookupObject<volScalarField>(
                                         this->thermo().phasePropertyName("rho"))
@@ -11,21 +12,25 @@ std::vector<gScalar> gpuChemistryModel::getRho0() const {
     return std::vector<gScalar>(rho.begin(), rho.end());
 }
 
-std::vector<gScalar> gpuChemistryModel::getP0() const {
+template<class cpuThermoType>
+std::vector<gScalar> gpuChemistryModel<cpuThermoType>::getP0() const {
     const volScalarField& p = this->thermo().p().oldTime();
     return std::vector<gScalar>(p.begin(), p.end());
 }
 
-std::vector<gScalar> gpuChemistryModel::getT0() const {
+template<class cpuThermoType>
+std::vector<gScalar> gpuChemistryModel<cpuThermoType>::getT0() const {
     const volScalarField& T = this->thermo().T().oldTime();
     return std::vector<gScalar>(T.begin(), T.end());
 }
 
-std::vector<gScalar> gpuChemistryModel::getDeltaTChem() const {
+template<class cpuThermoType>
+std::vector<gScalar> gpuChemistryModel<cpuThermoType>::getDeltaTChem() const {
     return std::vector<gScalar>(deltaTChem_.begin(), deltaTChem_.end());
 }
 
-std::vector<gScalar> gpuChemistryModel::getY0() const {
+template<class cpuThermoType>
+std::vector<gScalar> gpuChemistryModel<cpuThermoType>::getY0() const {
     const PtrList<volScalarField>& Yvf = this->thermo().Y();
 
     const volScalarField& p = this->thermo().p().oldTime();
@@ -46,7 +51,8 @@ std::vector<gScalar> gpuChemistryModel::getY0() const {
     return Y0;
 }
 
-FoamGpu::GpuKernelEvaluator gpuChemistryModel::makeEvaluator(
+template<class cpuThermoType>
+FoamGpu::GpuKernelEvaluator gpuChemistryModel<cpuThermoType>::makeEvaluator(
     label                                       nCells,
     label                                       nEqns,
     label                                       nSpecie,
@@ -70,7 +76,8 @@ FoamGpu::GpuKernelEvaluator gpuChemistryModel::makeEvaluator(
             chemistryProperties.subDict("odeCoeffs")));
 }
 
-gpuChemistryModel::gpuChemistryModel(const fluidMulticomponentThermo& thermo)
+template<class cpuThermoType>
+gpuChemistryModel<cpuThermoType>::gpuChemistryModel(const fluidMulticomponentThermo& thermo)
     : basicChemistryModel(thermo)
     , mixture_(dynamicCast<const multicomponentMixture<cpuThermoType>>(
           this->thermo()))
@@ -102,22 +109,28 @@ gpuChemistryModel::gpuChemistryModel(const fluidMulticomponentThermo& thermo)
     }
 }
 
-label gpuChemistryModel::nEqns() const {
+template<class cpuThermoType>
+label gpuChemistryModel<cpuThermoType>::nEqns() const {
     // nEqns = number of species + temperature + pressure
     return this->nSpecie() + 2;
 }
 
-label gpuChemistryModel::nCells() const { return this->thermo().T().size(); }
+template<class cpuThermoType>
+label gpuChemistryModel<cpuThermoType>::nCells() const { return this->thermo().T().size(); }
 
-label gpuChemistryModel::nSpecie() const { return this->thermo().Y().size(); }
+template<class cpuThermoType>
+label gpuChemistryModel<cpuThermoType>::nSpecie() const { return this->thermo().Y().size(); }
 
-label gpuChemistryModel::nReaction() const { return reactions_.size(); }
+template<class cpuThermoType>
+label gpuChemistryModel<cpuThermoType>::nReaction() const { return reactions_.size(); }
 
-const PtrList<volScalarField::Internal>& gpuChemistryModel::RR() const {
+template<class cpuThermoType>
+const PtrList<volScalarField::Internal>& gpuChemistryModel<cpuThermoType>::RR() const {
     return RR_;
 }
 
-void gpuChemistryModel::calculate() {
+template<class cpuThermoType>
+void gpuChemistryModel<cpuThermoType>::calculate() {
     if (!this->chemistry_) { return; }
 
     tmp<volScalarField>   trhovf(this->thermo().rho());
@@ -156,8 +169,9 @@ void gpuChemistryModel::calculate() {
     }
 }
 
+template<class cpuThermoType>
 PtrList<DimensionedField<scalar, volMesh>>
-gpuChemistryModel::reactionRR(const label reactioni) const {
+gpuChemistryModel<cpuThermoType>::reactionRR(const label reactioni) const {
     const PtrList<volScalarField>& Yvf = this->thermo().Y();
 
     PtrList<volScalarField::Internal> RR(this->nSpecie());
@@ -208,7 +222,8 @@ gpuChemistryModel::reactionRR(const label reactioni) const {
     return RR;
 }
 
-scalar gpuChemistryModel::solve(const scalar deltaT) {
+template<class cpuThermoType>
+scalar gpuChemistryModel<cpuThermoType>::solve(const scalar deltaT) {
     // Don't allow the time-step to change more than a factor of 2
     return min(
         // this->doSolve<UniformField<scalar>>(UniformField<scalar>(deltaT)),
@@ -216,13 +231,15 @@ scalar gpuChemistryModel::solve(const scalar deltaT) {
         2 * deltaT);
 }
 
-scalar gpuChemistryModel::solve(const scalarField& deltaT) {
+template<class cpuThermoType>
+scalar gpuChemistryModel<cpuThermoType>::solve(const scalarField& deltaT) {
     throw std::logic_error("LTS time step not yet supported");
     // return this->doSolve<scalarField>(deltaT);
     return 0;
 }
 
-scalar gpuChemistryModel::computeRRAndChemDeltaT(const scalar& deltaT) {
+template<class cpuThermoType>
+scalar gpuChemistryModel<cpuThermoType>::computeRRAndChemDeltaT(const scalar& deltaT) {
 
     if (!this->chemistry_) { return great; }
 
@@ -244,7 +261,8 @@ scalar gpuChemistryModel::computeRRAndChemDeltaT(const scalar& deltaT) {
     return minDeltaT;
 }
 
-tmp<volScalarField> gpuChemistryModel::tc() const {
+template<class cpuThermoType>
+tmp<volScalarField> gpuChemistryModel<cpuThermoType>::tc() const {
     tmp<volScalarField> ttc(volScalarField::New(
         "tc",
         this->mesh(),
@@ -322,7 +340,8 @@ tmp<volScalarField> gpuChemistryModel::tc() const {
     return ttc;
 }
 
-tmp<volScalarField> gpuChemistryModel::Qdot() const {
+template<class cpuThermoType>
+tmp<volScalarField> gpuChemistryModel<cpuThermoType>::Qdot() const {
     tmp<volScalarField> tQdot(volScalarField::New(
         "Qdot",
         this->mesh_,

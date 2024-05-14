@@ -20,16 +20,16 @@
 
 #include "gpuKernelEvaluator.H"
 #include "multicomponentMixture.H"
-#include "validThermoType.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam {
 
+
+template<class cpuThermoType>
 class gpuChemistryModel : public basicChemistryModel {
 
 public:
-    using cpuThermoType = FoamGpu::validThermoType;
 
 private:
     //- Reference to the multi component mixture
