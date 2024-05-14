@@ -171,3 +171,7 @@ public:
 };
 
 } // End namespace Foam
+
+#ifdef NoRepository
+    #include "gpuChemistryModel.C"
+#endif
