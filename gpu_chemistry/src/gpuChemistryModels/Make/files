@@ -1,4 +1,5 @@
-gpuChemistryModel/gpuChemistryModels.C
+gpuChemistryModel/makeGpuChemistryModels.C
+gpuChemistryModel/makeMoreGpuChemistryModels.C
 
 
 LIB = $(FOAM_USER_LIBBIN)/libGpuChemistryModel
