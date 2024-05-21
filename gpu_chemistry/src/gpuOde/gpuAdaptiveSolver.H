@@ -1,7 +1,6 @@
 #pragma once
 
 #include "cuda_host_dev.H"
-#include "cuda_math.H"
 #include "gpuODESolverBase.H"
 #include "gpuODESolverInputs.H"
 #include "ludecompose.H"
@@ -105,7 +104,7 @@ static inline CUDA_HOSTDEV void adaptiveSolve(const Ode&         ode,
         // If error is large reduce dx
         if (err > 1) {
             gScalar scale =
-                max(ode.safeScale() * pow(err, -ode.alphaDec()),
+                fmax(ode.safeScale() * pow(err, -ode.alphaDec()),
                     ode.minScale());
             dx *= scale;
 
@@ -125,7 +124,7 @@ static inline CUDA_HOSTDEV void adaptiveSolve(const Ode&         ode,
     // If the error is small increase the step-size
     if (err > pow(ode.maxScale() / ode.safeScale(),
                   -1.0 / ode.alphaInc())) {
-        dxTry = min(max(ode.safeScale() * pow(err, -ode.alphaInc()),
+        dxTry = fmin(fmax(ode.safeScale() * pow(err, -ode.alphaInc()),
                         ode.minScale()),
                     ode.maxScale()) *
                 dx;

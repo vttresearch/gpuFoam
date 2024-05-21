@@ -35,7 +35,7 @@ struct singleCellSolver {
 
             ode_.solve(0, dt, Y, deltaTChem_[celli], buffer_[celli]);
 
-            for (int i = 0; i < nSpecie_; i++) { Y[i] = std::max(0.0, Y[i]); }
+            for (int i = 0; i < nSpecie_; i++) { Y[i] = fmax(0.0, Y[i]); }
 
             timeLeft -= dt;
         }

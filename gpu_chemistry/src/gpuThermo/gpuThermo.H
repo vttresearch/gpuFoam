@@ -1,6 +1,5 @@
 #pragma once
 #include "cuda_host_dev.H"
-#include "cuda_math.H"
 #include "gpuPerfectGas.H"
 #include "gpu_constants.H"
 #include <array> //std::array
@@ -109,7 +108,7 @@ public:
 
         const gScalar nm = this->Y() / this->W();
 
-        if (abs(nm - gpuSmall) < gpuVSmall) { return Kp(p, T); }
+        if (fabs(nm - gpuSmall) < gpuVSmall) { return Kp(p, T); }
         return Kp(p, T) * pow(gpuPstd / (gpuRR * T), nm);
     }
 
@@ -127,7 +126,7 @@ public:
 
         const gScalar nm = this->Y() / this->W();
 
-        if (abs(nm - gpuSmall) < 1E-8) { return dKcdTbyKc; }
+        if (fabs(nm - gpuSmall) < 1E-8) { return dKcdTbyKc; }
         return dKcdTbyKc - nm / T;
     }
 
@@ -144,7 +143,7 @@ public:
         const gScalar nm            = this->Y() / this->W();
         const gScalar logT = log(T);
         const gScalar Gstd          = this->Gstd(T, logT);
-        const bool    nm_is_small   = abs(nm - gpuSmall) < gpuVSmall;
+        const bool    nm_is_small   = fabs(nm - gpuSmall) < gpuVSmall;
         const gScalar gpuRR_times_T = gpuRR * T;
 
         const gScalar K = [&]() {
@@ -358,12 +357,12 @@ public:
 
         EquationOfState::operator+=(jt);
 
-        if (abs(this->Y()) > gpuSmall) {
+        if (std::abs(this->Y()) > gpuSmall) {
             Y1 /= this->Y();
             const gScalar Y2 = jt.Y() / this->Y();
 
-            Tlow_  = max(Tlow_, jt.Tlow_);
-            Thigh_ = min(Thigh_, jt.Thigh_);
+            Tlow_  = std::max(Tlow_, jt.Tlow_);
+            Thigh_ = std::min(Thigh_, jt.Thigh_);
 
             for (size_t coefLabel = 0; coefLabel < nCoeffs_;
                  coefLabel++) {
@@ -389,7 +388,7 @@ inline gpuThermo operator+(const gpuThermo& jt1,
     gpuThermo::EquationOfState eofs = jt1;
     eofs += jt2;
 
-    if (abs(eofs.Y_) < gpuSmall) {
+    if (std::abs(eofs.Y_) < gpuSmall) {
         return gpuThermo(eofs,
                          jt1.Tlow_,
                          jt1.Thigh_,
@@ -414,8 +413,8 @@ inline gpuThermo operator+(const gpuThermo& jt1,
     }
 
     return gpuThermo(eofs,
-                     max(jt1.Tlow_, jt2.Tlow_),
-                     min(jt1.Thigh_, jt2.Thigh_),
+                     std::max(jt1.Tlow_, jt2.Tlow_),
+                     std::min(jt1.Thigh_, jt2.Thigh_),
                      jt1.Tcommon_,
                      highCpCoeffs,
                      lowCpCoeffs);
@@ -463,8 +462,8 @@ inline gpuThermo operator==(const gpuThermo& jt1,
     }
 
     return gpuThermo(eofs,
-                     max(jt2.Tlow_, jt1.Tlow_),
-                     min(jt2.Thigh_, jt1.Thigh_),
+                     std::max(jt2.Tlow_, jt1.Tlow_),
+                     std::min(jt2.Thigh_, jt1.Thigh_),
                      jt2.Tcommon_,
                      highCpCoeffs,
                      lowCpCoeffs);

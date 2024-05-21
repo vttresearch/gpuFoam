@@ -2,7 +2,6 @@
 
 #include "check_ptr.H"
 #include "cuda_host_dev.H"
-#include "cuda_math.H"
 #include "gpuBuffer.H"
 #include "gpuMixture.H"
 #include "gpuReaction.H"

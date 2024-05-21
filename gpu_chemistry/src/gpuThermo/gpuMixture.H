@@ -1,7 +1,6 @@
 #pragma once
 
 #include "cuda_host_dev.H"
-#include "cuda_math.H"
 #include "gpuThermo.H"
 #include "gpu_constants.H"
 #include "mdspan.H"
@@ -47,7 +46,7 @@ struct gpuMixture {
         gScalar alphav = 0.0;
 
         for (gLabel i = 0; i < nSpecie; ++i) {
-            const gScalar    yi     = max(y[i], 0.0);
+            const gScalar    yi     = fmax(y[i], 0.0);
             const gpuThermo& thermo = specieThermos()[i];
             const gScalar    rhoi   = thermo.rho(p, T);
             const gScalar    vi     = 1.0 / rhoi;
@@ -99,7 +98,7 @@ struct gpuMixture {
         gScalar CpM  = 0.0;
 
         for (gLabel i = 0; i < nSpecie; ++i) {
-            const gScalar    yi     = max(y[i], 0.0);
+            const gScalar    yi     = fmax(y[i], 0.0);
             const gpuThermo& thermo = specieThermos()[i];
             const gScalar    rhoi   = thermo.rho(p, T);
 

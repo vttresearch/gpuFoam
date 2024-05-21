@@ -3,7 +3,6 @@
 #include <array>
 
 #include "cuda_host_dev.H"
-#include "cuda_math.H"
 #include "gpuReactionRate.H"
 #include "gpuSpecieExponent.H"
 #include "gpuThermo.H"
@@ -473,9 +472,9 @@ gpuReaction::omega(const gScalar                  p,
                    const gScalar                  T,
                    const mdspan<const gScalar, 1> c) const {
 
-    const gScalar clippedT = min(max(T, this->Tlow()), this->Thigh());
+    const gScalar clippedT = fmin(fmax(T, this->Tlow()), this->Thigh());
 
-    const gScalar Kc = max(RSMALL, this->Kc(p, T));
+    const gScalar Kc = fmax(RSMALL, this->Kc(p, T));
     // Rate constants
     const gScalar kf = this->kf(p, clippedT, c);
     const gScalar kr = this->kr(kf, p, clippedT, Kc, c);
@@ -540,7 +539,7 @@ gpuReaction::kr(const gScalar                  p,
                 const gScalar                  T,
                 const mdspan<const gScalar, 1> c) const {
     if (isIrreversible()) { return 0.0; }
-    const gScalar Kc = max(this->Kc(p, T), RSMALL);
+    const gScalar Kc = fmax(this->Kc(p, T), RSMALL);
     return kr(kf(p, T, c), p, T, Kc, c);
 }
 
@@ -670,7 +669,7 @@ computeReactionParameters(const gpuReaction&             r,
     if (!r.isIrreversible()) {
 
         const auto [Kc_t, dKcdTbyV] = r.KcAnddKcTbyKc(p, T);
-        Kc                          = max(Kc_t, r.RSMALL);
+        Kc                          = fmax(Kc_t, r.RSMALL);
         const auto kr               = kf / Kc;
 
         const auto rhsPow = r.rhsPowers(c);

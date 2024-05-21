@@ -314,7 +314,7 @@ static inline void reactionTests(TestData::Mechanism mech)
             REQUIRE
             (
                 eval([=](){
-                    gScalar Kc = max(gpu->RSMALL, gpu->Kc(p, T));
+                    gScalar Kc = fmax(gpu->RSMALL, gpu->Kc(p, T));
 
                     return gpu->kr(32.0, p, T, Kc, c);})
                 == Approx(cpu.kr(32.0, p, T, c_cpu, li)).epsilon(errorTol)

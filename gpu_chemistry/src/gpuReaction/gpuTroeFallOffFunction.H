@@ -1,6 +1,5 @@
 #pragma once
 
-#include "cuda_math.H"
 #include "gpu_constants.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -29,12 +28,12 @@ public:
     inline CUDA_HOSTDEV gScalar operator()(const gScalar T,
                                            const gScalar Pr) const {
 
-        const gScalar logPr = log10(max(Pr, gpuSmall));
+        const gScalar logPr = log10(fmax(Pr, gpuSmall));
 
         const gScalar Fcent = (1.0 - alpha_) * exp(-T / Tsss_) +
                               alpha_ * exp(-T / Ts_) + exp(-Tss_ / T);
 
-        const gScalar logFcent = log10(max(Fcent, gpuSmall));
+        const gScalar logFcent = log10(fmax(Fcent, gpuSmall));
 
         const gScalar     c = -0.4 - 0.67 * logFcent;
         constexpr gScalar d = 0.14;
@@ -52,7 +51,7 @@ public:
                                     const gScalar Pr,
                                     const gScalar F) const {
 
-        const gScalar logPr = log10(max(Pr, gpuSmall));
+        const gScalar logPr = log10(fmax(Pr, gpuSmall));
 
         const gScalar Fcent = (1.0 - alpha_) * exp(-T / Tsss_) +
                               alpha_ * exp(-T / Ts_) + exp(-Tss_ / T);
@@ -60,7 +59,7 @@ public:
                                  alpha_ / Ts_ * exp(-T / Ts_) +
                                  Tss_ / (T * T) * exp(-Tss_ / T);
 
-        const gScalar logFcent = log10(max(Fcent, gpuSmall));
+        const gScalar logFcent = log10(fmax(Fcent, gpuSmall));
         const gScalar dlogFcentdT =
             Fcent >= gpuSmall ? dFcentdT / Fcent / gpuLogTen : 0.0;
 
@@ -86,14 +85,14 @@ public:
                                      const gScalar Pr,
                                      const gScalar F) const {
 
-        const gScalar logPr = log10(max(Pr, gpuSmall));
+        const gScalar logPr = log10(fmax(Pr, gpuSmall));
 
         const gScalar dlogPrdPr = Pr >= gpuSmall ? 1 / (gpuLogTen * Pr) : 0.0;
 
         const gScalar Fcent = (1.0 - alpha_) * exp(-T / Tsss_) +
                               alpha_ * exp(-T / Ts_) + exp(-Tss_ / T);
 
-        const gScalar logFcent = log10(max(Fcent, gpuSmall));
+        const gScalar logFcent = log10(fmax(Fcent, gpuSmall));
 
         const gScalar     c = -0.4 - 0.67 * logFcent;
         constexpr gScalar d = 0.14;

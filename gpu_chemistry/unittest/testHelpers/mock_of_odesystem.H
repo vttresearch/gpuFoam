@@ -46,7 +46,7 @@ public:
                      const label        li,
                      scalarField&       dYTpdt) const override {
 
-        forAll(Y_, i) { Y_[i] = max(YTp[i], 0); }
+        forAll(Y_, i) { Y_[i] = fmax(YTp[i], 0); }
 
         const scalar T = YTp[nSpecie_];
         const scalar p = YTp[nSpecie_ + 1];
@@ -114,7 +114,7 @@ public:
                   scalarField&        dYTpdt,
                   scalarSquareMatrix& J) const override {
 
-        forAll(c_, i) { Y_[i] = max(YTp[i], 0); }
+        forAll(c_, i) { Y_[i] = fmax(YTp[i], 0); }
 
         const scalar T = YTp[nSpecie_];
         const scalar p = YTp[nSpecie_ + 1];

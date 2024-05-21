@@ -1,7 +1,6 @@
 #pragma once
 
 #include "cuda_host_dev.H"
-#include "cuda_math.H"
 #include "gpu_constants.H"
 #include "swap.H"
 
@@ -20,7 +19,7 @@ LUDecompose(mdspan<gScalar, 2> matrix,
         gScalar temp;
         const gScalar* __restrict__ matrixi = &(matrix(i, 0));
         for (gLabel j = 0; j < m; j++) {
-            if ((temp = abs(matrixi[j])) > largestCoeff)
+            if ((temp = fabs(matrixi[j])) > largestCoeff)
             {
                 largestCoeff = temp;
             }
@@ -60,7 +59,7 @@ LUDecompose(mdspan<gScalar, 2> matrix,
 
             gScalar temp;
 
-            if ((temp = vv[i]*abs(sum)) >= largestCoeff)
+            if ((temp = vv[i]*fabs(sum)) >= largestCoeff)
             {
                 largestCoeff = temp;
                 iMax = i;
@@ -79,7 +78,6 @@ LUDecompose(mdspan<gScalar, 2> matrix,
             vv[iMax] = vv[j];
         }
 
-        // matrix(j,j) = std::max(matrix(j,j), small);
 
         if (matrixj[j] == 0.0) { matrixj[j] = gpuSmall; }
 
