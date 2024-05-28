@@ -4,7 +4,7 @@
 
 #include "cuda_host_dev.H"
 
-#include "error_handling.H"
+#include "for_each_index.H"
 #include "host_device_vectors.H"
 #include <thrust/execution_policy.h>
 #include <thrust/extrema.h> //min_element
@@ -30,36 +30,10 @@ GpuKernelEvaluator::GpuKernelEvaluator(
     , solver_(make_gpuODESolver(system_, odeInputs))
     , inputs_(odeInputs)
     , memory_(nCells, nSpecie) {
-    /*
-    int num;
-    CHECK_CUDA_ERROR(cudaGetDeviceCount(&num)); // number of CUDA
-    devices
-
-    int dev = (nCells % num);
-    //cudaDeviceProp::canMapHostMemory prop;
-    //CHECK_CUDA_ERROR(cudaChooseDevice(&dev, &prop));
-
-
-    CHECK_CUDA_ERROR(cudaSetDevice(dev));
-    std::cout << "Using device: " << dev << std::endl;
-    */
-
-    /*
-    for (int i = 0; i < num; i++) {
-        // Query the device properties.
-        cudaDeviceProp prop;
-        cudaGetDeviceProperties(&prop, i);
-        std::cout << "Device id: " << i << std::endl;
-        std::cout << "Device name: " << prop.name << std::endl;
-    }
-    */
+    
 }
 
-__global__ void cuda_kernel(gLabel nCells, singleCellSolver op) {
 
-    int celli = blockIdx.x * blockDim.x + threadIdx.x;
-    if (celli < nCells) { op(celli); }
-}
 /*
 static inline auto parseTimes(const char*                   label,
                               const std::vector<gpuBuffer>& b) {
@@ -115,33 +89,18 @@ GpuKernelEvaluator::computeYNew(
     singleCellSolver op(
         deltaT, nSpecie_, ddeltaTChem, dYvf, buffer_span, solver_);
 
+    for_each_index(op, nCells);
+
+
+    /*
     gLabel NTHREADS = 32;
     gLabel NBLOCKS  = (nCells + NTHREADS - 1) / NTHREADS;
     cuda_kernel<<<NBLOCKS, NTHREADS>>>(nCells, op);
 
     CHECK_LAST_CUDA_ERROR();
-    CHECK_CUDA_ERROR(cudaDeviceSynchronize());
-
-    ////
-    /*
-        auto bhost = toStdVector(buffers);
-
-        parseTimes("adaptive", bhost);
-        parseTimes("Jacobian", bhost);
-        parseTimes("step1", bhost);
-        parseTimes("step2", bhost);
-        parseTimes("step3", bhost);
-        
+    gpuErrorCheck(cudaDeviceSynchronize());
     */
-           
-    ////
-
-    /*
-    thrust::for_each(thrust::device,
-                     thrust::make_counting_iterator(0),
-                     thrust::make_counting_iterator(nCells),
-                     op);
-    */
+    
     return std::make_pair(toStdVector(dYvf_arr),
                           toStdVector(ddeltaTChem_arr));
 }

@@ -32,7 +32,6 @@ private:
     gpuReaction* reactions_;
 
 
-    void allocate();
     void deallocate();
 
 

@@ -53,15 +53,15 @@ static inline gScalar eval(T t)
 {
 
     gScalar *d_result;
-    CHECK_CUDA_ERROR(cudaMalloc(&d_result, sizeof(gScalar)));
+    gpuErrorCheck(cudaMalloc(&d_result, sizeof(gScalar)));
     on_device<<<1,1>>>(t, d_result);
-    CHECK_LAST_CUDA_ERROR();
-    cudaDeviceSynchronize();
+    gpuErrorCheck(cudaGetLastError())
+    gpuErrorCheek(cudaDeviceSynchronize());
     gScalar h_result;
-    CHECK_CUDA_ERROR(cudaMemcpy(&h_result, d_result, sizeof(gScalar), cudaMemcpyDeviceToHost));
-    cudaDeviceSynchronize();
-    CHECK_CUDA_ERROR(cudaFree(d_result));
-    cudaDeviceSynchronize();
+    gpuErrorCheck(cudaMemcpy(&h_result, d_result, sizeof(gScalar), cudaMemcpyDeviceToHost));
+    gpuErrorCheck(cudaDeviceSynchronize());
+    gpuErrorCheck(cudaFree(d_result));
+    gpuErrorCheck(cudaDeviceSynchronize());
     return h_result;
 
 }
