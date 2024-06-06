@@ -3,11 +3,11 @@
 #include "cuda_host_dev.H"
 #include <type_traits>
 
-#ifdef __NVIDIA_COMPILER__
+#ifdef __USING_GPU__
 #include <thrust/device_ptr.h>
 #endif
 
-#ifdef __NVIDIA_COMPILER__
+#ifdef __USING_GPU__
 
 template <class T> static constexpr inline auto make_raw_pointer(T p) {
     return thrust::raw_pointer_cast(p);

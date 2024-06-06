@@ -11,7 +11,7 @@
 
 
 static inline CUDA_HOSTDEV double second() {
-#ifdef __NVIDIA_COMPILER__
+#ifdef __NVIDIA_BACKEND__
 
 
     return static_cast<double>(clock());

@@ -9,7 +9,7 @@ namespace FoamGpu {
 
 template <class T>
 static inline T* allocateAndTransfer(const std::vector<T>& t) {
-    
+    /*
     T*         ptr = device_allocate<T>(t.size());
     const auto bytesize = t.size() * sizeof(T);
 
@@ -17,11 +17,12 @@ static inline T* allocateAndTransfer(const std::vector<T>& t) {
         cudaMemcpy(ptr, t.data(), bytesize, cudaMemcpyHostToDevice));
 
     return ptr;
-    /*
+    */
+
     T*         ptr = device_allocate<T>(t.size());
     host_to_device(t.begin(), t.end(), ptr);
     return ptr;
-    */
+
 }
 
 thermosAndReactions::thermosAndReactions

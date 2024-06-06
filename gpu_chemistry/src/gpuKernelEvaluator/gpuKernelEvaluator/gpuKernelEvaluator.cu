@@ -6,9 +6,7 @@
 
 #include "for_each_index.H"
 #include "host_device_vectors.H"
-#include <thrust/execution_policy.h>
-#include <thrust/extrema.h> //min_element
-#include <thrust/host_vector.h>
+
 
 namespace FoamGpu {
 
@@ -30,40 +28,10 @@ GpuKernelEvaluator::GpuKernelEvaluator(
     , solver_(make_gpuODESolver(system_, odeInputs))
     , inputs_(odeInputs)
     , memory_(nCells, nSpecie) {
-    
+
 }
 
 
-/*
-static inline auto parseTimes(const char*                   label,
-                              const std::vector<gpuBuffer>& b) {
-    auto mmin =
-        std::min_element(b.begin(), b.end(), [=](auto lhs, auto rhs) {
-            return lhs.get_time(label) < rhs.get_time(label);
-        })->get_time(label);
-
-    auto mmax =
-        std::max_element(b.begin(), b.end(), [=](auto lhs, auto rhs) {
-            return lhs.get_time(label) < rhs.get_time(label);
-        })->get_time(label);
-
-    auto sum = std::accumulate(
-        b.begin(), b.end(), double(0), [=](auto lhs, auto rhs) {
-            return lhs + rhs.get_time(label);
-        });
-
-
-    std::cout 
-        << label 
-        << " min: " << mmin
-        << " max: " << mmax  
-        << " sum: " << sum
-        << std::endl;  
-
-
-    return std::make_tuple(mmin, mmax, sum);
-}
-*/
 
 std::pair<std::vector<gScalar>, std::vector<gScalar>>
 GpuKernelEvaluator::computeYNew(
@@ -92,15 +60,7 @@ GpuKernelEvaluator::computeYNew(
     for_each_index(op, nCells);
 
 
-    /*
-    gLabel NTHREADS = 32;
-    gLabel NBLOCKS  = (nCells + NTHREADS - 1) / NTHREADS;
-    cuda_kernel<<<NBLOCKS, NTHREADS>>>(nCells, op);
 
-    CHECK_LAST_CUDA_ERROR();
-    gpuErrorCheck(cudaDeviceSynchronize());
-    */
-    
     return std::make_pair(toStdVector(dYvf_arr),
                           toStdVector(ddeltaTChem_arr));
 }

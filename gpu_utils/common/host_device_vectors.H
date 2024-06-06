@@ -3,7 +3,10 @@
 #include <vector>
 #include "cuda_host_dev.H"
 
-#ifdef __NVIDIA_COMPILER__
+
+
+
+#ifdef __USING_GPU__
 
 #include "thrust/device_vector.h"
 #include "thrust/host_vector.h"
@@ -13,8 +16,6 @@ using host_vector = thrust::host_vector<T>;
 
 template<class T>
 using device_vector = thrust::device_vector<T>;
-
-
 
 #else
 

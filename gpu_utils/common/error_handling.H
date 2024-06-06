@@ -5,8 +5,7 @@
 
 
 
-#ifdef __NVIDIA_COMPILER__
-#include <assert.h>
+#ifdef __NVIDIA_BACKEND__
 #include "cuda_runtime.h"
 
 #define gpuErrorCheck(call) \
@@ -19,8 +18,16 @@ do{ \
 }while(0)
 
 
-
-
+#elifdef __AMD_BACKEND__
+#include<hip/hip_runtime.h>
+#define gpuErrorCheck(call) \
+do{ \
+    hipError_t gpuErr = call; \
+    if(hipSuccess != gpuErr){ \
+    printf("GPU Error - %s:%d: '%s'\n", __FILE__, __LINE__, hipGetErrorString(gpuErr)); \
+    exit(1); \
+    } \
+}while(0)
 
 #else
 

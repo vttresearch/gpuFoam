@@ -4,8 +4,8 @@ c++WARN     =
 
 
 NVCC_FLAGS = --std=c++17
-NVCC_FLAGS += --expt-relaxed-constexpr
-NVCC_FLAGS += --expt-extended-lambda
+#NVCC_FLAGS += --expt-relaxed-constexpr
+#NVCC_FLAGS += --expt-extended-lambda
 #NVCC_FLAGS += --use_fast_math
 #NVCC_FLASG += --generate-line-info
 #NVCC_FLAGS += -lineinfo
@@ -30,8 +30,6 @@ cutoo       = $(Ctoo)
 
 LINK_LIBS   = $(c++DBUG)
 
-LINKLIBSO   = $(CC) $(c++FLAGS) -shared \
-              -Xlinker --add-needed -Xlinker --no-as-needed
+LINKLIBSO   = $(CC) $(c++FLAGS) -shared
 
-LINKEXE     = $(CC) $(c++FLAGS) \
-              -Xlinker --add-needed -Xlinker --no-as-needed
+LINKEXE     = $(CC) $(c++FLAGS)

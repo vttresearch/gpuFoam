@@ -4,13 +4,14 @@
 #include "cuda_host_dev.H"
 #include "pointer_casts.hpp"
 
-#ifdef __NVIDIA_COMPILER__
+#ifdef __NVIDIA_BACKEND__
 
 #include "thrust/device_vector.h" //thrust::raw_pointer_cast
 
 #endif
 
-namespace stdex = std::experimental;
+//namespace stdex = std::experimental;
+namespace stdex = std;
 
 
 

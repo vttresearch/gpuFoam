@@ -12,7 +12,6 @@
 #include "gpuODESystem.H"
 #include "gpuReaction.H"
 #include "gpuReactionRate.H"
-#include "host_device_vectors.H"
 #include "makeGpuOdeSolver.H"
 #include "thermosAndReactions.H"
 #include "singleCellSolver.H"
