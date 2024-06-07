@@ -1,0 +1,4 @@
+Test-gputests.cu
+
+EXE = $(FOAM_USER_APPBIN)/gpuTestGpuChemistry
+

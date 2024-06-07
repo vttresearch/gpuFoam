@@ -12,7 +12,7 @@
 
 
 
-#ifdef __NVIDIA_COMPILER__
+#ifdef __USING_GPU__
 
 
 using memoryResource_t = FoamGpu::gpuMemoryResource;
@@ -32,13 +32,13 @@ using memoryResource_t = FoamGpu::cpuMemoryResource;
 //Therefore a slightly more tolerance is allowed when comparing gpu result agains
 //cpu result. For better match use the -nofma switch. However, we want to allow
 //for the compiler to do optimizations.
-#ifdef __NVIDIA_COMPILER__
+#ifdef __USING_GPU__
 constexpr double errorTol = 1E-7;
 #else
 constexpr double errorTol = 1E-9;
 #endif
 
-#ifdef __NVIDIA_COMPILER__
+#ifdef __USING_GPU__
 
 
 template<class T, class R>

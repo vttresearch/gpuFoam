@@ -66,8 +66,8 @@ inline auto call_lu_cpu(const std::vector<gScalar>& m_vals, const std::vector<gS
 
 
     auto m_ret = std::vector<gScalar>(matrix.v(), matrix.v() + size*size);
-    auto p_ret = toStdVector(pivot);
-    auto s_ret = toStdVector(source);
+    auto p_ret = std::vector<gLabel>(pivot.begin(), pivot.end());
+    auto s_ret = std::vector<gScalar>(source.begin(), source.end());
 
     return std::make_tuple(m_ret, p_ret, s_ret);
 

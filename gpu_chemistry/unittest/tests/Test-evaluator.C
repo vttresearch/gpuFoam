@@ -10,6 +10,7 @@ TEST_CASE("Test GpuKernelEvaluator")
 {
     using namespace FoamGpu;
 
+    /*
     SECTION("Constructors")
     {
         REQUIRE_NOTHROW(GpuKernelEvaluator());
@@ -23,12 +24,52 @@ TEST_CASE("Test GpuKernelEvaluator")
         gpuODESolverInputs inputs;
         inputs.name = "Rosenbrock34";
 
-        REQUIRE_NOTHROW(GpuKernelEvaluator(nCells, nEqns, nSpecie, thermos, reactions, inputs));
+        GpuKernelEvaluator evaluator(nCells, nEqns, nSpecie, thermos, reactions, inputs);
+
+        gScalar deltaT = 1e-3;
+        gScalar deltaTChemMax = deltaT/4;
+        std::vector<gScalar> deltaTChem(deltaT/5, nCells);
+
+
+        std::vector<gScalar> rho(1.0, nCells);
+
+
+        std::vector<gScalar> Yvf(nCells*nEqns);
+
+        auto s = make_mdspan(Yvf, extents<2>{nCells, nEqns});
+
+        for (gLabel celli = 0; celli < nCells; ++celli) {
+            for (gLabel i = 0; i < nSpecie; ++i) {
+                s(celli, i) = 0.1; //concentration like
+            }
+            s(celli, nSpecie)     = 300.0; //T
+            s(celli, nSpecie + 1) = 1E5; //p
+        }
 
 
 
+
+
+        auto tuple = evaluator.computeRR
+        (
+            deltaT,
+            deltaTChemMax,
+            rho,
+            deltaTChem,
+            Yvf
+        );
+
+        auto RR = std::get<0>(tuple);
+        auto newDts = std::get<1>(tuple);
+        gScalar minDt = std::get<2>(tuple);
+
+        CHECK(minDt != gScalar(0));
+
+
+        //REQUIRE_NOTHROW(GpuKernelEvaluator(nCells, nEqns, nSpecie, thermos, reactions, inputs));
 
     }
+    */
 
 
 

@@ -3,18 +3,19 @@ SUFFIXES += .cu
 c++WARN     =
 
 
-NVCC_FLAGS = --std=c++17
-#NVCC_FLAGS += --expt-relaxed-constexpr
-#NVCC_FLAGS += --expt-extended-lambda
-#NVCC_FLAGS += --use_fast_math
+HIPCC_FLAGS = --std=c++17
+HIPCC_FLAGS += -Wno-old-style-cast
+#HIPCC_FLAGS += --expt-relaxed-constexpr
+#HIPCC_FLAGS += --expt-extended-lambda
+#HIPCC_FLAGS += --use_fast_math
 #NVCC_FLASG += --generate-line-info
-#NVCC_FLAGS += -lineinfo
-#NVCC_FLAGS += -fmad=false
-#NVCC_FLAGS += --gpu-architecture=compute_80 --gpu-code=sm_80
-#NVCC_FLAGS += --gpu-architecture=compute_86 --gpu-code=sm_86
+#HIPCC_FLAGS += -lineinfo
+#HIPCC_FLAGS += -fmad=false
+#HIPCC_FLAGS += --gpu-architecture=compute_80 --gpu-code=sm_80
+#HIPCC_FLAGS += --gpu-architecture=compute_86 --gpu-code=sm_86
 
 
-CC          = hipcc $(NVCC_FLAGS)
+CC          = hipcc $(HIPCC_FLAGS)
 
 ptFLAGS     = -DNoRepository
 

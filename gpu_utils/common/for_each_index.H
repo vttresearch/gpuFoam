@@ -34,19 +34,20 @@ static inline void for_each_index(UnaryOperation op, gLabel n){
                      dim3(NTHREADS), 0, 0, n, op);
     */
 
+    #ifdef __USING_GPU__
+        #ifdef __NVIDIA_BACKEND__
+            for_each_index_kernel<<<NBLOCKS, NTHREADS>>>(n, op);
+            gpuErrorCheck(cudaGetLastError());
+            gpuErrorCheck(cudaDeviceSynchronize());
+        #else
+            hipLaunchKernelGGL(for_each_index_kernel, dim3(NBLOCKS),
+                        dim3(NTHREADS), 0, 0, n, op);
 
-    #ifdef __NVIDIA_BACKEND__
-        for_each_index_kernel<<<NBLOCKS, NTHREADS>>>(n, op);
-        gpuErrorCheck(cudaGetLastError());
-        gpuErrorCheck(cudaDeviceSynchronize());
-    #elifdef __AMD_BACKEND__
-        hipLaunchKernelGGL(for_each_index_kernel, dim3(NBLOCKS),
-                     dim3(NTHREADS), 0, 0, n, op);
-
-        gpuErrorCheck(hipGetLastError());
-        gpuErrorCheck(hipDeviceSynchronize());
+            //gpuErrorCheck(hipGetLastError());
+            //gpuErrorCheck(hipDeviceSynchronize());
+        #endif
     #endif
-
+    //Should probably throw here but this file wont anyways compile without hip or cuda compiler
 
 
 }

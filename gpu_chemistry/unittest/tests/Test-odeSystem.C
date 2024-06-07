@@ -75,7 +75,7 @@ static inline void runMechanismTests(TestData::Mechanism mech)
         REQUIRE_THAT
         (
             toStdVector(dy_gpu),
-            Catch::Matchers::Approx(toStdVector(dy_cpu)).epsilon(errorTol)
+            Catch::Matchers::Approx(std::vector<gScalar>(dy_cpu.begin(), dy_cpu.end())).epsilon(errorTol)
         );
 
     }
@@ -133,10 +133,12 @@ static inline void runMechanismTests(TestData::Mechanism mech)
         }
         */
 
+
+
         REQUIRE_THAT
         (
             toStdVector(dy_gpu),
-            Catch::Matchers::Approx(toStdVector(dy_cpu)).epsilon(errorTol)
+            Catch::Matchers::Approx(std::vector<gScalar>(dy_cpu.begin(), dy_cpu.end())).epsilon(errorTol)
         );
 
         auto Jacobian_cpu = std::vector<gScalar>(J_cpu.v(), J_cpu.v()+J_cpu.size());

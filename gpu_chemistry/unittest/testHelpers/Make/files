@@ -1,6 +1,6 @@
 testHelpers.C
 create_foam_inputs.C
 create_gpu_inputs.C
-
+cpu_reference_results.C
 LIB = $(FOAM_USER_LIBBIN)/libGpuChemistryTestHelpers
 

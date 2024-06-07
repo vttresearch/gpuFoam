@@ -17,6 +17,18 @@ static inline gLabel equationCount(Mechanism m) {
     return speciesCount(m) + 2;
 }
 
+static inline gScalar pInf(Mechanism m){
+    if (m == Mechanism::GRI) {
+        return 1.36789e+06;
+    } else {
+        return 202650.0;
+    }
+}
+
+static inline gScalar TInf(Mechanism m){
+    return 1000.0;
+}
+
 template <class T> static inline void assign_gri(T& f) {
 
     constexpr int CH4_idx = 0;
@@ -26,8 +38,8 @@ template <class T> static inline void assign_gri(T& f) {
     constexpr double CH4_val = 0.2;
     constexpr double O2_val  = 0.5;
     constexpr double N2_val  = 0.3;
-    constexpr double T_inf   = 1000.0;
-    constexpr double p_inf   = 1.36789e+06;
+    double T_inf   = TInf(Mechanism::GRI);
+    double p_inf   = pInf(Mechanism::GRI);
 
     gLabel nSpecie = speciesCount(GRI);
 
@@ -49,8 +61,8 @@ template <class T> static inline void assign_h2(T& f) {
     constexpr double H2_val = 0.2;
     constexpr double O2_val = 0.2;
     constexpr double N2_val = 0.6;
-    constexpr double T_inf  = 1000.0;
-    constexpr double p_inf  = 202650;
+    double T_inf   = TInf(Mechanism::H2);
+    double p_inf   = pInf(Mechanism::H2);
 
     gLabel nSpecie = speciesCount(H2);
 
@@ -96,6 +108,17 @@ static inline void assign_test_concentration(T& f, Mechanism m)
 
 
 }
+
+
+static inline std::vector<gScalar> get_concentration_vector(Mechanism m){
+
+    gLabel nSpecie = speciesCount(m);
+    std::vector<gScalar> c(nSpecie);
+    assign_test_concentration(c, m);
+    return c;
+
+}
+
 
 
 } // namespace TestData

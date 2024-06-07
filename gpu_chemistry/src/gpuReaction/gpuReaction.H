@@ -74,7 +74,7 @@ public:
     //- Temperature limits of applicability of gpuReaction rates
     gScalar Tlow_, Thigh_;
 
-    gScalar RSMALL{sqrt(gpuSmall)};
+    //gScalar RSMALL{sqrt(gpuSmall)};
 
 public:
     gpuReaction() = default;
@@ -474,7 +474,7 @@ gpuReaction::omega(const gScalar                  p,
 
     const gScalar clippedT = fmin(fmax(T, this->Tlow()), this->Thigh());
 
-    const gScalar Kc = fmax(RSMALL, this->Kc(p, T));
+    const gScalar Kc = fmax(sqrt(gpuSmall), this->Kc(p, T));
     // Rate constants
     const gScalar kf = this->kf(p, clippedT, c);
     const gScalar kr = this->kr(kf, p, clippedT, Kc, c);
@@ -539,7 +539,7 @@ gpuReaction::kr(const gScalar                  p,
                 const gScalar                  T,
                 const mdspan<const gScalar, 1> c) const {
     if (isIrreversible()) { return 0.0; }
-    const gScalar Kc = fmax(this->Kc(p, T), RSMALL);
+    const gScalar Kc = fmax(this->Kc(p, T), sqrt(gpuSmall));
     return kr(kf(p, T, c), p, T, Kc, c);
 }
 
@@ -669,14 +669,14 @@ computeReactionParameters(const gpuReaction&             r,
     if (!r.isIrreversible()) {
 
         const auto [Kc_t, dKcdTbyV] = r.KcAnddKcTbyKc(p, T);
-        Kc                          = fmax(Kc_t, r.RSMALL);
+        Kc                          = fmax(Kc_t, sqrt(gpuSmall));
         const auto kr               = kf / Kc;
 
         const auto rhsPow = r.rhsPowers(c);
         Cr                = r.calcCr(rhsPow);
 
         const auto dkrdT =
-            ddT / Kc - (Kc > r.RSMALL ? kr * dKcdTbyV : 0.0);
+            ddT / Kc - (Kc > sqrt(gpuSmall) ? kr * dKcdTbyV : 0.0);
 
         ret.dwdT -= Cr * dkrdT;
         ret.omega -= Cr * kr;

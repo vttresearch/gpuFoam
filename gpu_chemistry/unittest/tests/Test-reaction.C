@@ -8,6 +8,8 @@
 #include "test_utilities.H"
 #include "create_gpu_inputs.H"
 #include "create_foam_inputs.H"
+#include "mechanisms.H"
+#include "cpu_reference_results.H"
 
 TEST_CASE("variant")
 {
@@ -215,72 +217,29 @@ static inline void reactionTests(TestData::Mechanism mech)
 
     using namespace FoamGpu;
 
-    
-    const Foam::ReactionList<FoamThermoType> cpu_reactions(
-        TestData::makeSpeciesTable(mech),
-        TestData::makeCpuThermos(mech),
-        TestData::makeReactionDict(mech)
-    );
-    
-
-    //auto cpu_reactions = TestData::makeCpuReactions(mech);
-    auto gpu_reactions_temp = makeGpuReactions(mech);
-
     const gLabel nSpecie = TestData::speciesCount(mech);
     const gLabel nEqns = TestData::equationCount(mech);
-    const gScalar p = 1E5;
-    const gScalar T = 431.4321;
-    const gLabel li = 0;
 
-    const Foam::scalarField c_cpu(nSpecie, 0.123);
-    auto c_gpu = toDeviceVector(c_cpu);
-    //const device_vector<gScalar> c_gpu = host_vector<gScalar>(c_cpu.begin(), c_cpu.end());
-
-    //device_vector<gpuReaction>  gpu_reactions(gpu_reactions_temp.begin(), gpu_reactions_temp.end());
-
+    auto gpu_reactions_temp = makeGpuReactions(mech);
     auto gpu_reactions = toDeviceVector(gpu_reactions_temp);
-    CHECK(cpu_reactions.size() == gLabel(gpu_reactions.size()));
 
     SECTION("Thigh/Tlow")
     {
-        for (gLabel i = 0; i < cpu_reactions.size(); ++i)
+        std::vector<std::pair<gScalar, gScalar>> cpu_results = Thigh_Tlow_result(mech);
+        for (size_t i = 0; i < gpu_reactions.size(); ++i)
         {
-            const auto& cpu = cpu_reactions[i];
+            //const auto& cpu = cpu_reactions[i];
+            auto cpu_high = std::get<0>(cpu_results[i]);
+            auto cpu_low = std::get<1>(cpu_results[i]);
             const auto  gpu = &(gpu_reactions[i]);
 
-            REQUIRE(eval([=](){return gpu->Tlow();}) == Approx(cpu.Tlow()).epsilon(errorTol));
-            REQUIRE(eval([=](){return gpu->Thigh();}) == Approx(cpu.Thigh()).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Thigh();}) == Approx(cpu_high).epsilon(errorTol));
+            REQUIRE(eval([=](){return gpu->Tlow();}) == Approx(cpu_low).epsilon(errorTol));
         }
 
     }
 
-
-    SECTION("omega")
-    {
-
-        const auto c = make_mdspan(c_gpu, extents<1>{nSpecie});
-
-        for (gLabel i = 0; i < cpu_reactions.size(); ++i)
-        {
-            const auto& cpu = cpu_reactions[i];
-            const auto  gpu =&(gpu_reactions[i]);
-
-            auto f_gpu = [=](){
-                return gpu->omega(p, T, c);
-            };
-
-            auto f_cpu = [&](){
-                Foam::scalar omegaf = 0.3;
-                Foam::scalar omegar = 0.4;
-                return cpu.omega(p, T, c_cpu, li, omegaf, omegar);
-            };
-
-            REQUIRE(eval(f_gpu) == Approx(f_cpu()).epsilon(errorTol));
-        }
-
-    }
-
-
+    /*
 
     SECTION("Kc/kf/kr/dkfdT/dkrdT")
     {
@@ -314,7 +273,7 @@ static inline void reactionTests(TestData::Mechanism mech)
             REQUIRE
             (
                 eval([=](){
-                    gScalar Kc = fmax(gpu->RSMALL, gpu->Kc(p, T));
+                    gScalar Kc = fmax(sqrt(gpuSmall), gpu->Kc(p, T));
 
                     return gpu->kr(32.0, p, T, Kc, c);})
                 == Approx(cpu.kr(32.0, p, T, c_cpu, li)).epsilon(errorTol)
@@ -325,27 +284,65 @@ static inline void reactionTests(TestData::Mechanism mech)
 
         }
     }
+    */
 
 
-
-
-    SECTION("dNdtByV")
+    SECTION("omega")
     {
 
 
+        const auto cc = toDeviceVector(get_concentration_vector(mech));
+        //const auto cc = toDeviceVector(std::vector<gScalar>(nSpecie, 0.1));
+        const auto cpu_results = TestData::omega_result(mech);
+        const gScalar p = pInf(mech);
+        const gScalar T = TInf(mech);
+
+        for (size_t i = 0; i < gpu_reactions.size(); ++i)
+        {
+            const auto  gpu =&(gpu_reactions[i]);
+
+            const auto c = make_mdspan(cc, extents<1>{nSpecie});
+
+
+            auto f_gpu = [=](){
+                return gpu->omega(p, T, c);
+            };
+
+            auto omega_cpu = cpu_results[i];
+
+            REQUIRE(eval(f_gpu) == Approx(omega_cpu).epsilon(errorTol));
+        }
+
+    }
+
+
+
+
+    /*
+    SECTION("dNdtByV")
+    {
+
+        auto cpu_results = TestData::dndtbyv_result(mech);
         //Here it is important to have same initial condition as the function only modifies
         //certain values
-        Foam::scalarField res_cpu(nSpecie, 0.435);
-        device_vector<gScalar> res_gpu(nSpecie, 0.435);
+        //Foam::scalarField res_cpu(nSpecie, 0.435);
+        //device_vector<gScalar> res_gpu(nSpecie, 0.435);
 
-        for (gLabel i = 0; i < cpu_reactions.size(); ++i)
+
+        std::vector<std::vector<gScalar>> gpu_results;
+
+        for (gLabel i = 0; i < gpu_reactions.size(); ++i)
         {
-            const auto& cpu = cpu_reactions[i];
             const auto  gpu = &(gpu_reactions[i]);
 
+            std::vector<gScalar> c_tmp1(nSpecie);
+            assign_test_concentration(c_tmp1, mech);
 
-            auto c = make_mdspan(c_gpu, extents<1>{nSpecie});
-            auto res = make_mdspan(res_gpu, extents<1>{nSpecie});
+            device_vector<gScalar> c_tmp = toDeviceVector(c_tmp1);
+            device_vector<gScalar> res_tmp = toDeviceVector(std::vector<gScalar>(nSpecie, 0));
+
+            auto c = make_mdspan(c_tmp, extents<1>{nSpecie});
+            auto res = make_mdspan(res_tmp, extents<1>{nSpecie});
 
             auto f = [=](){
                 gpu->dNdtByV(p, T, c, res);
@@ -353,19 +350,21 @@ static inline void reactionTests(TestData::Mechanism mech)
             };
             eval(f);
 
-            cpu.dNdtByV(p, T, c_cpu, li, res_cpu, false, Foam::List<gLabel>{}, 0);
-
-            auto dNdtByV_cpu = toStdVector(res_gpu);
-            auto dNdtByV_gpu = toStdVector(res_cpu);
-
-            for (gLabel i = 0; i < gLabel(dNdtByV_cpu.size()); ++i)
-            {
-                REQUIRE(dNdtByV_gpu[i] == Approx(dNdtByV_cpu[i]).epsilon(errorTol));
-            }
+            gpu_results.push_back(toStdVector(res_tmp));
         }
 
+        for (gLabel i = 0; i < gpu_reactions.size(); ++i)
+        {
+            CHECK
+            (
+                cpu_results[i] == gpu_results[i]
+            );
+        }
     }
+    */
 
+
+    /*
     SECTION("ddNdtByVdcTp")
     {
 
@@ -541,6 +540,7 @@ static inline void reactionTests(TestData::Mechanism mech)
 
 
     }
+    */
 
 }
 

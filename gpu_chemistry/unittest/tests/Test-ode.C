@@ -88,7 +88,7 @@ auto callCpuSolve(const Foam::scalarField& y0, const Foam::ODESolver& ode, TestP
     scalar dxTry_temp = dxTry;
     ode.solve(xStart, xEnd, y, li, dxTry_temp);
 
-    auto ret = toStdVector(y);
+    auto ret = std::vector<gScalar>(y.begin(), y.end());
 
     //Round small values to zero to avoid -0 == 0 comparisons
     for (auto& e : ret)

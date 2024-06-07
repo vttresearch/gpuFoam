@@ -3,6 +3,19 @@
 #include "cuda_host_dev.H"
 #include <type_traits>
 
+
+template <class T> static constexpr inline auto make_raw_pointer(T p) {
+    static_assert(std::is_pointer<T>::value, "Not a pointer type.");
+    return p;
+}
+
+template <class T> static constexpr inline auto make_device_pointer(T p) {
+    static_assert(std::is_pointer<T>::value, "Not a pointer type.");
+    return p;
+}
+
+
+/*
 #ifdef __USING_GPU__
 #include <thrust/device_ptr.h>
 #endif
@@ -29,3 +42,5 @@ template <class T> static constexpr inline auto make_device_pointer(T p) {
     return p;
 }
 #endif
+
+*/

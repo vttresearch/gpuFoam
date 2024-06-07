@@ -32,7 +32,6 @@ GpuKernelEvaluator::GpuKernelEvaluator(
 }
 
 
-
 std::pair<std::vector<gScalar>, std::vector<gScalar>>
 GpuKernelEvaluator::computeYNew(
     gScalar                     deltaT,
@@ -58,7 +57,6 @@ GpuKernelEvaluator::computeYNew(
         deltaT, nSpecie_, ddeltaTChem, dYvf, buffer_span, solver_);
 
     for_each_index(op, nCells);
-
 
 
     return std::make_pair(toStdVector(dYvf_arr),
