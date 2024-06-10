@@ -48,23 +48,53 @@ __global__ void on_device(T t, R* r)
 }
 
 
-template<class T>
-static inline gScalar eval(T t)
-{
+    #ifdef __NVIDIA_BACKEND__
 
-    gScalar *d_result;
-    gpuErrorCheck(cudaMalloc(&d_result, sizeof(gScalar)));
-    on_device<<<1,1>>>(t, d_result);
-    gpuErrorCheck(cudaGetLastError())
-    gpuErrorCheek(cudaDeviceSynchronize());
-    gScalar h_result;
-    gpuErrorCheck(cudaMemcpy(&h_result, d_result, sizeof(gScalar), cudaMemcpyDeviceToHost));
-    gpuErrorCheck(cudaDeviceSynchronize());
-    gpuErrorCheck(cudaFree(d_result));
-    gpuErrorCheck(cudaDeviceSynchronize());
-    return h_result;
+    template<class T>
+    static inline gScalar eval(T t)
+    {
 
-}
+        gScalar *d_result;
+        gpuErrorCheck(cudaMalloc(&d_result, sizeof(gScalar)));
+        on_device<<<1,1>>>(t, d_result);
+        gpuErrorCheck(cudaGetLastError())
+        gpuErrorCheck(cudaDeviceSynchronize());
+        gScalar h_result;
+        gpuErrorCheck(cudaMemcpy(&h_result, d_result, sizeof(gScalar), cudaMemcpyDeviceToHost));
+        gpuErrorCheck(cudaDeviceSynchronize());
+        gpuErrorCheck(cudaFree(d_result));
+        gpuErrorCheck(cudaDeviceSynchronize());
+        return h_result;
+
+    }
+
+    //AMD-backend
+    #else
+
+    template<class T>
+    static inline gScalar eval(T t)
+    {
+
+        gScalar *d_result;
+        gpuErrorCheck(hipMalloc(&d_result, sizeof(gScalar)));
+        hipLaunchKernelGGL
+        (
+            on_device, dim3(1), dim3(1), 0, 0, t, d_result
+        );
+        //on_device<<<1,1>>>(t, d_result);
+        //gpuErrorCheck(cudaGetLastError())
+        gpuErrorCheck(hipDeviceSynchronize());
+        gScalar h_result;
+        gpuErrorCheck(hipMemcpy(&h_result, d_result, sizeof(gScalar), hipMemcpyDeviceToHost));
+        gpuErrorCheck(hipDeviceSynchronize());
+        gpuErrorCheck(hipFree(d_result));
+        gpuErrorCheck(hipDeviceSynchronize());
+        return h_result;
+
+    }
+
+    #endif
+
 
 #else
 

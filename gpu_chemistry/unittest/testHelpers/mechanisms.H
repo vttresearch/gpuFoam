@@ -119,6 +119,15 @@ static inline std::vector<gScalar> get_concentration_vector(Mechanism m){
 
 }
 
+static inline std::vector<gScalar> get_solution_vector(Mechanism m){
+
+    gLabel nEqns = equationCount(m);
+    std::vector<gScalar> y(nEqns);
+    assign_test_condition(y, m);
+    return y;
+
+}
+
 
 
 } // namespace TestData

@@ -1,5 +1,8 @@
 #include "catch.H"
 
+#include "cpu_reference_results.H"
+#include "gpu_reference_results.H"
+
 
 #include "test_utilities.H"
 #include "create_foam_inputs.H"
@@ -10,25 +13,32 @@
 #include "physicoChemicalConstants.H"
 #include "specieExponent.H"
 
+
+
+
+
 TEST_CASE("Test gpuConstans")
 {
+    auto cpu_result = TestData::constant_results();
+    auto gpu_result = TestData::constant_results_gpu();
+
     SECTION("Physical")
     {
-
-        CHECK(eval([](){return gpuRR;}) == Foam::constant::thermodynamic::RR);
-        CHECK(eval([](){return gpuPstd;}) == Foam::constant::thermodynamic::Pstd);
-        CHECK(eval([](){return gpuTstd;}) == Foam::constant::thermodynamic::Tstd);
-        CHECK(eval([](){return gpuNA;}) == Foam::constant::physicoChemical::NA.value());
-        CHECK(eval([](){return gpuk;}) == Foam::constant::physicoChemical::k.value());
+        CHECK(gpu_result.RR == cpu_result.RR);
+        CHECK(gpu_result.Pstd == cpu_result.Pstd);
+        CHECK(gpu_result.Tstd == cpu_result.Tstd);
+        CHECK(gpu_result.NA == cpu_result.NA);
+        CHECK(gpu_result.k == cpu_result.k);
 
     }
 
     SECTION("Numeric")
     {
-        CHECK(eval([](){return gpuVGreat;}) == Foam::vGreat);
-        CHECK(eval([](){return gpuVSmall;}) == Foam::vSmall);
-        CHECK(eval([](){return gpuSmall;}) == Foam::small);
-        CHECK(eval([](){return gpuGreat;}) == Foam::great);
+        CHECK(gpu_result.vGreat == cpu_result.vGreat);
+        CHECK(gpu_result.vSmall == cpu_result.vSmall);
+        CHECK(gpu_result.small == cpu_result.small);
+        CHECK(gpu_result.great == cpu_result.great);
+
     }
 }
 
@@ -43,8 +53,36 @@ TEST_CASE("Test perfectGas"){
     }
 
 
-    gScalar molWeight = 0.32;
-    gScalar Y = 0.1;
+
+
+    SECTION("thermo properties")
+    {
+        const gScalar p = 1E5;
+        const gScalar T = 3542.324;
+        const gScalar molWeight = 0.32;
+        const gScalar Y = 0.1;
+
+        auto cpu_result = TestData::thermo_result(p, T, Y, molWeight);
+        auto gpu_result = TestData::thermo_result_gpu(p, T, Y, molWeight);
+
+        CHECK(gpu_result.R == cpu_result.R);
+        CHECK(gpu_result.rho == cpu_result.rho);
+        CHECK(gpu_result.h == cpu_result.h);
+        CHECK(gpu_result.Cp == cpu_result.Cp);
+        CHECK(gpu_result.e == cpu_result.e);
+        CHECK(gpu_result.Cv == cpu_result.Cv);
+        CHECK(gpu_result.sp == cpu_result.sp);
+        CHECK(gpu_result.psi == cpu_result.psi);
+        CHECK(gpu_result.Z == cpu_result.Z);
+        CHECK(gpu_result.CpMCv == cpu_result.CpMCv);
+        CHECK(gpu_result.alphav == cpu_result.alphav);
+
+    }
+
+    /*
+
+
+
 
     const Foam::perfectGas<Foam::specie> cpu
     (
@@ -57,26 +95,6 @@ TEST_CASE("Test perfectGas"){
         Y, molWeight
     );
 
-
-    SECTION("thermo properties")
-    {
-        const gScalar p = 1E5;
-        const gScalar T = 3542.324;
-
-        CHECK(eval([=](){return gpu.R();}) == Approx(cpu.R()).epsilon(errorTol));
-        CHECK(eval([=](){return gpu.rho(p, T);}) == Approx(cpu.rho(p, T)).epsilon(errorTol));
-        CHECK(eval([=](){return gpu.H(p, T);}) == Approx(cpu.h(p, T)).epsilon(errorTol));
-        CHECK(eval([=](){return gpu.Cp(p, T);}) == Approx(cpu.Cp(p, T)).epsilon(errorTol));
-        CHECK(eval([=](){return gpu.E(p, T);}) == Approx(cpu.e(p, T)).epsilon(errorTol));
-        CHECK(eval([=](){return gpu.Cv(p, T);}) == Approx(cpu.Cv(p, T)).epsilon(errorTol));
-        CHECK(eval([=](){return gpu.Sp(p, T);}) == Approx(cpu.sp(p, T)).epsilon(errorTol));
-        //CHECK(eval([=](){return gpu.Sv(p, T);}) == cpu.Sv(p, T)); //throws
-        CHECK(eval([=](){return gpu.psi(p, T);}) == Approx(cpu.psi(p, T)).epsilon(errorTol));
-        CHECK(eval([=](){return gpu.Z(p, T);}) == Approx(cpu.Z(p, T)).epsilon(errorTol));
-        CHECK(eval([=](){return gpu.CpMCv(p, T);}) == Approx(cpu.CpMCv(p, T)).epsilon(errorTol));
-        CHECK(eval([=](){return gpu.alphav(p, T);}) == Approx(cpu.alphav(p, T)).epsilon(errorTol));
-
-    }
 
 
     //Arithmetic operations are not run on kernels, only upon construction.
@@ -144,5 +162,5 @@ TEST_CASE("Test perfectGas"){
         CHECK((gpu1==gpu2).Y() == (cpu1==cpu2).Y());
 
     }
-
+    */
 }

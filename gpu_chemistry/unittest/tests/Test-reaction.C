@@ -10,7 +10,9 @@
 #include "create_foam_inputs.H"
 #include "mechanisms.H"
 #include "cpu_reference_results.H"
+#include "gpu_reference_results.H"
 
+/*
 TEST_CASE("variant")
 {
     using namespace FoamGpu;
@@ -210,6 +212,7 @@ TEST_CASE("gpuSpeciesCoeffs pow")
 
 
 }
+*/
 
 
 static inline void reactionTests(TestData::Mechanism mech)
@@ -217,330 +220,62 @@ static inline void reactionTests(TestData::Mechanism mech)
 
     using namespace FoamGpu;
 
-    const gLabel nSpecie = TestData::speciesCount(mech);
-    const gLabel nEqns = TestData::equationCount(mech);
+    auto results_gpu = TestData::reaction_results_gpu(mech);
+    auto results_cpu = TestData::reaction_results(mech);
 
-    auto gpu_reactions_temp = makeGpuReactions(mech);
-    auto gpu_reactions = toDeviceVector(gpu_reactions_temp);
 
-    SECTION("Thigh/Tlow")
+    REQUIRE_THAT
+    (
+        results_cpu.Thigh,
+        Catch::Matchers::Approx(results_gpu.Thigh).epsilon(errorTol)
+    );
+    REQUIRE_THAT
+    (
+        results_cpu.Tlow,
+        Catch::Matchers::Approx(results_gpu.Tlow).epsilon(errorTol)
+    );
+    REQUIRE_THAT
+    (
+        results_cpu.Kc,
+        Catch::Matchers::Approx(results_gpu.Kc).epsilon(errorTol)
+    );
+    REQUIRE_THAT
+    (
+        results_cpu.kf,
+        Catch::Matchers::Approx(results_gpu.kf).epsilon(errorTol)
+    );
+    REQUIRE_THAT
+    (
+        results_cpu.kr,
+        Catch::Matchers::Approx(results_gpu.kr).epsilon(errorTol)
+    );
+    REQUIRE_THAT
+    (
+        results_cpu.omega,
+        Catch::Matchers::Approx(results_gpu.omega).epsilon(errorTol)
+    );
+
+
+
+    for (size_t i = 0; i < results_cpu.dNdtByV.size(); ++i)
     {
-        std::vector<std::pair<gScalar, gScalar>> cpu_results = Thigh_Tlow_result(mech);
-        for (size_t i = 0; i < gpu_reactions.size(); ++i)
-        {
-            //const auto& cpu = cpu_reactions[i];
-            auto cpu_high = std::get<0>(cpu_results[i]);
-            auto cpu_low = std::get<1>(cpu_results[i]);
-            const auto  gpu = &(gpu_reactions[i]);
-
-            REQUIRE(eval([=](){return gpu->Thigh();}) == Approx(cpu_high).epsilon(errorTol));
-            REQUIRE(eval([=](){return gpu->Tlow();}) == Approx(cpu_low).epsilon(errorTol));
-        }
-
-    }
-
-    /*
-
-    SECTION("Kc/kf/kr/dkfdT/dkrdT")
-    {
-
-
-        const auto c = make_mdspan(c_gpu, extents<1>{nSpecie});
-
-        for (gLabel i = 0; i < cpu_reactions.size(); ++i)
-        {
-            const auto& cpu = cpu_reactions[i];
-            const auto  gpu =&(gpu_reactions[i]);
-
-
-            REQUIRE
-            (
-                eval([=](){return gpu->Kc(p, T);})
-                == Approx(cpu.Kc(p, T)).epsilon(errorTol)
-            );
-
-            REQUIRE
-            (
-                eval([=](){return gpu->kf(p, T, c);})
-                == Approx(cpu.kf(p, T, c_cpu, li)).epsilon(errorTol)
-            );
-            REQUIRE
-            (
-                eval([=](){return gpu->kr(p, T, c);})
-                == Approx(cpu.kr(p, T, c_cpu, li)).epsilon(errorTol)
-            );
-
-            REQUIRE
-            (
-                eval([=](){
-                    gScalar Kc = fmax(sqrt(gpuSmall), gpu->Kc(p, T));
-
-                    return gpu->kr(32.0, p, T, Kc, c);})
-                == Approx(cpu.kr(32.0, p, T, c_cpu, li)).epsilon(errorTol)
-            );
-
-
-
-
-        }
-    }
-    */
-
-
-    SECTION("omega")
-    {
-
-
-        const auto cc = toDeviceVector(get_concentration_vector(mech));
-        //const auto cc = toDeviceVector(std::vector<gScalar>(nSpecie, 0.1));
-        const auto cpu_results = TestData::omega_result(mech);
-        const gScalar p = pInf(mech);
-        const gScalar T = TInf(mech);
-
-        for (size_t i = 0; i < gpu_reactions.size(); ++i)
-        {
-            const auto  gpu =&(gpu_reactions[i]);
-
-            const auto c = make_mdspan(cc, extents<1>{nSpecie});
-
-
-            auto f_gpu = [=](){
-                return gpu->omega(p, T, c);
-            };
-
-            auto omega_cpu = cpu_results[i];
-
-            REQUIRE(eval(f_gpu) == Approx(omega_cpu).epsilon(errorTol));
-        }
-
+        REQUIRE_THAT
+        (
+            results_cpu.dNdtByV[i],
+            Catch::Matchers::Approx(results_gpu.dNdtByV[i]).epsilon(errorTol)
+        );
     }
 
 
-
-
-    /*
-    SECTION("dNdtByV")
+    for (size_t i = 0; i < results_cpu.ddNdtByVdcTp.size(); ++i)
     {
-
-        auto cpu_results = TestData::dndtbyv_result(mech);
-        //Here it is important to have same initial condition as the function only modifies
-        //certain values
-        //Foam::scalarField res_cpu(nSpecie, 0.435);
-        //device_vector<gScalar> res_gpu(nSpecie, 0.435);
-
-
-        std::vector<std::vector<gScalar>> gpu_results;
-
-        for (gLabel i = 0; i < gpu_reactions.size(); ++i)
-        {
-            const auto  gpu = &(gpu_reactions[i]);
-
-            std::vector<gScalar> c_tmp1(nSpecie);
-            assign_test_concentration(c_tmp1, mech);
-
-            device_vector<gScalar> c_tmp = toDeviceVector(c_tmp1);
-            device_vector<gScalar> res_tmp = toDeviceVector(std::vector<gScalar>(nSpecie, 0));
-
-            auto c = make_mdspan(c_tmp, extents<1>{nSpecie});
-            auto res = make_mdspan(res_tmp, extents<1>{nSpecie});
-
-            auto f = [=](){
-                gpu->dNdtByV(p, T, c, res);
-                return 0;
-            };
-            eval(f);
-
-            gpu_results.push_back(toStdVector(res_tmp));
-        }
-
-        for (gLabel i = 0; i < gpu_reactions.size(); ++i)
-        {
-            CHECK
-            (
-                cpu_results[i] == gpu_results[i]
-            );
-        }
-    }
-    */
-
-
-    /*
-    SECTION("ddNdtByVdcTp")
-    {
-
-        Foam::List<gLabel> c2s;
-        gLabel csi0 = 0;
-        gLabel Tsi = nSpecie;
-
-
-
-        Foam::scalarField dNdtByV_cpu(nSpecie, 1.0);
-        Foam::scalarSquareMatrix ddNdtByVdcTp_cpu(nEqns, 11.3);
-        Foam::scalarField cTpWork0_cpu(nSpecie, 11.1);
-        Foam::scalarField cTpWork1_cpu(nSpecie, 13.5);
-
-        auto dNdtByV_gpu = toDeviceVector(dNdtByV_cpu);
-        auto ddNdtByVdcTp_gpu = device_vector<gScalar>
-            (
-                ddNdtByVdcTp_cpu.v(),
-                ddNdtByVdcTp_cpu.v() + ddNdtByVdcTp_cpu.size()
-            );
-
-        auto cTpWork0_gpu = toDeviceVector(cTpWork0_cpu);
-
-        for (gLabel i = 0; i < cpu_reactions.size(); ++i)
-        {
-            const auto& cpu = cpu_reactions[i];
-            const auto  gpu = &(gpu_reactions[i]);
-
-
-            cpu.ddNdtByVdcTp
-            (
-                p,
-                T,
-                c_cpu,
-                li,
-                dNdtByV_cpu,
-                ddNdtByVdcTp_cpu,
-                false,
-                c2s,
-                csi0,
-                Tsi,
-                cTpWork0_cpu,
-                cTpWork1_cpu
-            );
-
-            auto f =
-            [
-                =,
-                c = make_mdspan(c_gpu, extents<1>{nSpecie}),
-                ddNdtByVdcTp = make_mdspan(ddNdtByVdcTp_gpu, extents<2>{nEqns, nEqns}),
-                cTpWork0 = make_mdspan(cTpWork0_gpu, extents<1>{nSpecie})
-            ]
-            ()
-            {
-                auto params = computeReactionParameters(*gpu, c, p, T, cTpWork0);
-
-                gpu->ddNdtByVdcTp
-                (
-                    p,
-                    T,
-                    c,
-                    ddNdtByVdcTp,
-                    params
-
-                );
-
-                return 0;
-            };
-
-            eval(f);
-
-            std::vector<double> r_cpu(ddNdtByVdcTp_cpu.v(), ddNdtByVdcTp_cpu.v() + ddNdtByVdcTp_cpu.size());
-            std::vector<double> r_gpu = toStdVector(ddNdtByVdcTp_gpu);
-            REQUIRE_THAT(r_gpu, Catch::Matchers::Approx(r_cpu).epsilon(errorTol));
-
-
-        }
-
+        REQUIRE_THAT
+        (
+            results_cpu.ddNdtByVdcTp[i],
+            Catch::Matchers::Approx(results_gpu.ddNdtByVdcTp[i]).epsilon(errorTol)
+        );
     }
 
-
-    SECTION("ddNdtByVdcTp with small concentrations")
-    {
-        Foam::List<gLabel> c2s;
-        gLabel csi0 = 0;
-        gLabel Tsi = nSpecie;
-
-        Foam::scalarField c_cpu2(nSpecie);
-        fill_random(c_cpu2);
-        c_cpu2[3] = 1E-4;
-        c_cpu2[5] = 1E-5;
-        c_cpu2[6] = 1E-7;
-        c_cpu2[7] = gpuSmall;
-        c_cpu2[8] = 0.9*gpuSmall;
-        c_cpu2[9] = gpuVSmall;
-
-        auto c_gpu2 = toDeviceVector(c_cpu2);
-
-        Foam::scalarField dNdtByV_cpu(nSpecie, 1.0);
-        Foam::scalarSquareMatrix ddNdtByVdcTp_cpu(nEqns, 11.3);
-        Foam::scalarField cTpWork0_cpu(nSpecie, 11.1);
-        Foam::scalarField cTpWork1_cpu(nSpecie, 13.5);
-
-
-        auto dNdtByV_gpu = toDeviceVector(dNdtByV_cpu);
-        auto ddNdtByVdcTp_gpu = device_vector<gScalar>
-            (
-                ddNdtByVdcTp_cpu.v(),
-                ddNdtByVdcTp_cpu.v() + ddNdtByVdcTp_cpu.size()
-            );
-
-        auto cTpWork0_gpu = toDeviceVector(cTpWork0_cpu);
-
-
-
-        for (gLabel i = 0; i < cpu_reactions.size(); ++i)
-        {
-            const auto& cpu = cpu_reactions[i];
-            const auto  gpu = &(gpu_reactions[i]);
-
-            cpu.ddNdtByVdcTp
-            (
-                p,
-                T,
-                c_cpu2,
-                li,
-                dNdtByV_cpu,
-                ddNdtByVdcTp_cpu,
-                false,
-                c2s,
-                csi0,
-                Tsi,
-                cTpWork0_cpu,
-                cTpWork1_cpu
-            );
-
-            auto f =
-            [
-                =,
-                c = make_mdspan(c_gpu2, extents<1>{nSpecie}),
-                ddNdtByVdcTp = make_mdspan(ddNdtByVdcTp_gpu, extents<2>{nEqns, nEqns}),
-                cTpWork0 = make_mdspan(cTpWork0_gpu, extents<1>{nSpecie})
-            ]
-            ()
-            {
-                auto params = computeReactionParameters(*gpu, c, p, T, cTpWork0);
-
-                gpu->ddNdtByVdcTp
-                (
-                    p,
-                    T,
-                    c,
-                    ddNdtByVdcTp,
-                    params
-                );
-
-                return 0;
-            };
-
-
-            eval(f);
-
-
-
-
-            std::vector<double> r_cpu(ddNdtByVdcTp_cpu.v(), ddNdtByVdcTp_cpu.v() + ddNdtByVdcTp_cpu.size());
-            std::vector<double> r_gpu = toStdVector(ddNdtByVdcTp_gpu);
-
-            REQUIRE_THAT(r_gpu, Catch::Matchers::Approx(r_cpu).epsilon(errorTol));
-
-
-        }
-
-
-    }
-    */
 
 }
 

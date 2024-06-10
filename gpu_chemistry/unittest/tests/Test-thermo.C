@@ -5,6 +5,7 @@
 #include "create_gpu_inputs.H"
 #include "create_foam_inputs.H"
 #include "makeGpuThermo.H"
+#include "cpu_reference_results.H"
 
 template<class T, unsigned N>
 static inline auto toArray(Foam::FixedList<T, N> a)

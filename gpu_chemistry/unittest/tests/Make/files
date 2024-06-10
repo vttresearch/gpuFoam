@@ -1,12 +1,13 @@
-Test-eos.C
-Test-thermo.C
-Test-reaction.C
-Test-memoryResource.C
-Test-ludecompose.C
-Test-odeSystem.C
-Test-ode.C
-Test-evaluator.C
-Test-utilities.C
+Test-gpuChemistry.C
+
+#Test-eos.C
+#Test-thermo.C
+#Test-reaction.C
+#Test-memoryResource.C
+#Test-ludecompose.C
+#Test-odeSystem.C
+#Test-ode.C
+#Test-evaluator.C
+#Test-utilities.C
 
 EXE = $(FOAM_USER_APPBIN)/testGpuChemistry
-

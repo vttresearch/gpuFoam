@@ -1,7 +1,5 @@
 EXE_INC = \
     -I../testHelpers/lnInclude \
-    -I../gpuResults/lnInclude \
-    -I../cpuResults/lnInclude \
     -I../../catchMain/lnInclude \
     -I../../src/lnInclude \
     -I../../src/gpuChemistryModels/lnInclude \
@@ -24,8 +22,6 @@ EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
     -lGpuChemistryTestHelpers \
     -lGpuKernelEvaluator \
-    -lGpuFoamGpuResults \
-    -lGpuFoamCpuResults \
     -lCatchMain \
     -lmeshTools \
     -lthermophysicalProperties \
@@ -38,5 +34,3 @@ EXE_LIBS = \
     -lfiniteVolume \
     -lchemistryModel \
     -lblockMesh
-
-#include ../nvcpp
