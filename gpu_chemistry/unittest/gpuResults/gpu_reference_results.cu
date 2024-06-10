@@ -18,15 +18,15 @@ TestData::constantResults constant_results_gpu(){
     using namespace FoamGpu;
 
     TestData::constantResults ret;
-    ret.RR = eval([](){return gpuRR;});
-    ret.Pstd = eval([](){return gpuPstd;});
-    ret.Tstd = eval([](){return gpuTstd;});
-    ret.NA = eval([](){return gpuNA;});
-    ret.k = eval([](){return gpuk;});
-    ret.vGreat = eval([](){return gpuVGreat;});
-    ret.vSmall = eval([](){return gpuVSmall;});
-    ret.small = eval([](){return gpuSmall;});
-    ret.great = eval([](){return gpuGreat;});
+    ret.RR = eval([] DEVICE (){return gpuRR;});
+    ret.Pstd = eval([] DEVICE (){return gpuPstd;});
+    ret.Tstd = eval([] DEVICE (){return gpuTstd;});
+    ret.NA = eval([] DEVICE (){return gpuNA;});
+    ret.k = eval([] DEVICE (){return gpuk;});
+    ret.vGreat = eval([] DEVICE (){return gpuVGreat;});
+    ret.vSmall = eval([] DEVICE (){return gpuVSmall;});
+    ret.small = eval([] DEVICE (){return gpuSmall;});
+    ret.great = eval([] DEVICE (){return gpuGreat;});
     return ret;
 
 }
@@ -43,18 +43,18 @@ TestData::perfectGasResult perfect_gas_results_gpu(gScalar p, gScalar T, gScalar
     TestData::perfectGasResult ret;
 
 
-    ret.R = eval([=](){return eos.R();});
-    ret.rho = eval([=](){return eos.rho(p, T);});
-    ret.h = eval([=](){return eos.H(p, T);});
-    ret.Cp = eval([=](){return eos.Cp(p, T);});
-    ret.e = eval([=](){return eos.E(p, T);});
-    ret.Cv = eval([=](){return eos.Cv(p, T);});
-    ret.sp = eval([=](){return eos.Sp(p, T);});
-    //ret.sv = eval([=](){return eos.Sv(p, T);});
-    ret.psi = eval([=](){return eos.psi(p, T);});
-    ret.Z = eval([=](){return eos.Z(p, T);});
-    ret.CpMCv = eval([=](){return eos.CpMCv(p, T);});
-    ret.alphav = eval([=](){return eos.alphav(p, T);});
+    ret.R = eval([=] DEVICE (){return eos.R();});
+    ret.rho = eval([=] DEVICE (){return eos.rho(p, T);});
+    ret.h = eval([=] DEVICE (){return eos.H(p, T);});
+    ret.Cp = eval([=] DEVICE (){return eos.Cp(p, T);});
+    ret.e = eval([=] DEVICE (){return eos.E(p, T);});
+    ret.Cv = eval([=] DEVICE (){return eos.Cv(p, T);});
+    ret.sp = eval([=] DEVICE (){return eos.Sp(p, T);});
+    //ret.sv = eval([=] DEVICE (){return eos.Sv(p, T);});
+    ret.psi = eval([=] DEVICE (){return eos.psi(p, T);});
+    ret.Z = eval([=] DEVICE (){return eos.Z(p, T);});
+    ret.CpMCv = eval([=] DEVICE (){return eos.CpMCv(p, T);});
+    ret.alphav = eval([=] DEVICE (){return eos.alphav(p, T);});
 
 
     return ret;
@@ -79,23 +79,23 @@ thermoResults thermo_results_gpu(Mechanism mech)
     {
         gpuThermo* thermo = thermos.data() + i;
 
-        ret.W[i] = eval([=](){return thermo->W();});
-        ret.Y[i] = eval([=](){return thermo->Y();});
-        ret.R[i] = eval([=](){return thermo->R();});
-        ret.Cp[i] = eval([=](){return thermo->Cp(p, T);});
-        ret.ha[i] = eval([=](){return thermo->Ha(p, T);});
-        ret.hs[i] = eval([=](){return thermo->Hs(p, T);});
-        ret.hf[i] = eval([=](){return thermo->Hf(    );});
-        ret.s[i] = eval([=](){return thermo->S(p, T);});
-        ret.gStd[i] = eval([=](){return thermo->Gstd(T);});
-        ret.dCpdT[i] = eval([=](){return thermo->dCpdT(p, T);});
-        ret.Cv[i] = eval([=](){return thermo->Cv(p, T);});
-        ret.es[i] = eval([=](){return thermo->Es(p, T);});
-        ret.ea[i] = eval([=](){return thermo->Ea(p, T);});
-        ret.K[i] = eval([=](){return thermo->K(p, T);});
-        ret.Kp[i] = eval([=](){return thermo->Kp(p, T);});
-        ret.Kc[i] = eval([=](){return thermo->Kc(p, T);});
-        ret.dKcdTbyKc[i] = eval([=](){return thermo->dKcdTbyKc(p, T);});
+        ret.W[i] = eval([=] DEVICE (){return thermo->W();});
+        ret.Y[i] = eval([=] DEVICE (){return thermo->Y();});
+        ret.R[i] = eval([=] DEVICE (){return thermo->R();});
+        ret.Cp[i] = eval([=] DEVICE (){return thermo->Cp(p, T);});
+        ret.ha[i] = eval([=] DEVICE (){return thermo->Ha(p, T);});
+        ret.hs[i] = eval([=] DEVICE (){return thermo->Hs(p, T);});
+        ret.hf[i] = eval([=] DEVICE (){return thermo->Hf(    );});
+        ret.s[i] = eval([=] DEVICE (){return thermo->S(p, T);});
+        ret.gStd[i] = eval([=] DEVICE (){return thermo->Gstd(T);});
+        ret.dCpdT[i] = eval([=] DEVICE (){return thermo->dCpdT(p, T);});
+        ret.Cv[i] = eval([=] DEVICE (){return thermo->Cv(p, T);});
+        ret.es[i] = eval([=] DEVICE (){return thermo->Es(p, T);});
+        ret.ea[i] = eval([=] DEVICE (){return thermo->Ea(p, T);});
+        ret.K[i] = eval([=] DEVICE (){return thermo->K(p, T);});
+        ret.Kp[i] = eval([=] DEVICE (){return thermo->Kp(p, T);});
+        ret.Kc[i] = eval([=] DEVICE (){return thermo->Kc(p, T);});
+        ret.dKcdTbyKc[i] = eval([=] DEVICE (){return thermo->dKcdTbyKc(p, T);});
 
     }
 
@@ -134,25 +134,26 @@ reactionResults reaction_results_gpu(Mechanism mech)
 
         gpuReaction* reaction = reactions.data() + i;
 
-        Thigh[i] = eval([=](){return reaction->Thigh();});
-        Tlow[i] = eval([=](){return reaction->Tlow();});
+        Thigh[i] = eval([=] DEVICE (){return reaction->Thigh();});
+        Tlow[i] = eval([=] DEVICE (){return reaction->Tlow();});
 
         auto c = make_mdspan(cc, extents<1>{nSpecie});
 
-        Kc[i] = eval([=](){return reaction->Kc(p, T);});
-        kf[i] = eval([=](){return reaction->kf(p, T, c);});
-        kr[i] = eval([=](){return reaction->kr(p, T, c);});
-        omega[i] = eval([=](){return reaction->omega(p, T, c);});
+        Kc[i] = eval([=] DEVICE (){return reaction->Kc(p, T);});
+        kf[i] = eval([=] DEVICE (){return reaction->kf(p, T, c);});
+        kr[i] = eval([=] DEVICE (){return reaction->kr(p, T, c);});
+        omega[i] = eval([=] DEVICE (){return reaction->omega(p, T, c);});
 
 
 
         ///==================dNdtByV==================
-        device_vector<gScalar> dNdtByV_i(nSpecie);
+        device_vector<gScalar> dNdtByV_i = toDeviceVector(std::vector<gScalar>(nSpecie, 0));
         auto f =
         [
             =,
             res = make_mdspan(dNdtByV_i, extents<1>{nSpecie})
-        ](){
+        ] DEVICE
+        (){
             reaction->dNdtByV(p, T, c, res);
             return 0;
         };
@@ -162,14 +163,14 @@ reactionResults reaction_results_gpu(Mechanism mech)
 
 
         ///==================ddNdtByVdcTp==================
-        device_vector<gScalar> ddNdtByVdcTp_i(nEqns*nEqns);
+        device_vector<gScalar> ddNdtByVdcTp_i = toDeviceVector(std::vector<gScalar>(nEqns*nEqns, 0));
         device_vector<gScalar> cTpWork0_i(nSpecie);
         auto f2 =
             [
                 =,
                 res = make_mdspan(ddNdtByVdcTp_i, extents<2>{nEqns, nEqns}),
                 cTpWork0 = make_mdspan(cTpWork0_i, extents<1>{nSpecie})
-            ]
+            ] DEVICE
             ()
             {
                 auto params = computeReactionParameters(*reaction, c, p, T, cTpWork0);
@@ -226,14 +227,14 @@ lu_results_gpu(const std::vector<gScalar>& m_vals, const std::vector<gScalar>& s
 
     eval
     (
-        [=](){FoamGpu::LUDecompose(m_span, p_span, v_span); return 0;}
+        [=] DEVICE (){FoamGpu::LUDecompose(m_span, p_span, v_span); return 0;}
     );
 
     auto s_span = make_mdspan(source, extents<1>{size});
 
     eval
     (
-        [=](){FoamGpu::LUBacksubstitute(m_span, p_span, s_span); return 0;}
+        [=] DEVICE (){FoamGpu::LUBacksubstitute(m_span, p_span, s_span); return 0;}
     );
 
 
@@ -280,7 +281,7 @@ odeSystemResults odesystem_results_gpu(Mechanism mech)
             buffers = make_mdspan(buffers, extents<1>{1}),
             y = make_mdspan(y0_v, extents<1>{nEqns}),
             dy = make_mdspan(dy_v, extents<1>{nEqns})
-        ]
+        ] DEVICE
         ()
         {
             gpu.derivatives(y, dy, buffers[0]);
@@ -305,7 +306,7 @@ odeSystemResults odesystem_results_gpu(Mechanism mech)
             y = make_mdspan(y0_v, extents<1>{nEqns}),
             dy = make_mdspan(dy_v, extents<1>{nEqns}),
             J = make_mdspan(J_v, extents<2>{nEqns, nEqns})
-        ]
+        ] DEVICE
         ()
         {
             gpu.jacobian(y, dy, J, buffers[0]);
@@ -359,7 +360,7 @@ std::vector<gScalar> ode_results_gpu(Mechanism mech, std::string solver_name, gS
         y = make_mdspan(y0_v, extents<1>{nEqns}),
         dxTry = dxTry,
         buffers = make_mdspan(buffers, extents<1>{1})
-    ]()
+    ] DEVICE ()
     {
         gScalar dxTry_temp = dxTry;
         ode.solve(xStart, xEnd, y, dxTry_temp, buffers[0]);
@@ -371,13 +372,7 @@ std::vector<gScalar> ode_results_gpu(Mechanism mech, std::string solver_name, gS
     auto ret = toStdVector(y0_v);
 
 
-    for (auto& e : ret)
-    {
-        if (std::abs(e) < 1E-6)
-        {
-            e = 0.0;
-        }
-    }
+    remove_negative_zero(ret);
 
     return ret;
 

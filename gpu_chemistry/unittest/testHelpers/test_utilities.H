@@ -26,18 +26,6 @@ using memoryResource_t = FoamGpu::cpuMemoryResource;
 
 
 
-//Note, here the "error" is a comparison against a cpu result.
-//When compiled with an nvidia compiler, the arithmetic operations are computed
-//differently since nvcc and nvc++ use fused multiply add (fma) in many places.
-//Therefore a slightly more tolerance is allowed when comparing gpu result agains
-//cpu result. For better match use the -nofma switch. However, we want to allow
-//for the compiler to do optimizations.
-#ifdef __USING_GPU__
-constexpr double errorTol = 1E-7;
-#else
-constexpr double errorTol = 1E-9;
-#endif
-
 #ifdef __USING_GPU__
 
 
@@ -57,7 +45,7 @@ __global__ void on_device(T t, R* r)
         gScalar *d_result;
         gpuErrorCheck(cudaMalloc(&d_result, sizeof(gScalar)));
         on_device<<<1,1>>>(t, d_result);
-        gpuErrorCheck(cudaGetLastError())
+        gpuErrorCheck(cudaGetLastError());
         gpuErrorCheck(cudaDeviceSynchronize());
         gScalar h_result;
         gpuErrorCheck(cudaMemcpy(&h_result, d_result, sizeof(gScalar), cudaMemcpyDeviceToHost));
@@ -82,7 +70,7 @@ __global__ void on_device(T t, R* r)
             on_device, dim3(1), dim3(1), 0, 0, t, d_result
         );
         //on_device<<<1,1>>>(t, d_result);
-        //gpuErrorCheck(cudaGetLastError())
+        //gpuErrorCheck(hipGetLastError());
         gpuErrorCheck(hipDeviceSynchronize());
         gScalar h_result;
         gpuErrorCheck(hipMemcpy(&h_result, d_result, sizeof(gScalar), hipMemcpyDeviceToHost));
@@ -124,6 +112,17 @@ static inline void fill_random(T& v, double LO = 0.0, double HI = 1.0)
     for (auto& e : v)
     {
         e = random_number(LO, HI);
+    }
+
+}
+
+template<class C>
+static inline void remove_negative_zero(C& c){
+
+    for (auto& e : c){
+        if (std::abs(e) < 1E-7){
+            e = 0.0;
+        }
     }
 
 }

@@ -89,7 +89,6 @@ thermoResults thermo_results_cpu(Mechanism mech)
         ret.dKcdTbyKc[i] = thermos[i].dKcdTbyKc(p, T);
     }
 
-
     return ret;
 
 }
@@ -290,13 +289,8 @@ std::vector<gScalar> ode_results_cpu(Mechanism mech, std::string solver_name, gS
     auto ret = std::vector<gScalar>(y.begin(), y.end());
 
 
-    for (auto& e : ret)
-    {
-        if (std::abs(e) < 1E-6)
-        {
-            e = 0.0;
-        }
-    }
+    remove_negative_zero(ret);
+
 
 
     return ret;

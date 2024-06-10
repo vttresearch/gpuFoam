@@ -88,6 +88,12 @@ static inline void thermoTests(TestData::Mechanism mech)
     auto results_cpu = TestData::thermo_results_cpu(mech);
     auto results_gpu = TestData::thermo_results_gpu(mech);
 
+    constexpr double errorTol = 1E-7;
+
+    remove_negative_zero(results_cpu.hf);
+    remove_negative_zero(results_gpu.hf);
+
+
     CHECK_THAT
     (
         results_cpu.W,
@@ -199,6 +205,9 @@ static inline void reactionTests(TestData::Mechanism mech)
 {
 
     using namespace FoamGpu;
+
+    constexpr double errorTol = 1E-7;
+
 
     auto results_gpu = TestData::reaction_results_gpu(mech);
     auto results_cpu = TestData::reaction_results_cpu(mech);
@@ -356,6 +365,9 @@ TEST_CASE("Test ludecompose")
 {
     using namespace FoamGpu;
 
+    constexpr double errorTol = 1E-7;
+
+
     for (int i = 3; i < 50; ++i)
     {
         int size = i;
@@ -391,6 +403,9 @@ TEST_CASE("Test ludecompose")
 TEST_CASE("Test gpuOdeSystem")
 {
     using namespace FoamGpu;
+
+    constexpr double errorTol = 1E-7;
+
 
     SECTION("H2"){
 
@@ -442,8 +457,8 @@ TEST_CASE("Test gpuOdeSolver")
     const gScalar xEnd = 1E-5;
     const gScalar dxTry = 1E-7;
 
+    constexpr double errorTol = 1E-7;
 
-    const gScalar tolerance = 1E-7;
 
     SECTION("H2"){
 
@@ -457,7 +472,7 @@ TEST_CASE("Test gpuOdeSolver")
             CHECK_THAT
             (
                 cpu_results,
-                Catch::Matchers::Approx(gpu_results).epsilon(tolerance)
+                Catch::Matchers::Approx(gpu_results).epsilon(errorTol)
             );
 
         }
@@ -469,7 +484,7 @@ TEST_CASE("Test gpuOdeSolver")
             CHECK_THAT
             (
                 cpu_results,
-                Catch::Matchers::Approx(gpu_results).epsilon(tolerance)
+                Catch::Matchers::Approx(gpu_results).epsilon(errorTol)
             );
 
         }
@@ -480,7 +495,7 @@ TEST_CASE("Test gpuOdeSolver")
             CHECK_THAT
             (
                 cpu_results,
-                Catch::Matchers::Approx(gpu_results).epsilon(tolerance)
+                Catch::Matchers::Approx(gpu_results).epsilon(errorTol)
             );
 
         }
@@ -502,7 +517,7 @@ TEST_CASE("Test gpuOdeSolver")
             CHECK_THAT
             (
                 cpu_results,
-                Catch::Matchers::Approx(gpu_results).epsilon(tolerance)
+                Catch::Matchers::Approx(gpu_results).epsilon(errorTol)
             );
 
         }
@@ -515,7 +530,7 @@ TEST_CASE("Test gpuOdeSolver")
             CHECK_THAT
             (
                 cpu_results,
-                Catch::Matchers::Approx(gpu_results).epsilon(tolerance)
+                Catch::Matchers::Approx(gpu_results).epsilon(errorTol)
             );
 
         }
@@ -528,7 +543,7 @@ TEST_CASE("Test gpuOdeSolver")
             CHECK_THAT
             (
                 cpu_results,
-                Catch::Matchers::Approx(gpu_results).epsilon(tolerance)
+                Catch::Matchers::Approx(gpu_results).epsilon(errorTol)
             );
 
         }

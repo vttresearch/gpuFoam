@@ -2,7 +2,6 @@
 
 #include "gpu_constants.H"
 #include "error_handling.H"
-#include "hip/hip_runtime.h"
 
 
 template<class UnaryOperation>
