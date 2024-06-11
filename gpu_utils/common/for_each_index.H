@@ -28,10 +28,6 @@ static inline void for_each_index(UnaryOperation op, gLabel n){
     gLabel NBLOCKS  = (n + NTHREADS - 1) / NTHREADS;
 
 
-    /*
-    hipLaunchKernelGGL(for_each_index_kernel, dim3(NBLOCKS),
-                     dim3(NTHREADS), 0, 0, n, op);
-    */
 
     #ifdef __USING_GPU__
         #ifdef __NVIDIA_BACKEND__
