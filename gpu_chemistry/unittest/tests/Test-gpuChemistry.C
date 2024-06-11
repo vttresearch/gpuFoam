@@ -553,7 +553,11 @@ TEST_CASE("Test gpuOdeSolver")
 
 
 }
+TEST_CASE("for_each_index"){
 
+    CHECK(TestData::test_for_each_index() == true);
+
+}
 
 TEST_CASE("Test gpuKernelEvaluator"){
 

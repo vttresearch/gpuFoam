@@ -32,9 +32,9 @@ public:
     }
 
 public:
-    CUDA_HOSTDEV gpuThermo() = default;
+    gpuThermo() = default;
 
-    CUDA_HOSTDEV gpuThermo(const EquationOfState& eos,
+    gpuThermo(const EquationOfState& eos,
               gScalar                Tlow,
               gScalar                Thigh,
               gScalar                Tcommon,
@@ -47,7 +47,7 @@ public:
         , highCpCoeffs_(highCpCoeffs)
         , lowCpCoeffs_(lowCpCoeffs) {}
 
-    CUDA_HOSTDEV gpuThermo(gScalar    Y,
+    gpuThermo(gScalar    Y,
               gScalar    molWeight,
               gScalar    Tlow,
               gScalar    Thigh,

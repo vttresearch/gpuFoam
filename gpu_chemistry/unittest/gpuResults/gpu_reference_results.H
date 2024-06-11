@@ -30,7 +30,7 @@ odeSystemResults odesystem_results_gpu(Mechanism mech);
 
 std::vector<gScalar> ode_results_gpu(Mechanism mech, std::string solver_name, gScalar xStart, gScalar xEnd, gScalar dxTry);
 
-
+bool test_for_each_index();
 bool test_evaluator();
 
 

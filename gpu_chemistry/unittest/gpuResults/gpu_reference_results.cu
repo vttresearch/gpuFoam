@@ -3,6 +3,7 @@
 #include "gpuReaction.H"
 #include "gpuODESystem.H"
 #include "gpuKernelEvaluator.H"
+#include "for_each_index.H"
 
 #include "ludecompose.H"
 #include "create_gpu_inputs.H"
@@ -381,6 +382,31 @@ std::vector<gScalar> ode_results_gpu(Mechanism mech, std::string solver_name, gS
 
 }
 
+bool test_for_each_index(){
+
+    using namespace FoamGpu;
+
+    device_vector<gScalar> v1 = toDeviceVector(std::vector<gScalar>(100, 1.0));
+    device_vector<gScalar> v2 = toDeviceVector(std::vector<gScalar>(100, 2.0));
+    device_vector<gScalar> v3 = toDeviceVector(std::vector<gScalar>(100, 3.0));
+
+
+
+    auto op = [v1 = v1.data(), v2 = v2.data(), v3 = v3.data()] DEVICE (gLabel idx){
+
+        v1[idx] = v2[idx] + v3[idx] + 4.0;
+
+    };
+
+    for_each_index(op, 100);
+
+    std::vector<gScalar> correct(100, 2.0 + 3.0 + 4.0);
+
+    return toStdVector(v1) == correct;
+
+
+}
+
 bool test_evaluator(){
 
     using namespace FoamGpu;
@@ -395,24 +421,25 @@ bool test_evaluator(){
     inputs.name = "Rosenbrock34";
     GpuKernelEvaluator evaluator(nCells, nEqns, nSpecie, thermos, reactions, inputs);
 
-    gScalar deltaT = 1e-3;
+    gScalar deltaT = 1e-6;
     gScalar deltaTChemMax = deltaT/4;
-    std::vector<gScalar> deltaTChem(deltaT/5, nCells);
+    std::vector<gScalar> deltaTChem(nCells, deltaT/5);
 
 
-    std::vector<gScalar> rho(1.0, nCells);
+    std::vector<gScalar> rho(nCells, 1.0);
 
 
     std::vector<gScalar> Yvf(nCells*nEqns);
 
     auto s = make_mdspan(Yvf, extents<2>{nCells, nEqns});
 
+    auto Yi = TestData::get_solution_vector(m);
+
     for (gLabel celli = 0; celli < nCells; ++celli) {
-        for (gLabel i = 0; i < nSpecie; ++i) {
-            s(celli, i) = 0.1; //concentration like
+        for (gLabel i = 0; i < nEqns; ++i){
+            s(celli, i) = Yi[i];
         }
-        s(celli, nSpecie)     = 300.0; //T
-        s(celli, nSpecie + 1) = 1E5; //p
+
     }
 
 
