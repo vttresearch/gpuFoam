@@ -21,7 +21,8 @@ TEST_CASE("make_mdspan"){
 
 }
 
-/*
+
+
 TEST_CASE("Test gpuConstants")
 {
     auto cpu_result = TestData::constant_results_cpu();
@@ -46,7 +47,6 @@ TEST_CASE("Test gpuConstants")
 
     }
 }
-*/
 
 
 TEST_CASE("Test perfectGas"){
@@ -551,5 +551,13 @@ TEST_CASE("Test gpuOdeSolver")
     }
 
 
+
+}
+
+
+TEST_CASE("Test gpuKernelEvaluator"){
+
+
+    CHECK(TestData::test_evaluator() == true);
 
 }

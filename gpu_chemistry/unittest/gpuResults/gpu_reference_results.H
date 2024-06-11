@@ -6,6 +6,9 @@
 
 namespace TestData{
 
+
+double kernel_test();
+
 constantResults constant_results_gpu();
 
 
@@ -27,6 +30,8 @@ odeSystemResults odesystem_results_gpu(Mechanism mech);
 
 std::vector<gScalar> ode_results_gpu(Mechanism mech, std::string solver_name, gScalar xStart, gScalar xEnd, gScalar dxTry);
 
+
+bool test_evaluator();
 
 
 }

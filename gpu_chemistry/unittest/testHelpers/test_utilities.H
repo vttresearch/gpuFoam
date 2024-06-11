@@ -69,8 +69,7 @@ __global__ void on_device(T t, R* r)
         (
             on_device, dim3(1), dim3(1), 0, 0, t, d_result
         );
-        //on_device<<<1,1>>>(t, d_result);
-        //gpuErrorCheck(hipGetLastError());
+        gpuErrorCheck(hipGetLastError());
         gpuErrorCheck(hipDeviceSynchronize());
         gScalar h_result;
         gpuErrorCheck(hipMemcpy(&h_result, d_result, sizeof(gScalar), hipMemcpyDeviceToHost));

@@ -5,6 +5,7 @@ c++WARN     =
 
 HIPCC_FLAGS = --std=c++17
 HIPCC_FLAGS += -Wno-old-style-cast
+HIPCC_FLAGS += --offload-arch=gfx90a
 #HIPCC_FLAGS += --expt-relaxed-constexpr
 #HIPCC_FLAGS += --expt-extended-lambda
 #HIPCC_FLAGS += --use_fast_math
