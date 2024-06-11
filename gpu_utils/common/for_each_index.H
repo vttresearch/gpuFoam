@@ -42,8 +42,8 @@ static inline void for_each_index(UnaryOperation op, gLabel n){
             hipLaunchKernelGGL(for_each_index_kernel, dim3(NBLOCKS),
                         dim3(NTHREADS), 0, 0, n, op);
 
-            //gpuErrorCheck(hipGetLastError());
-            //gpuErrorCheck(hipDeviceSynchronize());
+            gpuErrorCheck(hipGetLastError());
+            gpuErrorCheck(hipDeviceSynchronize());
         #endif
     #endif
     //Should probably throw here but this file wont anyways compile without hip or cuda compiler
