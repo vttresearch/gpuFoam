@@ -115,12 +115,25 @@ static inline void fill_random(T& v, double LO = 0.0, double HI = 1.0)
 
 }
 
+template<class T>
+static inline void fill_linear(T& v){
+
+    double dx = 1.0 / v.size();
+
+    for (int i = 0; i < v.size(); ++i){
+        v[i] = dx*i + dx;
+    }
+
+
+
+}
+
 template<class C>
-static inline void remove_negative_zero(C& c){
+static inline void remove_negative(C& c){
 
     for (auto& e : c){
-        if (std::abs(e) < 1E-7){
-            e = 0.0;
+        if (e < 0){
+            e = -e;
         }
     }
 

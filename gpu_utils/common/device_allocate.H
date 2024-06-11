@@ -19,6 +19,7 @@
         T*         ptr;
         const auto bytesize = length * sizeof(T);
         gpuErrorCheck(hipMalloc((void**)&ptr, bytesize));
+        gpuErrorCheck(hipMemset(ptr, 0, bytesize));
         return ptr;
     }
     #endif

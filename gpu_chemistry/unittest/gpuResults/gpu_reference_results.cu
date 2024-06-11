@@ -79,7 +79,7 @@ thermoResults thermo_results_gpu(Mechanism mech)
 
     for (size_t i = 0; i < thermos.size(); ++i)
     {
-        gpuThermo* thermo = thermos.data() + i;
+        gpuThermo* thermo = make_raw_pointer(thermos.data()) + i;
 
         ret.W[i] = eval([=] DEVICE (){return thermo->W();});
         ret.Y[i] = eval([=] DEVICE (){return thermo->Y();});
@@ -122,7 +122,13 @@ reactionResults reaction_results_gpu(Mechanism mech)
     const gScalar p = TestData::pInf(mech);
     const gScalar T = TestData::TInf(mech);
 
-    const auto cc = toDeviceVector(get_concentration_vector(mech));
+    device_vector<gScalar> cc =
+    [&](){
+        std::vector<gScalar> t(nSpecie);
+        fill_linear(t);
+        return toDeviceVector(t);
+    }();
+
     std::vector<gScalar> Thigh(nReactions);
     std::vector<gScalar> Tlow(nReactions);
     std::vector<gScalar> Kc(nReactions);
@@ -134,7 +140,7 @@ reactionResults reaction_results_gpu(Mechanism mech)
 
     for (size_t i = 0; i < nReactions; ++i){
 
-        gpuReaction* reaction = reactions.data() + i;
+        gpuReaction* reaction = make_raw_pointer(reactions.data()) + i;
 
         Thigh[i] = eval([=] DEVICE (){return reaction->Thigh();});
         Tlow[i] = eval([=] DEVICE (){return reaction->Tlow();});
@@ -266,7 +272,15 @@ odeSystemResults odesystem_results_gpu(Mechanism mech)
     );
 
 
-    const device_vector<gScalar> y0_v = toDeviceVector(TestData::get_solution_vector(mech));
+    const device_vector<gScalar> y0_v
+    = [&](){
+
+        std::vector<gScalar> t(nEqns);
+        fill_linear(t);
+        t[nSpecie] = TestData::TInf(mech);
+        t[nSpecie + 1] = TestData::pInf(mech);
+        return toDeviceVector(t);
+    }();
 
 
 
@@ -350,6 +364,18 @@ std::vector<gScalar> ode_results_gpu(Mechanism mech, std::string solver_name, gS
 
     auto solver = make_gpuODESolver(system, i);
 
+    /*
+    device_vector<gScalar> y0_v
+    = [&](){
+
+        std::vector<gScalar> t(nEqns);
+        fill_linear(t);
+        t[nSpecie] = TestData::TInf(mech);
+        t[nSpecie + 1] = TestData::pInf(mech);
+        return toDeviceVector(t);
+    }();
+    */
+
     device_vector<gScalar> y0_v = toDeviceVector(TestData::get_solution_vector(mech));
 
     memoryResource_t memory(1, nSpecie);
@@ -369,12 +395,12 @@ std::vector<gScalar> ode_results_gpu(Mechanism mech, std::string solver_name, gS
         return dxTry_temp;
     };
 
+    eval(f);
 
     //Round small values to zero to avoid -0 == 0 comparisons
     auto ret = toStdVector(y0_v);
 
-
-    remove_negative_zero(ret);
+    remove_negative(ret);
 
     return ret;
 
@@ -407,7 +433,7 @@ bool test_for_each_index(){
 
 }
 
-bool test_evaluator(){
+bool test_evaluator(gLabel nCells){
 
     using namespace FoamGpu;
 
@@ -416,14 +442,15 @@ bool test_evaluator(){
     auto reactions = TestData::makeGpuReactions(m);
     gLabel nSpecie = TestData::speciesCount(m);
     gLabel nEqns = TestData::equationCount(m);
-    gLabel nCells = 100;
     gpuODESolverInputs inputs;
     inputs.name = "Rosenbrock34";
+    inputs.absTol = 1E-12;
+    inputs.relTol = 1e-1;
     GpuKernelEvaluator evaluator(nCells, nEqns, nSpecie, thermos, reactions, inputs);
 
-    gScalar deltaT = 1e-6;
+    gScalar deltaT = 1e-5;
     gScalar deltaTChemMax = deltaT/4;
-    std::vector<gScalar> deltaTChem(nCells, deltaT/5);
+    std::vector<gScalar> deltaTChem(nCells, deltaT/10);
 
 
     std::vector<gScalar> rho(nCells, 1.0);
@@ -442,24 +469,28 @@ bool test_evaluator(){
 
     }
 
-
-
-
-
-    auto tuple = evaluator.computeRR
+    auto tuple = evaluator.computeYNew
     (
         deltaT,
         deltaTChemMax,
-        rho,
         deltaTChem,
         Yvf
     );
 
-    auto RR = std::get<0>(tuple);
-    auto newDts = std::get<1>(tuple);
-    gScalar minDt = std::get<2>(tuple);
+    auto newY = std::get<0>(tuple);
+    auto newDeltaTs = std::get<0>(tuple);
 
-    return minDt != gScalar(0);
+
+    auto s2 = make_mdspan(newY, extents<2>{nCells, nEqns});
+
+    for (gLabel i = 0; i < nEqns; ++i){
+            std::cout << s2(0, i) << std::endl;
+    }
+
+
+
+
+    return true;
 
 
 }

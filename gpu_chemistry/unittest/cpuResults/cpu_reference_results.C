@@ -110,7 +110,8 @@ reactionResults reaction_results_cpu(Mechanism mech)
 
     const Foam::scalarField c = [&](){
         Foam::scalarField ret(nSpecie);
-        assign_test_concentration(ret, mech);
+        //assign_test_concentration(ret, mech);
+        fill_linear(ret);
         return ret;
 
     }();
@@ -226,6 +227,7 @@ lu_results_cpu(const std::vector<gScalar>& m_vals, const std::vector<gScalar>& s
 
 odeSystemResults odesystem_results_cpu(Mechanism mech)
 {
+    const gLabel nSpecie = TestData::speciesCount(mech);
     const gLabel nEqns = TestData::equationCount(mech);
     Foam::MockOFSystem system(mech);
 
@@ -234,7 +236,12 @@ odeSystemResults odesystem_results_cpu(Mechanism mech)
     const Foam::scalarField y0 = [=](){
         gLabel nEqns = TestData::equationCount(mech);
         Foam::scalarField y0_t(nEqns);
-        assign_test_condition(y0_t, mech);
+        fill_linear(y0_t);
+        y0_t[nSpecie] = TestData::TInf(mech);
+        y0_t[nSpecie + 1] = TestData::pInf(mech);
+
+        //std::vector<gScalar> y0_vec = TestData::get_solution_vector(mech);
+        //std::copy(y0_vec.begin(), y0_vec.end(), y0_t.begin());
         return y0_t;
     }();
 
@@ -268,7 +275,9 @@ std::vector<gScalar> ode_results_cpu(Mechanism mech, std::string solver_name, gS
     dict.add("solver", solver_name);
     Foam::MockOFSystem system(mech);
 
+
     auto ode = Foam::ODESolver::New(system, dict);
+
 
     Foam::scalarField y = [&](){
 
@@ -279,6 +288,17 @@ std::vector<gScalar> ode_results_cpu(Mechanism mech, std::string solver_name, gS
 
     }();
 
+    /*
+    Foam::scalarField y = [=](){
+        const gLabel nSpecie = TestData::speciesCount(mech);
+        const gLabel nEqns = TestData::equationCount(mech);
+        Foam::scalarField y0_t(nEqns);
+        fill_linear(y0_t);
+        y0_t[nSpecie] = TestData::TInf(mech);
+        y0_t[nSpecie + 1] = TestData::pInf(mech);
+        return y0_t;
+    }();
+    */
     const Foam::label li = 0;
 
 
@@ -288,8 +308,7 @@ std::vector<gScalar> ode_results_cpu(Mechanism mech, std::string solver_name, gS
 
     auto ret = std::vector<gScalar>(y.begin(), y.end());
 
-
-    remove_negative_zero(ret);
+    remove_negative(ret);
 
 
 

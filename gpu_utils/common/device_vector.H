@@ -1,12 +1,30 @@
 #pragma once
 
 #include <vector>
+#include <iterator>
+
+
 
 #include "device_allocate.H"
 #include "device_free.H"
 #include "error_handling.H"
 #include "host_device_transfers.H"
 #include "cuda_host_dev.H"
+
+/*
+#include <thrust/device_vector.h>
+#include <thrust/host_vector.h>
+template<class T>
+using device_vector2 = thrust::device_vector<T>;
+
+
+template<class T>
+static inline std::vector<T> toStdVector(const device_vector2<T>& v){
+
+    thrust::host_vector<T> tmp(v.begin(), v.end());
+    return std::vector<T>(tmp.begin(), tmp.end());
+}
+*/
 
 
 template<class T>
@@ -70,10 +88,12 @@ private:
 
 };
 
+
 template<class T>
 static inline std::vector<T> toStdVector(const device_vector2<T>& v){
 
     std::vector<T> ret(v.size());
     device_to_host(v.begin(), v.end(), ret.begin());
     return ret;
+
 }

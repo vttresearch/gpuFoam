@@ -42,5 +42,5 @@ template <class T> static constexpr inline auto make_device_pointer(T p) {
     return p;
 }
 #endif
-
 */
+

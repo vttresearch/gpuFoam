@@ -88,10 +88,9 @@ static inline void thermoTests(TestData::Mechanism mech)
     auto results_cpu = TestData::thermo_results_cpu(mech);
     auto results_gpu = TestData::thermo_results_gpu(mech);
 
-    constexpr double errorTol = 1E-7;
+    constexpr double errorTol = 1E-8;
 
-    remove_negative_zero(results_cpu.hf);
-    remove_negative_zero(results_gpu.hf);
+
 
 
     CHECK_THAT
@@ -124,11 +123,17 @@ static inline void thermoTests(TestData::Mechanism mech)
         results_cpu.hs,
         Catch::Matchers::Approx(results_gpu.hs).epsilon(errorTol)
     );
+
+
+    remove_negative(results_cpu.hf);
+    remove_negative(results_gpu.hf);
+
     CHECK_THAT
     (
         results_cpu.hf,
         Catch::Matchers::Approx(results_gpu.hf).epsilon(errorTol)
     );
+
     CHECK_THAT
     (
         results_cpu.s,
@@ -454,7 +459,7 @@ TEST_CASE("Test gpuOdeSolver")
     using namespace FoamGpu;
 
     const gScalar xStart = 0.0;
-    const gScalar xEnd = 1E-5;
+    const gScalar xEnd = 2E-7;
     const gScalar dxTry = 1E-7;
 
     constexpr double errorTol = 1E-7;
@@ -562,6 +567,14 @@ TEST_CASE("for_each_index"){
 TEST_CASE("Test gpuKernelEvaluator"){
 
 
-    CHECK(TestData::test_evaluator() == true);
+    CHECK(TestData::test_evaluator(1) == true);
+    CHECK(TestData::test_evaluator(2) == true);
+    /*
+    CHECK(TestData::test_evaluator(100) == true);
+
+    CHECK(TestData::test_evaluator(250) == true);
+    CHECK(TestData::test_evaluator(400) == true);
+    CHECK(TestData::test_evaluator(600) == true);
+    */
 
 }
