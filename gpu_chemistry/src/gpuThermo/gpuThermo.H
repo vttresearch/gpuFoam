@@ -136,7 +136,7 @@ public:
     /// @param p Pressure.
     /// @param T Temperature.
     /// @return A pair of scalars [Kc, dKcTbyKc].
-    inline CUDA_HOSTDEV std::pair<gScalar, gScalar>
+    inline CUDA_HOSTDEV device_array<gScalar, 2>
     KcAnddKcTbyKc(const gScalar p, const gScalar T) const {
 
         // const gScalar nm = this->Y() / this->W();
@@ -165,7 +165,7 @@ public:
             return ret - nm / T;
         }();
 
-        return std::make_pair(Kc, dKcdTbyKc);
+        return device_array<gScalar, 2>({Kc, dKcdTbyKc});
     }
 
     /// @brief Computes the heat capacity [J/kg/K] at constant

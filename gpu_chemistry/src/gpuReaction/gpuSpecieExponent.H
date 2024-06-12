@@ -45,8 +45,7 @@ struct gpuSpecieExponent {
 
     inline CUDA_HOSTDEV gpuSpecieExponent()
         : integerExponent_(gpuLabelMax)
-        , scalarExponent_(
-              std::numeric_limits<gScalar>::signaling_NaN()) {}
+        , scalarExponent_(gpuScalarNaN) {}
 
     inline CUDA_HOSTDEV
     gpuSpecieExponent(const gLabel integerExponent)

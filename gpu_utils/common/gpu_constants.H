@@ -36,6 +36,8 @@ using gScalar = double;
 
     #define gpuSmall double(::cuda::std::numeric_limits<double>::epsilon())
 
+    #define gpuScalarNaN double(::cuda::std::numeric_limits<double>::signaling_NaN())
+
 #else
 
     #define gpuLabelMax gLabel(std::numeric_limits<gLabel>::max() / 10)
@@ -45,6 +47,9 @@ using gScalar = double;
     #define gpuVSmall double(std::numeric_limits<double>::min())
 
     #define gpuSmall double(std::numeric_limits<double>::epsilon())
+
+    #define gpuScalarNaN double(std::numeric_limits<double>::signaling_NaN())
+
 
 #endif
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gpu_constants.H"
+#include "device_array.H"
 #include "mdspan.H"
 
 namespace FoamGpu {
@@ -99,11 +100,11 @@ public:
     ///@param c Concentration.
     ///@param ddc A span of at least size nSpcecie where the
     /// derivative is put.
-    ///@return std::pair<gScalar, gScalar> A pair of scalars where the
+    ///@return device_array<gScalar, 2> A pair of scalars where the
     /// first value is the reaction rate and second value is the
     /// derivative w.r.t temperature.
     ///
-    inline CUDA_HOSTDEV std::pair<gScalar, gScalar>
+    inline CUDA_HOSTDEV device_array<gScalar, 2>
                         everything(const gScalar                  p,
                                    const gScalar                  T,
                                    const mdspan<const gScalar, 1> c,
@@ -112,7 +113,7 @@ public:
 
         const auto Ak = computeAk(p, T);
         const auto dT = Ak * (beta_ + Ta_ / T) / T;
-        return std::make_pair(Ak, dT);
+        return device_array<gScalar, 2>({Ak, dT});
     }
 };
 

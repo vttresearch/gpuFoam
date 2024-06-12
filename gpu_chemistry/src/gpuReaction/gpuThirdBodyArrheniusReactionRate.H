@@ -98,26 +98,26 @@ public:
     ///@param c Concentration.
     ///@param ddc A span of at least size nSpcecie where the
     /// derivative is put.
-    ///@return std::pair<gScalar, gScalar> A pair of scalars where the
+    ///@return device_array<gScalar, 2> A pair of scalars where the
     /// first value is the reaction rate and second value is the
     /// derivative w.r.t temperature.
     ///
-    inline CUDA_HOSTDEV std::pair<gScalar, gScalar>
+    inline CUDA_HOSTDEV device_array<gScalar, 2>
                         everything(const gScalar                  p,
                                    const gScalar                  T,
                                    const mdspan<const gScalar, 1> c,
                                    mdspan<gScalar, 1>             ddc) const {
 
         auto          pair = k_.everything(p, T, c, ddc);
-        const gScalar k    = std::get<0>(pair);
-        const gScalar ddT  = std::get<1>(pair);
+        const gScalar k    = pair[0];
+        const gScalar ddT  = pair[1];
 
         for (gLabel i = 0; i < gLabel(ddc.size()); ++i) {
             ddc[i] = thirdBodyEfficiencies_.dMdc(c)[i] * k;
         }
 
         const gScalar M = thirdBodyEfficiencies_.M(c);
-        return std::make_pair(M * k, M * ddT);
+        return device_array<gScalar, 2>({M * k, M * ddT});
     }
 };
 

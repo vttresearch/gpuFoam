@@ -654,7 +654,9 @@ computeReactionParameters(const gpuReaction&             r,
                           mdspan<gScalar, 1>             ddc) {
     reactionParams ret;
 
-    const auto [kf, ddT] = r.k_.everything(p, T, c, ddc);
+    const auto pair = r.k_.everything(p, T, c, ddc);
+    const auto kf = pair[0];
+    const auto ddT = pair[1];
 
     const auto lhsPow = r.lhsPowers(c);
     const auto Cf     = r.calcCf(lhsPow);
@@ -668,7 +670,9 @@ computeReactionParameters(const gpuReaction&             r,
     gScalar Kc = 1.0;
     if (!r.isIrreversible()) {
 
-        const auto [Kc_t, dKcdTbyV] = r.KcAnddKcTbyKc(p, T);
+        const auto pair2 = r.KcAnddKcTbyKc(p, T);
+        const auto Kc_t = pair2[0];
+        const auto dKcdTbyV = pair2[1];
         Kc                          = fmax(Kc_t, sqrt(gpuSmall));
         const auto kr               = kf / Kc;
 

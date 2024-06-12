@@ -26,11 +26,11 @@ struct gpuMixture {
     /// @param Ha [OUT] A span containing the species absolute
     /// enthalpies.
     /// @param c [OUT] A span containing the species concetrations.
-    /// @return std::tuple<gScalar, gScalar, gScalar, gScalar> a tuple
-    /// tuple of mixture density, heat capacity, derivative of heat
+    /// @return device_array<gScalar, 4> an array
+    /// of mixture density, heat capacity, derivative of heat
     /// capacity w.r.t temperature and volumetric coefficient of
     /// thermal expansion, respectively.
-    CUDA_HOSTDEV std::tuple<gScalar, gScalar, gScalar, gScalar>
+    CUDA_HOSTDEV device_array<gScalar, 4>
                  computeJacobianRequired(const mdspan<const gScalar, 1> y,
                                          mdspan<gScalar, 1>             Cp,
                                          mdspan<gScalar, 1>             Ha,
@@ -71,7 +71,7 @@ struct gpuMixture {
 
         for (gLabel i = 0; i < nSpecie; ++i) { c[i] *= rhoM; }
 
-        return std::make_tuple(rhoM, CpM, dCpMdT, alphav);
+        return {rhoM, CpM, dCpMdT, alphav};
 
         // alphav_ *= rhoM_;
     }
@@ -83,9 +83,9 @@ struct gpuMixture {
     /// @param Ha [OUT] A span containing the species absolute
     /// enthalpies.
     /// @param c [OUT] A span containing the species concetrations.
-    /// @return std::pair<gScalar, gScalar> a pair containing mixture
+    /// @return device_array<gScalar, 2> a pair containing mixture
     /// density and specific heat, respectively.
-    CUDA_HOSTDEV std::pair<gScalar, gScalar>
+    CUDA_HOSTDEV device_array<gScalar, 2>
                  computeDerivativeRequired(const mdspan<const gScalar, 1> y,
                                            mdspan<gScalar, 1>             Ha,
                                            mdspan<gScalar, 1>             c) {
@@ -114,8 +114,8 @@ struct gpuMixture {
         rhoM = 1.0 / rhoM;
 
         for (gLabel i = 0; i < nSpecie; ++i) { c[i] *= rhoM; }
-
-        return std::make_pair(rhoM, CpM);
+        return {rhoM, CpM};
+        //return device_array<gScalar, 2>({rhoM, CpM});
 
         // alphav_ *= rhoM_;
     }
