@@ -1,13 +1,13 @@
 #pragma once
 
 #include "gpu_constants.H"
-#include <array>
+#include "device_array.H"
 
 namespace FoamGpu {
 
 class gpuThirdBodyEfficiencies {
 public:
-    using effArray = std::array<gScalar, 300>;
+    using effArray = device_array<gScalar, 300>;
 
     gLabel   nSpecie_;
     effArray efficiencies_{};
@@ -35,7 +35,7 @@ public:
     ///@brief Calculates the derivative of M w.r.t concentrations.
     ///
     ///@param c Concentration.
-    ///@return std::array<gScalar, 300> The derivative of M w.r.t concentrations. 
+    ///@return device_array<gScalar, 300> The derivative of M w.r.t concentrations. 
     ///
     inline CUDA_HOSTDEV const effArray&
     dMdc(const mdspan<const gScalar, 1> c) const {

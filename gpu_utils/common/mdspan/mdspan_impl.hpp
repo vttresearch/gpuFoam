@@ -2270,7 +2270,8 @@ template <class _T1, class _T2, class _Enable = void> struct __compressed_pair {
   ~__compressed_pair() = default;
   template <class _T1Like, class _T2Like>
   MDSPAN_INLINE_FUNCTION constexpr __compressed_pair(_T1Like &&__t1, _T2Like &&__t2)
-      : __t1_val((_T1Like &&) __t1), __t2_val((_T2Like &&) __t2) {}
+      //: __t1_val((_T1Like &&) __t1), __t2_val((_T2Like &&) __t2) {}
+      : __t1_val(static_cast<_T1Like &&>(__t1)), __t2_val(static_cast<_T2Like &&>(__t2)) {}
 };
 
 #if !defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)

@@ -15,10 +15,11 @@
 
 #ifdef __USING_GPU__
 #define DEVICE __device__
+#define HOST __host__
 #else
 #define DEVICE
+#define HOST
 #endif
-
 
 #ifdef __USING_GPU__
 #define CUDA_HOSTDEV __host__ __device__

@@ -4,7 +4,6 @@
 #include "gpu_constants.H"
 #include "memoryResource.H"
 #include "pointer_casts.hpp"
-#include <array>
 #include <vector>
 
 namespace FoamGpu {
@@ -23,15 +22,15 @@ struct cpuMemoryResource : public memoryResource {
 
     ~cpuMemoryResource() { deallocate(); }
 
-    std::array<gLabel*, N_LABEL_ARRAYS>& getLabelData() override {
+    device_array<gLabel*, N_LABEL_ARRAYS>& getLabelData() override {
         return labelData_;
     }
 
-    std::array<gScalar*, N_SCALAR_ARRAYS>& getScalarData() override {
+    device_array<gScalar*, N_SCALAR_ARRAYS>& getScalarData() override {
         return scalarData_;
     }
 
-    std::array<gScalar*, N_TWOD_SCALAR_ARRAYS>& getTwodScalarData() override {
+    device_array<gScalar*, N_TWOD_SCALAR_ARRAYS>& getTwodScalarData() override {
         return twodScalarData_;
     }
 
@@ -81,9 +80,9 @@ private:
         }
     }
 
-    std::array<gLabel*, N_LABEL_ARRAYS>        labelData_{};
-    std::array<gScalar*, N_SCALAR_ARRAYS>      scalarData_{};
-    std::array<gScalar*, N_TWOD_SCALAR_ARRAYS> twodScalarData_{};
+    device_array<gLabel*, N_LABEL_ARRAYS>        labelData_{};
+    device_array<gScalar*, N_SCALAR_ARRAYS>      scalarData_{};
+    device_array<gScalar*, N_TWOD_SCALAR_ARRAYS> twodScalarData_{};
 };
 
 } // namespace FoamGpu

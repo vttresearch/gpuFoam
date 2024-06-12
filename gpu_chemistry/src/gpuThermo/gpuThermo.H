@@ -2,7 +2,7 @@
 #include "cuda_host_dev.H"
 #include "gpuPerfectGas.H"
 #include "gpu_constants.H"
-#include <array> //std::array
+#include "device_array.H"
 
 namespace FoamGpu {
 
@@ -12,7 +12,7 @@ public:
 
     static constexpr size_t nCoeffs_ = 7;
 
-    using coeffArray = std::array<gScalar, nCoeffs_>;
+    using coeffArray = device_array<gScalar, nCoeffs_>;
 
     // Temperature limits of applicability of functions
     gScalar Tlow_, Thigh_, Tcommon_;
