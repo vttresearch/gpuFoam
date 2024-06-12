@@ -10,11 +10,9 @@
 #include "gpuMemoryResource.H"
 #include "gpuODESolverInputs.H"
 #include "gpuODESystem.H"
-#include "gpuReaction.H"
-#include "gpuReactionRate.H"
-#include "makeGpuOdeSolver.H"
+#include "gpuODESolver.H"
 #include "thermosAndReactions.H"
-#include "singleCellSolver.H"
+
 
 
 namespace FoamGpu {

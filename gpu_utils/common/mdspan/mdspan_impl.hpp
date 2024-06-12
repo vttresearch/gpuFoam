@@ -2310,7 +2310,7 @@ struct __compressed_pair<
   ~__compressed_pair() = default;
   template <class _T1Like, class _T2Like>
   MDSPAN_INLINE_FUNCTION constexpr __compressed_pair(_T1Like &&__t1, _T2Like &&__t2)
-      : _T1((_T1Like &&) __t1), __t2_val((_T2Like &&) __t2) {}
+      : _T1(static_cast<_T1Like &&> (__t1)), __t2_val(static_cast<_T2Like &&>(__t2)) {}
 };
 
 // Second empty.
@@ -2348,7 +2348,7 @@ struct __compressed_pair<
 
   template <class _T1Like, class _T2Like>
   MDSPAN_INLINE_FUNCTION constexpr __compressed_pair(_T1Like &&__t1, _T2Like &&__t2)
-      : _T2((_T2Like &&) __t2), __t1_val((_T1Like &&) __t1) {}
+      : _T2(static_cast<_T2Like &&>(__t2)), __t1_val(static_cast<_T1Like &&>(__t1)) {}
 };
 
 // Both empty.
@@ -2400,8 +2400,8 @@ struct __compressed_pair<
   ~__compressed_pair() = default;
   template <class _T1Like, class _T2Like>
   MDSPAN_INLINE_FUNCTION constexpr __compressed_pair(_T1Like &&__t1, _T2Like &&__t2) noexcept
-    : __first_base_t(_T1((_T1Like &&) __t1)),
-      __second_base_t(_T2((_T2Like &&) __t2))
+    : __first_base_t(_T1(static_cast<_T1Like &&>(__t1))),
+      __second_base_t(_T2(static_cast<_T2Like &&>(__t2)))
   { }
 };
 

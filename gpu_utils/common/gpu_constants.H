@@ -24,19 +24,40 @@ using gScalar = double;
 #define gpuTstd double(298.15)
 
 #ifdef __USING_GPU__
-    #include <cuda/std/limits>
+    
 
-    //::cuda::std::numeric_limits<float>::max();
+    #ifdef __NVIDIA_BACKEND__
 
-    #define gpuLabelMax gLabel(::cuda::std::numeric_limits<gLabel>::max() / 10)
+        #include <cuda/std/limits>
 
-    #define gpuVGreat double(::cuda::std::numeric_limits<double>::max() / 10.0)
+        //::cuda::std::numeric_limits<float>::max();
 
-    #define gpuVSmall double(::cuda::std::numeric_limits<double>::min())
+        #define gpuLabelMax gLabel(::cuda::std::numeric_limits<gLabel>::max() / 10)
 
-    #define gpuSmall double(::cuda::std::numeric_limits<double>::epsilon())
+        #define gpuVGreat double(::cuda::std::numeric_limits<double>::max() / 10.0)
 
-    #define gpuScalarNaN double(::cuda::std::numeric_limits<double>::signaling_NaN())
+        #define gpuVSmall double(::cuda::std::numeric_limits<double>::min())
+
+        #define gpuSmall double(::cuda::std::numeric_limits<double>::epsilon())
+
+        #define gpuScalarNaN double(::cuda::std::numeric_limits<double>::signaling_NaN())
+
+    #else
+        //#include <cuda/std/limits>
+
+        //::cuda::std::numeric_limits<float>::max();
+
+        #define gpuLabelMax gLabel(std::numeric_limits<gLabel>::max() / 10)
+
+        #define gpuVGreat double(std::numeric_limits<double>::max() / 10.0)
+
+        #define gpuVSmall double(std::numeric_limits<double>::min())
+
+        #define gpuSmall double(std::numeric_limits<double>::epsilon())
+
+        #define gpuScalarNaN double(std::numeric_limits<double>::signaling_NaN())
+
+    #endif
 
 #else
 

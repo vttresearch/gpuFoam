@@ -6,6 +6,7 @@
 #include "mechanisms.H"
 #include "mdspan.H"
 
+
 TEST_CASE("make_mdspan"){
 
 
@@ -564,17 +565,18 @@ TEST_CASE("for_each_index"){
 
 }
 
-TEST_CASE("Test gpuKernelEvaluator"){
 
+TEST_CASE("Test gpuKernelEvaluator"){
 
     CHECK(TestData::test_evaluator(1) == true);
     CHECK(TestData::test_evaluator(2) == true);
+    
     /*
     CHECK(TestData::test_evaluator(100) == true);
 
     CHECK(TestData::test_evaluator(250) == true);
     CHECK(TestData::test_evaluator(400) == true);
     CHECK(TestData::test_evaluator(600) == true);
+    
     */
-
 }

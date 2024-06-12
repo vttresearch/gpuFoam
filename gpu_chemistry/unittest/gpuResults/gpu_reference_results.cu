@@ -444,7 +444,7 @@ bool test_evaluator(gLabel nCells){
     gLabel nEqns = TestData::equationCount(m);
     gpuODESolverInputs inputs;
     inputs.name = "Rosenbrock34";
-    inputs.absTol = 1E-12;
+    inputs.absTol = 1E-6;
     inputs.relTol = 1e-1;
     GpuKernelEvaluator evaluator(nCells, nEqns, nSpecie, thermos, reactions, inputs);
 
@@ -480,15 +480,16 @@ bool test_evaluator(gLabel nCells){
     auto newY = std::get<0>(tuple);
     auto newDeltaTs = std::get<0>(tuple);
 
-    return newY[0] != 0;
 
-    /*
+    
     auto s2 = make_mdspan(newY, extents<2>{nCells, nEqns});
 
     for (gLabel i = 0; i < nEqns; ++i){
             std::cout << s2(0, i) << std::endl;
     }
-    */
+    
+
+    return newY[0] != 0;
 
 
 

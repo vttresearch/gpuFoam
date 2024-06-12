@@ -6,7 +6,8 @@
 
 #include "for_each_index.H"
 #include "host_device_vectors.H"
-
+#include "singleCellSolver.H"
+#include "makeGpuOdeSolver.H"
 
 namespace FoamGpu {
 
