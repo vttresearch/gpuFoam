@@ -22,4 +22,4 @@ EXE_LIBS = \
     -lchemistryModel
 
 
-include ../nvcc
+include ../../nvcc

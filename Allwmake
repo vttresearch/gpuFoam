@@ -2,6 +2,17 @@
 cd ${0%/*} || exit 1    # Run from this directory
 
 
+if [ -n "${GPUFOAM_BACKEND_NVIDIA}" ]
+then
+    echo "Compiling gpuFoam for Nvidia backend"
+elif [ -n "${GPUFOAM_BACKEND_AMD}" ]
+then
+    echo "Compiling gpuFoam for AMD backend"
+else
+    echo "You need to set either GPUFOAM_BACKEND_NVIDIA=1 or GPUFOAM_BACKEND_AMD=1 to compile gpu models."
+    exit
+fi
+
 # Compile gpu utilities
 gpu_utils/Allwmake
 

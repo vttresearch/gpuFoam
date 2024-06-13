@@ -1,13 +1,5 @@
 # gpu_chemistry
 
-## Compilation
-Everything in this folder such compile with the Allwmake script. Before running it, ensure that you have a valid OpenFOAM installation and compilers available by typing the following commands
-
-```
-foamRun -help
-g++ --version
-nvcc --version
-```
 
 ## Performance
 
