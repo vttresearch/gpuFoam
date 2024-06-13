@@ -1,0 +1,5 @@
+gpu_test_kernels.cu
+
+
+LIB = $(FOAM_USER_LIBBIN)/libGpuFoamGpuTestKernels
+

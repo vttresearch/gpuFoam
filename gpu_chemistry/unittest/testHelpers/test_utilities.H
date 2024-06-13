@@ -1,101 +1,6 @@
 #pragma once
 
-#include <vector>
-#include <array>
-#include "error_handling.H"
-
-#include "host_device_vectors.H"
-
-#include "gpuThermo.H"
-#include "gpuMemoryResource.H"
-#include "cpuMemoryResource.H"
-
-
-
-#ifdef __USING_GPU__
-
-
-using memoryResource_t = FoamGpu::gpuMemoryResource;
-
-#else
-
-
-using memoryResource_t = FoamGpu::cpuMemoryResource;
-
-#endif
-
-
-
-#ifdef __USING_GPU__
-
-
-template<class T, class R>
-__global__ void on_device(T t, R* r)
-{
-    *r = t();
-}
-
-
-    #ifdef __NVIDIA_BACKEND__
-
-    template<class T>
-    static inline gScalar eval(T t)
-    {
-
-        gScalar *d_result;
-        gpuErrorCheck(cudaMalloc(&d_result, sizeof(gScalar)));
-        on_device<<<1,1>>>(t, d_result);
-        gpuErrorCheck(cudaGetLastError());
-        gpuErrorCheck(cudaDeviceSynchronize());
-        gScalar h_result;
-        gpuErrorCheck(cudaMemcpy(&h_result, d_result, sizeof(gScalar), cudaMemcpyDeviceToHost));
-        gpuErrorCheck(cudaDeviceSynchronize());
-        gpuErrorCheck(cudaFree(d_result));
-        gpuErrorCheck(cudaDeviceSynchronize());
-        return h_result;
-
-    }
-
-    //AMD-backend
-    #else
-
-    template<class T>
-    static inline gScalar eval(T t)
-    {
-
-        gScalar *d_result;
-        gpuErrorCheck(hipMalloc(&d_result, sizeof(gScalar)));
-        hipLaunchKernelGGL
-        (
-            on_device, dim3(1), dim3(1), 0, 0, t, d_result
-        );
-        gpuErrorCheck(hipGetLastError());
-        gpuErrorCheck(hipDeviceSynchronize());
-        gScalar h_result;
-        gpuErrorCheck(hipMemcpy(&h_result, d_result, sizeof(gScalar), hipMemcpyDeviceToHost));
-        gpuErrorCheck(hipDeviceSynchronize());
-        gpuErrorCheck(hipFree(d_result));
-        gpuErrorCheck(hipDeviceSynchronize());
-        return h_result;
-
-    }
-
-    #endif
-
-
-#else
-
-template<class T>
-static inline gScalar eval(T t)
-{
-    return t();
-}
-#endif
-
-
-
-
-
+#include <cstdlib> //rand
 
 
 static inline double random_number(double LO, double HI){
@@ -120,7 +25,7 @@ static inline void fill_linear(T& v){
 
     double dx = 1.0 / v.size();
 
-    for (int i = 0; i < v.size(); ++i){
+    for (int i = 0; i < static_cast<int>(v.size()); ++i){
         v[i] = dx*i + dx;
     }
 
@@ -129,11 +34,11 @@ static inline void fill_linear(T& v){
 }
 
 template<class C>
-static inline void remove_negative(C& c){
+static inline void remove_negative(C& c, double tolerance){
 
     for (auto& e : c){
-        if (e < 0){
-            e = -e;
+        if (e < tolerance){
+            e = double(0);
         }
     }
 

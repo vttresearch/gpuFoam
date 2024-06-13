@@ -34,5 +34,3 @@ EXE_LIBS = \
     -lfiniteVolume \
     -lchemistryModel \
     -lblockMesh
-
-include ../../hipcc

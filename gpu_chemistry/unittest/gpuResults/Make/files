@@ -1,5 +1,0 @@
-gpu_reference_results.cu
-
-
-LIB = $(FOAM_USER_LIBBIN)/libGpuFoamGpuResults
-

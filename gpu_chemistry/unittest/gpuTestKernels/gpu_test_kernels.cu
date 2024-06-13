@@ -1,21 +1,87 @@
-#include "gpu_reference_results.H"
+#include "gpu_test_kernels.H"
 #include "test_utilities.H"
 #include "gpuReaction.H"
 #include "gpuODESystem.H"
 #include "gpuKernelEvaluator.H"
 #include "for_each_index.H"
+#include "gpuMemoryResource.H"
 
 #include "ludecompose.H"
 #include "create_gpu_inputs.H"
 #include "makeGpuOdeSolver.H"
+#include "host_device_vectors.H"
+
+
+namespace GpuTestKernels{
 
 
 
-namespace TestData{
 
 
 
-TestData::constantResults constant_results_gpu(){
+using memoryResource_t = FoamGpu::gpuMemoryResource;
+
+
+
+
+
+template<class T, class R>
+__global__ void on_device(T t, R* r)
+{
+    *r = t();
+}
+
+
+
+#ifdef __NVIDIA_BACKEND__
+
+    template<class T>
+    static inline gScalar eval(T t)
+    {
+
+        gScalar *d_result;
+        gpuErrorCheck(cudaMalloc(&d_result, sizeof(gScalar)));
+        on_device<<<1,1>>>(t, d_result);
+        gpuErrorCheck(cudaGetLastError());
+        gpuErrorCheck(cudaDeviceSynchronize());
+        gScalar h_result;
+        gpuErrorCheck(cudaMemcpy(&h_result, d_result, sizeof(gScalar), cudaMemcpyDeviceToHost));
+        gpuErrorCheck(cudaDeviceSynchronize());
+        gpuErrorCheck(cudaFree(d_result));
+        gpuErrorCheck(cudaDeviceSynchronize());
+        return h_result;
+
+    }
+
+    //AMD-backend
+    #else
+
+    template<class T>
+    static inline gScalar eval(T t)
+    {
+
+        gScalar *d_result;
+        gpuErrorCheck(hipMalloc(&d_result, sizeof(gScalar)));
+        hipLaunchKernelGGL
+        (
+            on_device, dim3(1), dim3(1), 0, 0, t, d_result
+        );
+        gpuErrorCheck(hipGetLastError());
+        gpuErrorCheck(hipDeviceSynchronize());
+        gScalar h_result;
+        gpuErrorCheck(hipMemcpy(&h_result, d_result, sizeof(gScalar), hipMemcpyDeviceToHost));
+        gpuErrorCheck(hipDeviceSynchronize());
+        gpuErrorCheck(hipFree(d_result));
+        gpuErrorCheck(hipDeviceSynchronize());
+        return h_result;
+
+    }
+
+#endif
+
+
+
+TestData::constantResults constants(){
 
     using namespace FoamGpu;
 
@@ -33,7 +99,8 @@ TestData::constantResults constant_results_gpu(){
 
 }
 
-TestData::perfectGasResult perfect_gas_results_gpu(gScalar p, gScalar T, gScalar Y, gScalar molWeight)
+
+TestData::perfectGasResult perfect_gas(gScalar p, gScalar T, gScalar Y, gScalar molWeight)
 {
     using namespace FoamGpu;
 
@@ -41,9 +108,7 @@ TestData::perfectGasResult perfect_gas_results_gpu(gScalar p, gScalar T, gScalar
     (
         Y, molWeight
     );
-
     TestData::perfectGasResult ret;
-
 
     ret.R = eval([=] DEVICE (){return eos.R();});
     ret.rho = eval([=] DEVICE (){return eos.rho(p, T);});
@@ -62,7 +127,8 @@ TestData::perfectGasResult perfect_gas_results_gpu(gScalar p, gScalar T, gScalar
     return ret;
 }
 
-thermoResults thermo_results_gpu(Mechanism mech)
+
+TestData::thermoResults thermo(TestData::Mechanism mech)
 {
     using namespace FoamGpu;
 
@@ -75,7 +141,7 @@ thermoResults thermo_results_gpu(Mechanism mech)
 
     const gLabel nThermo = thermos.size();
 
-    thermoResults ret(nThermo);
+    TestData::thermoResults ret(nThermo);
 
     for (size_t i = 0; i < thermos.size(); ++i)
     {
@@ -108,7 +174,7 @@ thermoResults thermo_results_gpu(Mechanism mech)
 
 
 
-reactionResults reaction_results_gpu(Mechanism mech)
+TestData::reactionResults reaction(TestData::Mechanism mech)
 {
 
     using namespace FoamGpu;
@@ -202,7 +268,7 @@ reactionResults reaction_results_gpu(Mechanism mech)
 
     }
 
-    reactionResults ret;
+    TestData::reactionResults ret;
     ret.Thigh = Thigh;
     ret.Tlow = Tlow;
     ret.Kc = Kc;
@@ -217,7 +283,7 @@ reactionResults reaction_results_gpu(Mechanism mech)
 
 
 std::tuple<std::vector<gScalar>, std::vector<gLabel>, std::vector<gScalar>>
-lu_results_gpu(const std::vector<gScalar>& m_vals, const std::vector<gScalar>& s_vals)
+lu(const std::vector<gScalar>& m_vals, const std::vector<gScalar>& s_vals)
 {
 
     gLabel size = std::sqrt(m_vals.size());
@@ -254,7 +320,8 @@ lu_results_gpu(const std::vector<gScalar>& m_vals, const std::vector<gScalar>& s
 
 }
 
-odeSystemResults odesystem_results_gpu(Mechanism mech)
+
+TestData::odeSystemResults odesystem(TestData::Mechanism mech)
 {
     using namespace FoamGpu;
 
@@ -284,7 +351,7 @@ odeSystemResults odesystem_results_gpu(Mechanism mech)
 
 
 
-    odeSystemResults ret;
+    TestData::odeSystemResults ret;
 
     {
         memoryResource_t memory(1, nSpecie);
@@ -341,7 +408,7 @@ odeSystemResults odesystem_results_gpu(Mechanism mech)
 }
 
 
-std::vector<gScalar> ode_results_gpu(Mechanism mech, std::string solver_name, gScalar xStart, gScalar xEnd, gScalar dxTry)
+std::vector<gScalar> ode_solve(TestData::Mechanism mech, std::string solver_name, gScalar xStart, gScalar xEnd, gScalar dxTry)
 {
     using namespace FoamGpu;
 
@@ -397,16 +464,10 @@ std::vector<gScalar> ode_results_gpu(Mechanism mech, std::string solver_name, gS
 
     eval(f);
 
-    //Round small values to zero to avoid -0 == 0 comparisons
-    auto ret = toStdVector(y0_v);
-
-    remove_negative(ret);
-
-    return ret;
-
-
+    return toStdVector(y0_v);
 
 }
+
 
 bool test_for_each_index(){
 
@@ -427,12 +488,11 @@ bool test_for_each_index(){
     for_each_index(op, 100);
 
     std::vector<gScalar> correct(100, 2.0 + 3.0 + 4.0);
-
     return toStdVector(v1) == correct;
-
 
 }
 
+/*
 bool test_evaluator(gLabel nCells){
 
     using namespace FoamGpu;
@@ -481,13 +541,13 @@ bool test_evaluator(gLabel nCells){
     auto newDeltaTs = std::get<0>(tuple);
 
 
-    
+
     auto s2 = make_mdspan(newY, extents<2>{nCells, nEqns});
 
     for (gLabel i = 0; i < nEqns; ++i){
             std::cout << s2(0, i) << std::endl;
     }
-    
+
 
     return newY[0] != 0;
 
@@ -497,7 +557,7 @@ bool test_evaluator(gLabel nCells){
 
 
 }
-
+*/
 
 
 }

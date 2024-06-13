@@ -1,4 +1,4 @@
-#include "cpu_reference_results.H"
+#include "openfoam_reference_kernels.H"
 #include "volFields.H"
 #include "thermodynamicConstants.H"
 #include "fundamentalConstants.H"
@@ -9,11 +9,11 @@
 #include "mock_of_odesystem.H"
 
 
-namespace TestData{
+namespace OFReferenceKernels{
 
-constantResults constant_results_cpu()
+TestData::constantResults constants()
 {
-    constantResults ret;
+    TestData::constantResults ret;
 
     ret.RR = Foam::constant::thermodynamic::RR;
     ret.Pstd = Foam::constant::thermodynamic::Pstd;
@@ -28,7 +28,7 @@ constantResults constant_results_cpu()
 }
 
 
-perfectGasResult perfect_gas_results_cpu(gScalar p, gScalar T, gScalar Y, gScalar molWeight)
+TestData::perfectGasResult perfect_gas(gScalar p, gScalar T, gScalar Y, gScalar molWeight)
 {
 
     const Foam::perfectGas<Foam::specie> eos
@@ -36,7 +36,7 @@ perfectGasResult perfect_gas_results_cpu(gScalar p, gScalar T, gScalar Y, gScala
         Foam::specie("temp", Y, molWeight)
     );
 
-    perfectGasResult ret;
+    TestData::perfectGasResult ret;
 
     ret.R = eos.R();
     ret.rho = eos.rho(p, T);
@@ -57,7 +57,7 @@ perfectGasResult perfect_gas_results_cpu(gScalar p, gScalar T, gScalar Y, gScala
 
 
 
-thermoResults thermo_results_cpu(Mechanism mech)
+TestData::thermoResults thermo(TestData::Mechanism mech)
 {
     const Foam::scalar p = TestData::pInf(mech);
     const Foam::scalar T = TestData::TInf(mech);
@@ -66,7 +66,7 @@ thermoResults thermo_results_cpu(Mechanism mech)
 
     const gLabel nThermo = thermos.size();
 
-    thermoResults ret(nThermo);
+    TestData::thermoResults ret(nThermo);
 
     for (gLabel i = 0; i < thermos.size(); ++i)
     {
@@ -95,7 +95,7 @@ thermoResults thermo_results_cpu(Mechanism mech)
 
 
 
-reactionResults reaction_results_cpu(Mechanism mech)
+TestData::reactionResults reaction(TestData::Mechanism mech)
 {
     const Foam::ReactionList<FoamThermoType> reactions(
         TestData::makeSpeciesTable(mech),
@@ -185,7 +185,7 @@ reactionResults reaction_results_cpu(Mechanism mech)
 
 
     }
-    reactionResults ret;
+    TestData::reactionResults ret;
     ret.Thigh = Thigh;
     ret.Tlow = Tlow;
     ret.Kc = Kc;
@@ -201,7 +201,7 @@ reactionResults reaction_results_cpu(Mechanism mech)
 
 
 std::tuple<std::vector<gScalar>, std::vector<gLabel>, std::vector<gScalar>>
-lu_results_cpu(const std::vector<gScalar>& m_vals, const std::vector<gScalar>& s_vals)
+lu(const std::vector<gScalar>& m_vals, const std::vector<gScalar>& s_vals)
 {
     gLabel size = std::sqrt(m_vals.size());
 
@@ -225,13 +225,13 @@ lu_results_cpu(const std::vector<gScalar>& m_vals, const std::vector<gScalar>& s
 }
 
 
-odeSystemResults odesystem_results_cpu(Mechanism mech)
+TestData::odeSystemResults odesystem(TestData::Mechanism mech)
 {
     const gLabel nSpecie = TestData::speciesCount(mech);
     const gLabel nEqns = TestData::equationCount(mech);
     Foam::MockOFSystem system(mech);
 
-    odeSystemResults ret;
+    TestData::odeSystemResults ret;
 
     const Foam::scalarField y0 = [=](){
         gLabel nEqns = TestData::equationCount(mech);
@@ -269,7 +269,8 @@ odeSystemResults odesystem_results_cpu(Mechanism mech)
 
 }
 
-std::vector<gScalar> ode_results_cpu(Mechanism mech, std::string solver_name, gScalar xStart, gScalar xEnd, gScalar dxTry)
+
+std::vector<gScalar> ode_solve(TestData::Mechanism mech, std::string solver_name, gScalar xStart, gScalar xEnd, gScalar dxTry)
 {
     Foam::dictionary dict;
     dict.add("solver", solver_name);
@@ -306,13 +307,8 @@ std::vector<gScalar> ode_results_cpu(Mechanism mech, std::string solver_name, gS
     ode->solve(xStart, xEnd, y, li, dxTry_temp);
 
 
-    auto ret = std::vector<gScalar>(y.begin(), y.end());
+    return std::vector<gScalar>(y.begin(), y.end());
 
-    remove_negative(ret);
-
-
-
-    return ret;
 
 }
 
