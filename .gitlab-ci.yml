@@ -10,6 +10,7 @@ build-job:
   stage: build
   script:
     - echo "Compiling the code..."
+    - export GPUFOAM_BACKEND_NVIDIA=1
     - ./Allwmake -j 8
     - echo "Compile complete."
   after_script:
