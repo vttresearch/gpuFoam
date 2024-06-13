@@ -19,6 +19,6 @@ jobs:
     - name: Build gpuFoam
       run: export GPUFOAM_BACKEND_NVIDIA=1 && source /opt/OpenFOAM/OpenFOAM-dev/etc/bashrc && ./Allwmake
       shell: bash
-    - name: Run unittests on GPU
+    - name: Run unittests on CPU
       run: source /opt/OpenFOAM/OpenFOAM-dev/etc/bashrc && Test-gpuChemistry [CPU]
       shell: bash

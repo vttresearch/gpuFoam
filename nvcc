@@ -4,7 +4,6 @@ c++WARN     =
 
 
 NVCC_FLAGS = --std=c++17
-NVCC_FLAGS += --expt-relaxed-constexpr
 NVCC_FLAGS += --expt-extended-lambda
 NVCC_FLAGS += -O3
 NVCC_FLAGS += --use_fast_math
