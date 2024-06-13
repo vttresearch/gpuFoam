@@ -17,8 +17,8 @@ jobs:
     - name: Checkout gpuFoam
       uses: actions/checkout@v3
     - name: Build gpuFoam
-      run: source /opt/OpenFOAM/OpenFOAM-dev/etc/bashrc && ./Allwmake
+      run: export GPUFOAM_BACKEND_NVIDIA=1 && source /opt/OpenFOAM/OpenFOAM-dev/etc/bashrc && ./Allwmake
       shell: bash
-    #- name: Run unittests
-    #  run: source /opt/OpenFOAM/OpenFOAM-dev/etc/bashrc && testGpuChemistry
-    #  shell: bash
+    - name: Run unittests on GPU
+      run: source /opt/OpenFOAM/OpenFOAM-dev/etc/bashrc && Test-gpuChemistry [CPU]
+      shell: bash
