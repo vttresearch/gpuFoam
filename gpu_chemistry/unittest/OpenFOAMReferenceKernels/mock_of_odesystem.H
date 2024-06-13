@@ -26,6 +26,13 @@ class MockOFSystem : public ODESystem {
     const jacobianType jacobianType_ = jacobianType::fast;
 
 public:
+
+    const ReactionList<FoamThermoType>& getReactions() const
+    {
+        return reactions_;
+    }
+
+
     MockOFSystem(TestData::Mechanism m)
         : specieThermos_(TestData::makeCpuThermos(m))
         , reactions_(TestData::makeSpeciesTable(m),

@@ -3,7 +3,7 @@
 #include "cuda_host_dev.H"
 
 
-#ifdef __NVIDIA_COMPILER__
+#ifdef __NVIDIA_BACKEND__
 
 #define dADD(x,y) __dadd_rd(x,y)
 #define dDIV(x,y) __ddiv_rd(x,y)

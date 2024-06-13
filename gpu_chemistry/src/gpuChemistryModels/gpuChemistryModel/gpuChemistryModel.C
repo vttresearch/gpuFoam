@@ -243,8 +243,16 @@ scalar gpuChemistryModel<cpuThermoType>::computeRRAndChemDeltaT(const scalar& de
 
     if (!this->chemistry_) { return great; }
 
+    /*
     auto [RR, deltaTChem, minDeltaT] = evaluator_.computeRR(
         deltaT, deltaTChemMax_, getRho0(), getDeltaTChem(), getY0());
+    */
+    auto tpl = evaluator_.computeRR(
+        deltaT, deltaTChemMax_, getRho0(), getDeltaTChem(), getY0());
+
+    auto RR = std::get<0>(tpl);
+    auto deltaTChem = std::get<1>(tpl);
+    auto minDeltaT = std::get<2>(tpl);
 
     auto RRs = make_mdspan(RR, extents<2>{nCells(), nSpecie()});
 

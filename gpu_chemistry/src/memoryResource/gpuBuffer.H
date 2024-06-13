@@ -2,9 +2,10 @@
 
 #include "arrays.H"
 #include "check_ptr.H"
+#include "device_array.H"
 #include "gpu_constants.H"
 #include "mdspan.H"
-//#include "timer.H"
+// #include "timer.H"
 
 namespace FoamGpu {
 
@@ -14,10 +15,10 @@ struct gpuBuffer {
     gpuBuffer() = default;
 
     CUDA_HOSTDEV
-    gpuBuffer(std::array<gLabel*, N_LABEL_ARRAYS>        lData,
-              std::array<gScalar*, N_SCALAR_ARRAYS>      sData,
-              std::array<gScalar*, N_TWOD_SCALAR_ARRAYS> twodSData,
-              gLabel                                     nSpecie)
+    gpuBuffer(device_array<gLabel*, N_LABEL_ARRAYS>        lData,
+              device_array<gScalar*, N_SCALAR_ARRAYS>      sData,
+              device_array<gScalar*, N_TWOD_SCALAR_ARRAYS> twodSData,
+              gLabel                                       nSpecie)
         : lData_(lData)
         , sData_(sData)
         , twodSData_(twodSData)
@@ -114,11 +115,11 @@ struct gpuBuffer {
     }
 
 private:
-    std::array<gLabel*, N_LABEL_ARRAYS>        lData_;
-    std::array<gScalar*, N_SCALAR_ARRAYS>      sData_;
-    std::array<gScalar*, N_TWOD_SCALAR_ARRAYS> twodSData_;
-    gLabel                                     nSpecie_;
-    gLabel                                     nEqns_;
+    device_array<gLabel*, N_LABEL_ARRAYS>        lData_;
+    device_array<gScalar*, N_SCALAR_ARRAYS>      sData_;
+    device_array<gScalar*, N_TWOD_SCALAR_ARRAYS> twodSData_;
+    gLabel                                       nSpecie_;
+    gLabel                                       nEqns_;
 };
 
 } // namespace FoamGpu

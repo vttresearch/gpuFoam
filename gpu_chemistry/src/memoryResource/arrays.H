@@ -23,9 +23,6 @@ enum scalarArrays {
     N_SCALAR_ARRAYS
 };
 
-enum twoDScalarArrays {
-    J,
-    N_TWOD_SCALAR_ARRAYS
-};
+enum twoDScalarArrays { J, N_TWOD_SCALAR_ARRAYS };
 
 } // namespace FoamGpu

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "gpuBuffer.H"
-#include "gpu_constants.H"
 #include "gpuODESolver.H"
+#include "gpu_constants.H"
 #include "mdspan.H"
 
 namespace FoamGpu {
@@ -23,11 +23,11 @@ struct singleCellSolver {
         , ode_(ode) {}
 
     CUDA_HOSTDEV void operator()(gLabel celli) const {
-        auto Y = mdspan<gScalar, 1>(&Yvf_(celli, 0), extents<1>{nSpecie_ + 2});
+        auto Y = mdspan<gScalar, 1>(&Yvf_(celli, 0),
+                                    extents<1>{nSpecie_ + 2});
 
         // Initialise time progress
         gScalar timeLeft = deltaT_;
-
 
         // Calculate the chemical source terms
         while (timeLeft > gpuSmall) {
@@ -35,7 +35,9 @@ struct singleCellSolver {
 
             ode_.solve(0, dt, Y, deltaTChem_[celli], buffer_[celli]);
 
-            for (int i = 0; i < nSpecie_; i++) { Y[i] = fmax(0.0, Y[i]); }
+            for (int i = 0; i < nSpecie_; i++) {
+                Y[i] = fmax(0.0, Y[i]);
+            }
 
             timeLeft -= dt;
         }

@@ -1,0 +1,31 @@
+SUFFIXES += .cu
+
+c++WARN     =
+
+HIPCC_FLAGS = --std=c++17
+HIPCC_FLAGS += -Wno-old-style-cast
+HIPCC_FLAGS += -O3
+HIPCC_FLAGS += -DHIP_FAST_MATH
+HIPCC_FLAGS += --offload-arch=gfx90a
+
+
+
+CC          = hipcc $(HIPCC_FLAGS)
+
+ptFLAGS     = -DNoRepository
+
+c++FLAGS    = $(GFLAGS) $(c++WARN) $(c++DBUG) $(ptFLAGS) \
+              $(LIB_HEADER_DIRS) -fPIC
+
+
+Ctoo        = $(WM_SCHEDULER) $(CC) $(c++FLAGS) -c $< -o $@
+cxxtoo      = $(Ctoo)
+cctoo       = $(Ctoo)
+cpptoo      = $(Ctoo)
+cutoo       = $(Ctoo)
+
+LINK_LIBS   = $(c++DBUG)
+
+LINKLIBSO   = $(CC) $(c++FLAGS) -shared
+
+LINKEXE     = $(CC) $(c++FLAGS)

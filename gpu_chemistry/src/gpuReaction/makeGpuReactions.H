@@ -3,11 +3,9 @@
 #include <map>
 #include <vector>
 
-#include "host_device_vectors.H"
 #include "gpuReaction.H"
 #include "gpuThermo.H"
 #include "makeGpuReactionRate.H"
-
 
 #include "ReactionList.H"
 #include "dictionary.H"
@@ -23,31 +21,36 @@ set_reaction_thermo(gpuReaction&                      reaction,
                     const std::vector<std::string>&   species) {
 
     // typename MulticomponentThermo::thermoType rhsThermo
-    gpuThermo rhsThermo(reaction.rhs()[0].stoichCoeff *
-                        (thermoDatabase[species[reaction.rhs()[0].index]]).W() *
-                        (thermoDatabase[species[reaction.rhs()[0].index]]));
+    gpuThermo rhsThermo(
+        reaction.rhs()[0].stoichCoeff *
+        (thermoDatabase[species[reaction.rhs()[0].index]]).W() *
+        (thermoDatabase[species[reaction.rhs()[0].index]]));
 
     for (gLabel i = 1; i < gLabel(reaction.rhs().size()); ++i) {
-        rhsThermo += reaction.rhs()[i].stoichCoeff *
-                     (thermoDatabase[species[reaction.rhs()[i].index]]).W() *
-                     (thermoDatabase[species[reaction.rhs()[i].index]]);
+        rhsThermo +=
+            reaction.rhs()[i].stoichCoeff *
+            (thermoDatabase[species[reaction.rhs()[i].index]]).W() *
+            (thermoDatabase[species[reaction.rhs()[i].index]]);
     }
 
-    gpuThermo lhsThermo(reaction.lhs()[0].stoichCoeff *
-                        (thermoDatabase[species[reaction.lhs()[0].index]]).W() *
-                        (thermoDatabase[species[reaction.lhs()[0].index]]));
+    gpuThermo lhsThermo(
+        reaction.lhs()[0].stoichCoeff *
+        (thermoDatabase[species[reaction.lhs()[0].index]]).W() *
+        (thermoDatabase[species[reaction.lhs()[0].index]]));
 
     for (gLabel i = 1; i < gLabel(reaction.lhs().size()); ++i) {
-        lhsThermo += reaction.lhs()[i].stoichCoeff *
-                     (thermoDatabase[species[reaction.lhs()[i].index]]).W() *
-                     (thermoDatabase[species[reaction.lhs()[i].index]]);
+        lhsThermo +=
+            reaction.lhs()[i].stoichCoeff *
+            (thermoDatabase[species[reaction.lhs()[i].index]]).W() *
+            (thermoDatabase[species[reaction.lhs()[i].index]]);
     }
 
     if (std::abs(lhsThermo.Y() - rhsThermo.Y()) > 0.1) {
 
-        FatalErrorInFunction << "Mass imbalance for reaction "
-                             << ": " << std::abs(lhsThermo.Y() - rhsThermo.Y())
-                             << " kg/kmol" << exit(Foam::FatalError);
+        FatalErrorInFunction
+            << "Mass imbalance for reaction " << ": "
+            << std::abs(lhsThermo.Y() - rhsThermo.Y()) << " kg/kmol"
+            << exit(Foam::FatalError);
     }
 
     reaction.get_thermo() = (lhsThermo == rhsThermo);
@@ -55,7 +58,8 @@ set_reaction_thermo(gpuReaction&                      reaction,
     // gpuThermo::operator=(lhsThermo == rhsThermo);
 }
 
-static inline auto make_specie_coeffs(const Foam::List<Foam::specieCoeffs>& l) {
+static inline auto
+make_specie_coeffs(const Foam::List<Foam::specieCoeffs>& l) {
 
     using return_type = typename gpuReaction::specieCoeffArray;
 
@@ -71,25 +75,24 @@ static inline auto make_specie_coeffs(const Foam::List<Foam::specieCoeffs>& l) {
 
         gScalar exp = l[i].exponent;
 
-        if (isInteger(exp)){
-           ret[i].exponent = gpuSpecieExponent(gLabel(exp));
-        }
-        else {
+        if (isInteger(exp)) {
+            ret[i].exponent = gpuSpecieExponent(gLabel(exp));
+        } else {
             ret[i].exponent = gpuSpecieExponent(gScalar(exp));
         }
-        //ret[i].exponent = gpuSpecieExponent(gScalar(exp));
+        // ret[i].exponent = gpuSpecieExponent(gScalar(exp));
 
-        //ret[i].exponent    = l[i].exponent;
+        // ret[i].exponent    = l[i].exponent;
     }
     return ret;
 }
 
 template <class ThermoType>
-static std::vector<gpuReaction>
-makeGpuReactions(const Foam::speciesTable&             species,
-                   const Foam::dictionary&               dict,
-                   const std::vector<gpuThermo>&         gpu_thermos,
-                   const Foam::ReactionList<ThermoType>& cpu_reactions) {
+static std::vector<gpuReaction> makeGpuReactions(
+    const Foam::speciesTable&             species,
+    const Foam::dictionary&               dict,
+    const std::vector<gpuThermo>&         gpu_thermos,
+    const Foam::ReactionList<ThermoType>& cpu_reactions) {
 
     const Foam::dictionary& reactions(dict.subDict("reactions"));
 
@@ -98,7 +101,8 @@ makeGpuReactions(const Foam::speciesTable&             species,
         thermoDatabase[species[i]] = gpu_thermos[i];
     }
 
-    std::vector<std::string> specieNames(species.begin(), species.end());
+    std::vector<std::string> specieNames(species.begin(),
+                                         species.end());
 
     std::vector<gpuReaction> ret;
     gLabel                   i = 0;
@@ -136,12 +140,5 @@ makeGpuReactions(const Foam::speciesTable&             species,
 
     return ret;
 }
-
-
-
-
-
-
-
 
 } // namespace FoamGpu

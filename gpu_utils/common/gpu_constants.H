@@ -23,13 +23,59 @@ using gScalar = double;
 // Standard temperature
 #define gpuTstd double(298.15)
 
-#define gpuLabelMax gLabel(std::numeric_limits<gLabel>::max() / 10)
+#ifdef __USING_GPU__
+    
 
-#define gpuVGreat double(std::numeric_limits<double>::max() / 10.0)
+    #ifdef __NVIDIA_BACKEND__
 
-#define gpuVSmall double(std::numeric_limits<double>::min())
+        #include <cuda/std/limits>
 
-#define gpuSmall double(std::numeric_limits<double>::epsilon())
+        //::cuda::std::numeric_limits<float>::max();
+
+        #define gpuLabelMax gLabel(::cuda::std::numeric_limits<gLabel>::max() / 10)
+
+        #define gpuVGreat double(::cuda::std::numeric_limits<double>::max() / 10.0)
+
+        #define gpuVSmall double(::cuda::std::numeric_limits<double>::min())
+
+        #define gpuSmall double(::cuda::std::numeric_limits<double>::epsilon())
+
+        #define gpuScalarNaN double(::cuda::std::numeric_limits<double>::signaling_NaN())
+
+    #else
+        //#include <cuda/std/limits>
+
+        //::cuda::std::numeric_limits<float>::max();
+
+        #define gpuLabelMax gLabel(std::numeric_limits<gLabel>::max() / 10)
+
+        #define gpuVGreat double(std::numeric_limits<double>::max() / 10.0)
+
+        #define gpuVSmall double(std::numeric_limits<double>::min())
+
+        #define gpuSmall double(std::numeric_limits<double>::epsilon())
+
+        #define gpuScalarNaN double(std::numeric_limits<double>::signaling_NaN())
+
+    #endif
+
+#else
+
+    #define gpuLabelMax gLabel(std::numeric_limits<gLabel>::max() / 10)
+
+    #define gpuVGreat double(std::numeric_limits<double>::max() / 10.0)
+
+    #define gpuVSmall double(std::numeric_limits<double>::min())
+
+    #define gpuSmall double(std::numeric_limits<double>::epsilon())
+
+    #define gpuScalarNaN double(std::numeric_limits<double>::signaling_NaN())
+
+
+#endif
+
+
+
 
 #define gpuGreat double(1.0 / gpuSmall)
 

@@ -2,6 +2,7 @@
 # Lines that start with '#' are comments.
 
 # Editor and misc backup files - anywhere
+.vscode
 *~
 .*~
 .*.swp

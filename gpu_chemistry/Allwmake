@@ -9,7 +9,11 @@ wmakeLnInclude src
 wmake src/gpuKernelEvaluator
 wmake src/gpuChemistryModels
 wmake catchMain
-wmake all unittest
-#wmake all benchmark
+wmake unittest/testHelpers
+wmake unittest/OpenFOAMReferenceKernels
+wmake unittest/cpuTestKernels
+wmake unittest/gpuTestKernels
+wmake unittest/tests
+wmake all benchmark
 
 # ----------------------------------------------------------------- end-of-file

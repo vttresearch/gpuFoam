@@ -1,11 +1,10 @@
 EXE_INC = \
+    -I../testHelpers/lnInclude \
     -I../../catchMain/lnInclude \
     -I../../src/lnInclude \
     -I../../src/gpuChemistryModels/lnInclude \
     -I../../src/gpuKernelEvaluator/lnInclude \
     -I../../../gpu_utils/common/lnInclude \
-    -I../../unittest/testHelpers/ \
-    -I../ \
     -I$(LIB_SRC)/physicalProperties/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/multicomponentThermo/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/basic/lnInclude \
@@ -18,10 +17,11 @@ EXE_INC = \
     -I$(LIB_SRC)/thermophysicalModels/chemistryModel/lnInclude \
     -std=c++17
 
+
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
-    -lGpuKernelEvaluator \
     -lGpuChemistryTestHelpers \
+    -lGpuKernelEvaluator \
     -lCatchMain \
     -lmeshTools \
     -lthermophysicalProperties \
@@ -35,3 +35,8 @@ EXE_LIBS = \
     -lchemistryModel \
     -lblockMesh
 
+ifeq ($(GPUFOAM_BACKEND_NVIDIA),1)
+    include ../../../nvcc
+else
+    include ../../../hipcc
+endif

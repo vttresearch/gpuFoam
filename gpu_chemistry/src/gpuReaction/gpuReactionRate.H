@@ -126,7 +126,7 @@ struct everythingVisitor {
     mdspan<gScalar, 1>       dkfdc;
 
     template <class T>
-    CUDA_HOSTDEV std::pair<gScalar, gScalar>
+    CUDA_HOSTDEV device_array<gScalar, 2>
                  operator()(const T& i) const {
         return i.everything(p, Temperature, c, dkfdc);
     }
@@ -145,7 +145,7 @@ struct gpuReactionRate {
 
     ///
     ///@brief Determines if the underlying reaction is irreversible or
-    ///not.
+    /// not.
     ///
     ///@return bool True if is irreversible, false otherwise.
     ///
@@ -176,7 +176,7 @@ struct gpuReactionRate {
     ///@brief Determines if the rate is a function of concentration.
     ///
     ///@return True if is a function of concentration, false
-    ///otherwise.
+    /// otherwise.
     ///
     inline CUDA_HOSTDEV bool hasDdc() const {
 
@@ -230,11 +230,11 @@ struct gpuReactionRate {
     ///@param c Concentration.
     ///@param dkfdc A span of at least size nSpcecie where the
     /// derivative is put.
-    ///@return std::pair<gScalar, gScalar> A pair of scalars where the
+    ///@return device_array<gScalar, 2> A pair of scalars where the
     /// first value is the reaction rate and second value is the
     /// derivative w.r.t temperature.
     ///
-    inline CUDA_HOSTDEV std::pair<gScalar, gScalar>
+    inline CUDA_HOSTDEV device_array<gScalar, 2>
                         everything(const gScalar                  p,
                                    const gScalar                  T,
                                    const mdspan<const gScalar, 1> c,

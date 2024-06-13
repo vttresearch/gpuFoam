@@ -1,8 +1,8 @@
 #pragma once
 #include "cuda_host_dev.H"
+#include "device_array.H"
 #include "gpuPerfectGas.H"
 #include "gpu_constants.H"
-#include <array> //std::array
 
 namespace FoamGpu {
 
@@ -12,7 +12,7 @@ public:
 
     static constexpr size_t nCoeffs_ = 7;
 
-    using coeffArray = std::array<gScalar, nCoeffs_>;
+    using coeffArray = device_array<gScalar, nCoeffs_>;
 
     // Temperature limits of applicability of functions
     gScalar Tlow_, Thigh_, Tcommon_;
@@ -136,12 +136,12 @@ public:
     /// @param p Pressure.
     /// @param T Temperature.
     /// @return A pair of scalars [Kc, dKcTbyKc].
-    inline CUDA_HOSTDEV std::pair<gScalar, gScalar>
+    inline CUDA_HOSTDEV device_array<gScalar, 2>
     KcAnddKcTbyKc(const gScalar p, const gScalar T) const {
 
         // const gScalar nm = this->Y() / this->W();
         const gScalar nm            = this->Y() / this->W();
-        const gScalar logT = log(T);
+        const gScalar logT          = log(T);
         const gScalar Gstd          = this->Gstd(T, logT);
         const bool    nm_is_small   = fabs(nm - gpuSmall) < gpuVSmall;
         const gScalar gpuRR_times_T = gpuRR * T;
@@ -165,7 +165,7 @@ public:
             return ret - nm / T;
         }();
 
-        return std::make_pair(Kc, dKcdTbyKc);
+        return device_array<gScalar, 2>({Kc, dKcdTbyKc});
     }
 
     /// @brief Computes the heat capacity [J/kg/K] at constant
@@ -279,13 +279,13 @@ public:
         return S(p, T, log(T));
     }
 
-
     /// @brief Computes the Gibbs free energy [J/kg] of the mixture in
     /// the standard state.
     /// @param T Temperature.
     /// @param logT Precomputed log(T)
     /// @return The Gibbs free energy.
-    inline CUDA_HOSTDEV gScalar Gstd(const gScalar T, const gScalar logT) const {
+    inline CUDA_HOSTDEV gScalar Gstd(const gScalar T,
+                                     const gScalar logT) const {
         const auto& a = coeffs(T);
 
         return (

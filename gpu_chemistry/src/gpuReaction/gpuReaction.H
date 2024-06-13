@@ -15,11 +15,11 @@ namespace FoamGpu {
 
 struct reactionParams {
 
-    gScalar                                 omega = 0.0;
-    gScalar                                 dwdT  = 0.0;
-    std::array<gScalar, MAX_REACTION_WIDTH> dCfdjs{};
-    std::array<gScalar, MAX_REACTION_WIDTH> dCrdjs{};
-    mdspan<gScalar, 1>                      ddc;
+    gScalar                                   omega = 0.0;
+    gScalar                                   dwdT  = 0.0;
+    device_array<gScalar, MAX_REACTION_WIDTH> dCfdjs{};
+    device_array<gScalar, MAX_REACTION_WIDTH> dCrdjs{};
+    mdspan<gScalar, 1>                        ddc;
 };
 
 struct gpuSpecieCoeffs {
@@ -44,7 +44,7 @@ class gpuReaction : public gpuThermo {
 
 public:
     using specieCoeffArray =
-        std::array<gpuSpecieCoeffs, MAX_REACTION_WIDTH>;
+        device_array<gpuSpecieCoeffs, MAX_REACTION_WIDTH>;
 
     //- Default temperature limits of applicability of gpuReaction
     // rates
@@ -74,7 +74,7 @@ public:
     //- Temperature limits of applicability of gpuReaction rates
     gScalar Tlow_, Thigh_;
 
-    gScalar RSMALL{sqrt(gpuSmall)};
+    // gScalar RSMALL{sqrt(gpuSmall)};
 
 public:
     gpuReaction() = default;
@@ -99,14 +99,16 @@ public:
 
     /// @brief Returns a span to the LHS specie coeffcients.
     /// @return A span to the LHS specie coefficients.
-    inline CUDA_HOSTDEV auto lhs() const {
-        return make_mdspan(lhs_, extents<1>{lhs_size_});
+    inline CUDA_HOSTDEV mdspan<const gpuSpecieCoeffs, 1> lhs() const {
+        return mdspan<const gpuSpecieCoeffs, 1>(
+            lhs_.data(), extents<1>{lhs_size_});
     }
 
     /// @brief Returns a span to the LHS specie coeffcients.
     /// @return A span to the LHS specie coefficients.
-    inline CUDA_HOSTDEV auto rhs() const {
-        return make_mdspan(rhs_, extents<1>{rhs_size_});
+    inline CUDA_HOSTDEV mdspan<const gpuSpecieCoeffs, 1> rhs() const {
+        return mdspan<const gpuSpecieCoeffs, 1>(
+            rhs_.data(), extents<1>{rhs_size_});
     }
 
     /// @brief Checks if the reaction rate of this reaction is
@@ -250,14 +252,14 @@ public:
     /// specie concentrations.
     /// @param c A span of concentrations in a cell.
     /// @return An array of powers of the LHS species.
-    inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
+    inline CUDA_HOSTDEV device_array<gScalar, MAX_REACTION_WIDTH>
     lhsPowers(const mdspan<const gScalar, 1> c) const;
 
     /// @brief Computes the powers speciePow(c_i, e_i) of the RHS
     /// specie concentrations.
     /// @param c A span of concentrations in a cell.
     /// @return An array of powers of the RHS species.
-    inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
+    inline CUDA_HOSTDEV device_array<gScalar, MAX_REACTION_WIDTH>
     rhsPowers(const mdspan<const gScalar, 1> c) const;
 
     /// @brief Given an array of LHS concentration powers, computes
@@ -265,14 +267,14 @@ public:
     /// @param lhsPow The input LHS powers to compute the product for.
     /// @return The product of the input powers.
     inline CUDA_HOSTDEV gScalar calcCf(
-        const std::array<gScalar, MAX_REACTION_WIDTH> lhsPow) const;
+        const device_array<gScalar, MAX_REACTION_WIDTH> lhsPow) const;
 
     /// @brief Given an array of RHS concentration powers, computes
     /// the product of them all.
     /// @param lhsPow The input RHS powers to compute the product for.
     /// @return The product of the input powers.
     inline CUDA_HOSTDEV gScalar calcCr(
-        const std::array<gScalar, MAX_REACTION_WIDTH> rhsPow) const;
+        const device_array<gScalar, MAX_REACTION_WIDTH> rhsPow) const;
 
     /// @brief Given precomputed LHS powers, computes the derivatives
     /// of the product of the powers w.r.t all concentrations on the
@@ -282,10 +284,10 @@ public:
     /// @param c A span of concentrations in a cell.
     /// @return The derivative of the product of concentration powers
     /// w.r.t to all concentrations on the LHS.
-    inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-    calcdCfdcj(const std::array<gScalar, MAX_REACTION_WIDTH> lhsPow,
-               const gScalar                                 Cf,
-               const mdspan<const gScalar, 1>                c) const;
+    inline CUDA_HOSTDEV device_array<gScalar, MAX_REACTION_WIDTH>
+    calcdCfdcj(const device_array<gScalar, MAX_REACTION_WIDTH> lhsPow,
+               const gScalar                                   Cf,
+               const mdspan<const gScalar, 1> c) const;
 
     /// @brief Given precomputed RHS powers, computes the derivatives
     /// of the product of the powers w.r.t all concentrations on the
@@ -295,10 +297,10 @@ public:
     /// @param c A span of concentrations in a cell.
     /// @return The derivative of the product of concentration powers
     /// w.r.t to all concentrations on the RHS.
-    inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
-    calcdCrdcj(const std::array<gScalar, MAX_REACTION_WIDTH> rhsPow,
-               const gScalar                                 Cr,
-               const mdspan<const gScalar, 1>                c) const;
+    inline CUDA_HOSTDEV device_array<gScalar, MAX_REACTION_WIDTH>
+    calcdCrdcj(const device_array<gScalar, MAX_REACTION_WIDTH> rhsPow,
+               const gScalar                                   Cr,
+               const mdspan<const gScalar, 1> c) const;
 
     inline CUDA_HOSTDEV void
     jac_dCfdcj_contribution(const reactionParams& r,
@@ -343,11 +345,11 @@ inline CUDA_HOSTDEV bool gpuReaction::rhsSmallConcentration(
     return false;
 }
 
-inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
+inline CUDA_HOSTDEV device_array<gScalar, MAX_REACTION_WIDTH>
 gpuReaction::lhsPowers(const mdspan<const gScalar, 1> c) const {
 
-    const auto                              llhs = lhs();
-    std::array<gScalar, MAX_REACTION_WIDTH> ret{};
+    const auto                                llhs = lhs();
+    device_array<gScalar, MAX_REACTION_WIDTH> ret{};
     for (size_t i = 0; i < llhs.size(); ++i) {
         const auto& el = llhs[i].exponent;
         const auto& si = llhs[i].index;
@@ -356,11 +358,11 @@ gpuReaction::lhsPowers(const mdspan<const gScalar, 1> c) const {
     return ret;
 }
 
-inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
+inline CUDA_HOSTDEV device_array<gScalar, MAX_REACTION_WIDTH>
 gpuReaction::rhsPowers(const mdspan<const gScalar, 1> c) const {
 
-    const auto                              rrhs = rhs();
-    std::array<gScalar, MAX_REACTION_WIDTH> ret{};
+    const auto                                rrhs = rhs();
+    device_array<gScalar, MAX_REACTION_WIDTH> ret{};
     for (size_t i = 0; i < rrhs.size(); ++i) {
         const auto& er = rrhs[i].exponent;
         const auto& si = rrhs[i].index;
@@ -370,26 +372,26 @@ gpuReaction::rhsPowers(const mdspan<const gScalar, 1> c) const {
 }
 
 inline CUDA_HOSTDEV gScalar gpuReaction::calcCf(
-    const std::array<gScalar, MAX_REACTION_WIDTH> lhsPow) const {
+    const device_array<gScalar, MAX_REACTION_WIDTH> lhsPow) const {
     gScalar Cf = 1.0;
     for (gLabel i = 0; i < lhs_size_; ++i) { Cf *= lhsPow[i]; }
     return Cf;
 }
 
 inline CUDA_HOSTDEV gScalar gpuReaction::calcCr(
-    const std::array<gScalar, MAX_REACTION_WIDTH> rhsPow) const {
+    const device_array<gScalar, MAX_REACTION_WIDTH> rhsPow) const {
     gScalar Cr = 1.0;
     for (gLabel i = 0; i < rhs_size_; ++i) { Cr *= rhsPow[i]; }
     return Cr;
 }
 
-inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
+inline CUDA_HOSTDEV device_array<gScalar, MAX_REACTION_WIDTH>
                     gpuReaction::calcdCfdcj(
-    const std::array<gScalar, MAX_REACTION_WIDTH> lhsPow,
-    const gScalar                                 Cf,
-    const mdspan<const gScalar, 1>                c) const {
+    const device_array<gScalar, MAX_REACTION_WIDTH> lhsPow,
+    const gScalar                                   Cf,
+    const mdspan<const gScalar, 1>                  c) const {
 
-    std::array<gScalar, MAX_REACTION_WIDTH> ret{};
+    device_array<gScalar, MAX_REACTION_WIDTH> ret{};
 
     /*
     //Should be just this but overflows
@@ -426,12 +428,12 @@ inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
     return ret;
 }
 
-inline CUDA_HOSTDEV std::array<gScalar, MAX_REACTION_WIDTH>
+inline CUDA_HOSTDEV device_array<gScalar, MAX_REACTION_WIDTH>
                     gpuReaction::calcdCrdcj(
-    const std::array<gScalar, MAX_REACTION_WIDTH> rhsPow,
-    const gScalar                                 Cr,
-    const mdspan<const gScalar, 1>                c) const {
-    std::array<gScalar, MAX_REACTION_WIDTH> ret{};
+    const device_array<gScalar, MAX_REACTION_WIDTH> rhsPow,
+    const gScalar                                   Cr,
+    const mdspan<const gScalar, 1>                  c) const {
+    device_array<gScalar, MAX_REACTION_WIDTH> ret{};
 
     /*
     //Should be just this but overflows
@@ -472,9 +474,10 @@ gpuReaction::omega(const gScalar                  p,
                    const gScalar                  T,
                    const mdspan<const gScalar, 1> c) const {
 
-    const gScalar clippedT = fmin(fmax(T, this->Tlow()), this->Thigh());
+    const gScalar clippedT =
+        fmin(fmax(T, this->Tlow()), this->Thigh());
 
-    const gScalar Kc = fmax(RSMALL, this->Kc(p, T));
+    const gScalar Kc = fmax(sqrt(gpuSmall), this->Kc(p, T));
     // Rate constants
     const gScalar kf = this->kf(p, clippedT, c);
     const gScalar kr = this->kr(kf, p, clippedT, Kc, c);
@@ -539,7 +542,7 @@ gpuReaction::kr(const gScalar                  p,
                 const gScalar                  T,
                 const mdspan<const gScalar, 1> c) const {
     if (isIrreversible()) { return 0.0; }
-    const gScalar Kc = fmax(this->Kc(p, T), RSMALL);
+    const gScalar Kc = fmax(this->Kc(p, T), sqrt(gpuSmall));
     return kr(kf(p, T, c), p, T, Kc, c);
 }
 
@@ -654,7 +657,9 @@ computeReactionParameters(const gpuReaction&             r,
                           mdspan<gScalar, 1>             ddc) {
     reactionParams ret;
 
-    const auto [kf, ddT] = r.k_.everything(p, T, c, ddc);
+    const auto pair = r.k_.everything(p, T, c, ddc);
+    const auto kf   = pair[0];
+    const auto ddT  = pair[1];
 
     const auto lhsPow = r.lhsPowers(c);
     const auto Cf     = r.calcCf(lhsPow);
@@ -668,15 +673,17 @@ computeReactionParameters(const gpuReaction&             r,
     gScalar Kc = 1.0;
     if (!r.isIrreversible()) {
 
-        const auto [Kc_t, dKcdTbyV] = r.KcAnddKcTbyKc(p, T);
-        Kc                          = fmax(Kc_t, r.RSMALL);
-        const auto kr               = kf / Kc;
+        const auto pair2    = r.KcAnddKcTbyKc(p, T);
+        const auto Kc_t     = pair2[0];
+        const auto dKcdTbyV = pair2[1];
+        Kc                  = fmax(Kc_t, sqrt(gpuSmall));
+        const auto kr       = kf / Kc;
 
         const auto rhsPow = r.rhsPowers(c);
         Cr                = r.calcCr(rhsPow);
 
         const auto dkrdT =
-            ddT / Kc - (Kc > r.RSMALL ? kr * dKcdTbyV : 0.0);
+            ddT / Kc - (Kc > sqrt(gpuSmall) ? kr * dKcdTbyV : 0.0);
 
         ret.dwdT -= Cr * dkrdT;
         ret.omega -= Cr * kr;

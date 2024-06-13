@@ -6,7 +6,7 @@
 #include <assert.h>
 #include "cuda_host_dev.H"
 
-#ifdef __NVIDIA_COMPILER__
+#ifdef __USING_GPU__
 #include <thrust/memory.h>
 #endif
 
@@ -443,7 +443,7 @@ struct variant {
         return *this;
     }
 
-    #ifdef __NVIDIA_COMPILER__
+    #ifdef __USING_GPU__
     //XXX WAR Thrust presenting references during copies
     //More WAR may be necessary.
 

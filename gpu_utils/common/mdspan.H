@@ -4,13 +4,9 @@
 #include "cuda_host_dev.H"
 #include "pointer_casts.hpp"
 
-#ifdef __NVIDIA_COMPILER__
 
-#include "thrust/device_vector.h" //thrust::raw_pointer_cast
-
-#endif
-
-namespace stdex = std::experimental;
+//namespace stdex = std::experimental;
+namespace stdex = std;
 
 
 
@@ -62,7 +58,7 @@ static CUDA_HOSTDEV std::size_t flat_size(Extents ext) {
 /// @param dims dimensions of the multi-dimensional span
 /// @return a multi-dimensional span
 template <class Container, class Extents>
-static constexpr auto make_mdspan(Container& c, Extents ext) {
+static constexpr HOST auto make_mdspan(Container& c, Extents ext) {
     using value_type = typename Container::value_type;
     //topaz::runtime_assert(flat_size(ext) == std::size(c),
     //               "Dimension mismatch in make_mdspan");
@@ -76,7 +72,7 @@ static constexpr auto make_mdspan(Container& c, Extents ext) {
 /// @param dims dimensions of the multi-dimensional span
 /// @return a multi-dimensional span
 template <class Container, class Extents>
-static constexpr auto make_mdspan(const Container& c, Extents ext) {
+static constexpr HOST auto make_mdspan(const Container& c, Extents ext) {
     using value_type = const typename Container::value_type;
     //topaz::runtime_assert(flat_size(ext) == std::size(c),
     //               "Dimension mismatch in make_mdspan");

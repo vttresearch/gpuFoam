@@ -14,18 +14,19 @@
 namespace FoamGpu {
 
 template <class ThermoType>
-static inline gpuThermo makeGpuThermo(const ThermoType&       cputhermo,
-                                      const Foam::dictionary& thermoDict) {
+static inline gpuThermo
+makeGpuThermo(const ThermoType&       cputhermo,
+              const Foam::dictionary& thermoDict) {
 
     gScalar W = cputhermo.W();
     gScalar Y = cputhermo.Y();
 
-    gScalar Tlow(
-        thermoDict.subDict("thermodynamics").lookup<Foam::scalar>("Tlow"));
-    gScalar Thigh(
-        thermoDict.subDict("thermodynamics").lookup<Foam::scalar>("Thigh"));
-    gScalar Tcommon(
-        thermoDict.subDict("thermodynamics").lookup<Foam::scalar>("Tcommon"));
+    gScalar Tlow(thermoDict.subDict("thermodynamics")
+                     .lookup<Foam::scalar>("Tlow"));
+    gScalar Thigh(thermoDict.subDict("thermodynamics")
+                      .lookup<Foam::scalar>("Thigh"));
+    gScalar Tcommon(thermoDict.subDict("thermodynamics")
+                        .lookup<Foam::scalar>("Tcommon"));
 
     Foam::FixedList<Foam::scalar, 7> cHigh =
         thermoDict.subDict("thermodynamics").lookup("highCpCoeffs");
@@ -42,7 +43,8 @@ static inline gpuThermo makeGpuThermo(const ThermoType&       cputhermo,
         lowCpCoeffs[i]  = cputhermo.R() * cLow[i];
     }
 
-    return gpuThermo(Y, W, Tlow, Thigh, Tcommon, highCpCoeffs, lowCpCoeffs);
+    return gpuThermo(
+        Y, W, Tlow, Thigh, Tcommon, highCpCoeffs, lowCpCoeffs);
 }
 
 template <class ThermoType>
@@ -53,9 +55,10 @@ makeGpuThermos(const Foam::PtrList<ThermoType>& cpuThermos,
 
     for (const auto& t : cpuThermos) {
         const auto& specieName = t.name();
-        const auto  subDict    = physicalProperties.subDict(specieName);
-        gpuThermo   gpu        = makeGpuThermo(t, subDict);
-        // gpuThermo gpu(t.Y(), t.W(), physicalProperties.subDict(specieName));
+        const auto  subDict = physicalProperties.subDict(specieName);
+        gpuThermo   gpu     = makeGpuThermo(t, subDict);
+        // gpuThermo gpu(t.Y(), t.W(),
+        // physicalProperties.subDict(specieName));
         gpuThermos.push_back(gpu);
     }
 
