@@ -4,10 +4,7 @@
 
 #include "basicChemistryModel.H"
 
-#include "gpuODESystem.H"
-#include "gpuReaction.H"
-#include "gpuRosenbrock34.H"
-#include "gpuThermo.H"
+
 #include "makeGpuReactions.H"
 #include "makeGpuThermo.H"
 #include "readGpuOdeInputs.H"
@@ -15,8 +12,8 @@
 #include "DynamicField.H"
 #include "ODESystem.H"
 #include "ReactionList.H"
+
 #include "chemistryReductionMethod.H"
-#include "chemistryTabulationMethod.H"
 
 #include "gpuKernelEvaluator.H"
 #include "multicomponentMixture.H"

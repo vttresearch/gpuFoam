@@ -1,7 +1,7 @@
 #pragma once
 
 #include "mechanisms.H"
-#include "testThermoType.H"
+#include "foam_thermo_types.H"
 
 #include "speciesTable.H"
 

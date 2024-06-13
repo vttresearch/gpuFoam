@@ -3,7 +3,6 @@
 #include <map>
 #include <vector>
 
-#include "host_device_vectors.H"
 #include "gpuReaction.H"
 #include "gpuThermo.H"
 #include "makeGpuReactionRate.H"
