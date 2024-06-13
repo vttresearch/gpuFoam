@@ -1,12 +1,10 @@
 EXE_INC = \
-    -I../../catchMain/lnInclude \
-    -I../../src/lnInclude \
-    -I../../src/gpuChemistryModels/lnInclude \
-    -I../../src/gpuKernelEvaluator/lnInclude \
-    -I../../../gpu_utils/common/lnInclude \
-    -I../../unittest/testHelpers/ \
-    -I../
-    -std=c++17
+    -I../catchMain/lnInclude \
+    -I../src/lnInclude \
+    -I../src/gpuChemistryModels/lnInclude \
+    -I../src/gpuKernelEvaluator/lnInclude \
+    -I../../gpu_utils/common/lnInclude \
+    -I../unittest/testHelpers/
 
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
@@ -24,4 +22,4 @@ EXE_LIBS = \
     -lchemistryModel
 
 
-include ../../nvcc
+include ../nvcc

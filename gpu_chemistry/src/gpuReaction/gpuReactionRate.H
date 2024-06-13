@@ -145,7 +145,7 @@ struct gpuReactionRate {
 
     ///
     ///@brief Determines if the underlying reaction is irreversible or
-    ///not.
+    /// not.
     ///
     ///@return bool True if is irreversible, false otherwise.
     ///
@@ -176,7 +176,7 @@ struct gpuReactionRate {
     ///@brief Determines if the rate is a function of concentration.
     ///
     ///@return True if is a function of concentration, false
-    ///otherwise.
+    /// otherwise.
     ///
     inline CUDA_HOSTDEV bool hasDdc() const {
 

@@ -151,10 +151,10 @@ public:
                 ddc[i] = gScalar(0);
             }
         }
-        
+
         return {k, ddT};
 
-        //return device_array<gScalar, 2>({k, ddT});
+        // return device_array<gScalar, 2>({k, ddT});
     }
 };
 

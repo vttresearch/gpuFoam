@@ -1,6 +1,6 @@
-#include "gpuMemoryResource.H"
 #include "device_allocate.H"
 #include "device_free.H"
+#include "gpuMemoryResource.H"
 
 namespace FoamGpu {
 
@@ -17,10 +17,12 @@ void gpuMemoryResource::allocate() {
         labelData_[i] = device_allocate<gLabel>(labelArrayLength());
     }
     for (gLabel i = 0; i < N_SCALAR_ARRAYS; ++i) {
-        scalarData_[i] = device_allocate<gScalar>(scalarArrayLength());
+        scalarData_[i] =
+            device_allocate<gScalar>(scalarArrayLength());
     }
     for (gLabel i = 0; i < N_TWOD_SCALAR_ARRAYS; ++i) {
-        twodScalarData_[i] = device_allocate<gScalar>(twodScalarArrayLength());
+        twodScalarData_[i] =
+            device_allocate<gScalar>(twodScalarArrayLength());
     }
 }
 

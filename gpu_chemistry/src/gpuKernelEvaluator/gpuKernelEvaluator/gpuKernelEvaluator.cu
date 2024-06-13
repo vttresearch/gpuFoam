@@ -6,8 +6,8 @@
 
 #include "for_each_index.H"
 #include "host_device_vectors.H"
-#include "singleCellSolver.H"
 #include "makeGpuOdeSolver.H"
+#include "singleCellSolver.H"
 
 namespace FoamGpu {
 
@@ -28,10 +28,7 @@ GpuKernelEvaluator::GpuKernelEvaluator(
               thermosReactions_.reactions())
     , solver_(make_gpuODESolver(system_, odeInputs))
     , inputs_(odeInputs)
-    , memory_(nCells, nSpecie) {
-
-}
-
+    , memory_(nCells, nSpecie) {}
 
 std::pair<std::vector<gScalar>, std::vector<gScalar>>
 GpuKernelEvaluator::computeYNew(
@@ -58,7 +55,6 @@ GpuKernelEvaluator::computeYNew(
         deltaT, nSpecie_, ddeltaTChem, dYvf, buffer_span, solver_);
 
     for_each_index(op, nCells);
-
 
     return std::make_pair(toStdVector(dYvf_arr),
                           toStdVector(ddeltaTChem_arr));

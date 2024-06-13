@@ -1,7 +1,7 @@
 #pragma once
 
-#include "gpu_constants.H"
 #include "device_array.H"
+#include "gpu_constants.H"
 #include "mdspan.H"
 
 namespace FoamGpu {

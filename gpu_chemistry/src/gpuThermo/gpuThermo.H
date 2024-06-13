@@ -1,8 +1,8 @@
 #pragma once
 #include "cuda_host_dev.H"
+#include "device_array.H"
 #include "gpuPerfectGas.H"
 #include "gpu_constants.H"
-#include "device_array.H"
 
 namespace FoamGpu {
 
@@ -141,7 +141,7 @@ public:
 
         // const gScalar nm = this->Y() / this->W();
         const gScalar nm            = this->Y() / this->W();
-        const gScalar logT = log(T);
+        const gScalar logT          = log(T);
         const gScalar Gstd          = this->Gstd(T, logT);
         const bool    nm_is_small   = fabs(nm - gpuSmall) < gpuVSmall;
         const gScalar gpuRR_times_T = gpuRR * T;
@@ -279,13 +279,13 @@ public:
         return S(p, T, log(T));
     }
 
-
     /// @brief Computes the Gibbs free energy [J/kg] of the mixture in
     /// the standard state.
     /// @param T Temperature.
     /// @param logT Precomputed log(T)
     /// @return The Gibbs free energy.
-    inline CUDA_HOSTDEV gScalar Gstd(const gScalar T, const gScalar logT) const {
+    inline CUDA_HOSTDEV gScalar Gstd(const gScalar T,
+                                     const gScalar logT) const {
         const auto& a = coeffs(T);
 
         return (

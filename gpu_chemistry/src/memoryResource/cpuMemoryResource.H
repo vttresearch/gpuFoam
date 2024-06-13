@@ -26,11 +26,13 @@ struct cpuMemoryResource : public memoryResource {
         return labelData_;
     }
 
-    device_array<gScalar*, N_SCALAR_ARRAYS>& getScalarData() override {
+    device_array<gScalar*, N_SCALAR_ARRAYS>&
+    getScalarData() override {
         return scalarData_;
     }
 
-    device_array<gScalar*, N_TWOD_SCALAR_ARRAYS>& getTwodScalarData() override {
+    device_array<gScalar*, N_TWOD_SCALAR_ARRAYS>&
+    getTwodScalarData() override {
         return twodScalarData_;
     }
 
@@ -57,14 +59,14 @@ private:
             scalarData_[i] = sAllocator.allocate(scalarArrayLength());
         }
         for (gLabel i = 0; i < N_TWOD_SCALAR_ARRAYS; ++i) {
-            twodScalarData_[i] = sAllocator.allocate(twodScalarArrayLength());
+            twodScalarData_[i] =
+                sAllocator.allocate(twodScalarArrayLength());
         }
     }
 
     void deallocate() {
         labelAllocator  lAllocator;
         scalarAllocator sAllocator;
-
 
         for (gLabel i = 0; i < N_LABEL_ARRAYS; ++i) {
             auto ptr = labelData_[i];

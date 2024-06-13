@@ -12,8 +12,8 @@ using host_vector = std::vector<T>;
 
 #include "device_vector.H"
 
-template<class T>
-using device_vector = device_vector2<T>;
+//template<class T>
+//using device_vector = device_vector<T>;
 
 #else
 

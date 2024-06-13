@@ -36,7 +36,7 @@ inline CUDA_HOSTDEV gScalar integerPow(const gScalar x,
 }
 
 struct gpuSpecieExponent {
-    
+
     gLabel noIntegerExponent_ = gpuLabelMax;
 
     gLabel integerExponent_;
@@ -66,12 +66,12 @@ struct gpuSpecieExponent {
     }
 
     inline CUDA_HOSTDEV gpuSpecieExponent&
-                        operator=(const gLabel integerExponent) {
+    operator=(const gLabel integerExponent) {
         return *this = gpuSpecieExponent(integerExponent);
     }
 
     inline CUDA_HOSTDEV gpuSpecieExponent&
-                        operator=(const gScalar scalarExponent) {
+    operator=(const gScalar scalarExponent) {
         return *this = gpuSpecieExponent(scalarExponent);
     }
 

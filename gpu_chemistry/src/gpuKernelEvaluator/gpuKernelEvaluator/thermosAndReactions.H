@@ -5,36 +5,27 @@
 #include "gpuReaction.H"
 #include "gpuThermo.H"
 
+namespace FoamGpu {
 
-namespace FoamGpu{
-
-struct thermosAndReactions{
+struct thermosAndReactions {
 
     thermosAndReactions() = default;
 
-    thermosAndReactions
-    (
-        const std::vector<gpuThermo> thermos,
-        const std::vector<gpuReaction>& reactions
-    );
+    thermosAndReactions(const std::vector<gpuThermo>    thermos,
+                        const std::vector<gpuReaction>& reactions);
 
     ~thermosAndReactions();
 
-
-    gpuThermo* thermos() {return thermos_;}
-    gpuReaction* reactions() {return reactions_;}
-
+    gpuThermo*   thermos() { return thermos_; }
+    gpuReaction* reactions() { return reactions_; }
 
 private:
-    gLabel nThermos_;
-    gLabel nReactions_;
-    gpuThermo* thermos_;
+    gLabel       nThermos_;
+    gLabel       nReactions_;
+    gpuThermo*   thermos_;
     gpuReaction* reactions_;
 
-
     void deallocate();
-
-
 };
 
-}
+} // namespace FoamGpu

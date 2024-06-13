@@ -2,10 +2,10 @@
 
 #include "arrays.H"
 #include "check_ptr.H"
-#include "gpu_constants.H"
 #include "device_array.H"
+#include "gpu_constants.H"
 #include "mdspan.H"
-//#include "timer.H"
+// #include "timer.H"
 
 namespace FoamGpu {
 
@@ -18,7 +18,7 @@ struct gpuBuffer {
     gpuBuffer(device_array<gLabel*, N_LABEL_ARRAYS>        lData,
               device_array<gScalar*, N_SCALAR_ARRAYS>      sData,
               device_array<gScalar*, N_TWOD_SCALAR_ARRAYS> twodSData,
-              gLabel                                     nSpecie)
+              gLabel                                       nSpecie)
         : lData_(lData)
         , sData_(sData)
         , twodSData_(twodSData)
@@ -118,8 +118,8 @@ private:
     device_array<gLabel*, N_LABEL_ARRAYS>        lData_;
     device_array<gScalar*, N_SCALAR_ARRAYS>      sData_;
     device_array<gScalar*, N_TWOD_SCALAR_ARRAYS> twodSData_;
-    gLabel                                     nSpecie_;
-    gLabel                                     nEqns_;
+    gLabel                                       nSpecie_;
+    gLabel                                       nEqns_;
 };
 
 } // namespace FoamGpu

@@ -31,10 +31,10 @@ struct gpuMixture {
     /// capacity w.r.t temperature and volumetric coefficient of
     /// thermal expansion, respectively.
     CUDA_HOSTDEV device_array<gScalar, 4>
-                 computeJacobianRequired(const mdspan<const gScalar, 1> y,
-                                         mdspan<gScalar, 1>             Cp,
-                                         mdspan<gScalar, 1>             Ha,
-                                         mdspan<gScalar, 1>             c) {
+    computeJacobianRequired(const mdspan<const gScalar, 1> y,
+                            mdspan<gScalar, 1>             Cp,
+                            mdspan<gScalar, 1>             Ha,
+                            mdspan<gScalar, 1>             c) {
 
         const gLabel  nSpecie = y.size() - 2;
         const gScalar T       = y[nSpecie];
@@ -86,9 +86,9 @@ struct gpuMixture {
     /// @return device_array<gScalar, 2> a pair containing mixture
     /// density and specific heat, respectively.
     CUDA_HOSTDEV device_array<gScalar, 2>
-                 computeDerivativeRequired(const mdspan<const gScalar, 1> y,
-                                           mdspan<gScalar, 1>             Ha,
-                                           mdspan<gScalar, 1>             c) {
+    computeDerivativeRequired(const mdspan<const gScalar, 1> y,
+                              mdspan<gScalar, 1>             Ha,
+                              mdspan<gScalar, 1>             c) {
 
         const gLabel  nSpecie = y.size() - 2;
         const gScalar T       = y[nSpecie];
@@ -115,7 +115,7 @@ struct gpuMixture {
 
         for (gLabel i = 0; i < nSpecie; ++i) { c[i] *= rhoM; }
         return {rhoM, CpM};
-        //return device_array<gScalar, 2>({rhoM, CpM});
+        // return device_array<gScalar, 2>({rhoM, CpM});
 
         // alphav_ *= rhoM_;
     }

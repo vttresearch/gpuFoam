@@ -14,7 +14,6 @@ wmake unittest/OpenFOAMReferenceKernels
 wmake unittest/cpuTestKernels
 wmake unittest/gpuTestKernels
 wmake unittest/tests
-#wmake all unittest
-#wmake all benchmark
+wmake all benchmark
 
 # ----------------------------------------------------------------- end-of-file

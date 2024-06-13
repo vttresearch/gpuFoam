@@ -8,10 +8,67 @@
 #include "ludecompose.H"
 #include "gpuODESystem.H"
 #include "makeGpuOdeSolver.H"
-
+#include "gpuMemoryResource.H"
 
 
 static constexpr TestData::Mechanism mech = TestData::GRI;
+using memoryResource_t = FoamGpu::gpuMemoryResource;
+
+
+template<class T, class R>
+__global__ void on_device(T t, R* r)
+{
+    *r = t();
+}
+
+
+
+#ifdef __NVIDIA_BACKEND__
+
+    template<class T>
+    static inline gScalar eval(T t)
+    {
+
+        gScalar *d_result;
+        gpuErrorCheck(cudaMalloc(&d_result, sizeof(gScalar)));
+        on_device<<<1,1>>>(t, d_result);
+        gpuErrorCheck(cudaGetLastError());
+        gpuErrorCheck(cudaDeviceSynchronize());
+        gScalar h_result;
+        gpuErrorCheck(cudaMemcpy(&h_result, d_result, sizeof(gScalar), cudaMemcpyDeviceToHost));
+        gpuErrorCheck(cudaDeviceSynchronize());
+        gpuErrorCheck(cudaFree(d_result));
+        gpuErrorCheck(cudaDeviceSynchronize());
+        return h_result;
+
+    }
+
+    //AMD-backend
+    #else
+
+    template<class T>
+    static inline gScalar eval(T t)
+    {
+
+        gScalar *d_result;
+        gpuErrorCheck(hipMalloc(&d_result, sizeof(gScalar)));
+        hipLaunchKernelGGL
+        (
+            on_device, dim3(1), dim3(1), 0, 0, t, d_result
+        );
+        gpuErrorCheck(hipGetLastError());
+        gpuErrorCheck(hipDeviceSynchronize());
+        gScalar h_result;
+        gpuErrorCheck(hipMemcpy(&h_result, d_result, sizeof(gScalar), hipMemcpyDeviceToHost));
+        gpuErrorCheck(hipDeviceSynchronize());
+        gpuErrorCheck(hipFree(d_result));
+        gpuErrorCheck(hipDeviceSynchronize());
+        return h_result;
+
+    }
+
+#endif
+
 
 TEST_CASE("LU")
 {
@@ -29,9 +86,9 @@ TEST_CASE("LU")
 
     device_vector<gScalar> matrix(vals.begin(), vals.end());
 
-    device_vector<gLabel> pivot(nEqns, 0);
-    device_vector<gScalar> v(nEqns, 0);
-    device_vector<gScalar> source(nEqns, 0);
+    device_vector<gLabel> pivot(nEqns);
+    device_vector<gScalar> v(nEqns);
+    device_vector<gScalar> source(nEqns);
 
     auto m_span = make_mdspan(matrix, extents<2>{nEqns, nEqns});
     auto p_span = make_mdspan(pivot, extents<1>{nEqns});
@@ -129,6 +186,7 @@ TEST_CASE("gpuODESystem"){
 
 }
 
+/*
 TEST_CASE("gpuReactionRate"){
 
     using namespace FoamGpu;
@@ -138,8 +196,10 @@ TEST_CASE("gpuReactionRate"){
     const gScalar T = 900.0;
 
 
-    device_vector<gScalar> c(nSpecie, 0.43);
-    device_vector<gScalar> ddc(nSpecie, 0.43);
+    device_vector<gScalar> c = toDeviceVector(TestData::get_concentration_vector(mech));
+    device_vector<gScalar> ddc = c;
+
+
 
     //SECTION("gpuArrheniusReactionRate")
     {
@@ -386,8 +446,8 @@ TEST_CASE("gpuReactionRate"){
             for (int i = 0; i < nReactions; ++i){
 
                 auto pair = reactions[i].k_.everything(p, T, c, ddc);
-                ret += std::get<0>(pair);
-                ret += std::get<1>(pair);
+                ret += pair[0];
+                ret += pair[1];
                 ret += ddc[0] + ddc[5] + ddc[7];
 
             }
@@ -412,10 +472,12 @@ TEST_CASE("gpuReactionRate"){
 
             return eval(op4);
         };
+
     }
 
 
 }
+*/
 
 TEST_CASE("gpuReaction"){
 
@@ -429,17 +491,12 @@ TEST_CASE("gpuReaction"){
     const gScalar p = 1E5;
     const gScalar T = 900.0;
 
-    device_vector<gScalar> c = [=](){
-        std::vector<gScalar> vals(nSpecie);
-        assign_test_concentration(vals, mech);
-        //fill_random(vals);
-        return device_vector<gScalar>(vals.begin(), vals.end());
-    }();
+    device_vector<gScalar> c = toDeviceVector(TestData::get_concentration_vector(mech));
 
-    device_vector<gScalar> dndt = [=](){
-        std::vector<gScalar> vals(nEqns);
-        return device_vector<gScalar>(vals.begin(), vals.end());
-    }();
+
+
+    device_vector<gScalar> dndt(nEqns);
+
 
     BENCHMARK("dNdtByV"){
 

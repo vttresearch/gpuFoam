@@ -2,7 +2,8 @@
 
 #include "gpu_constants.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+// * * * //
 
 namespace FoamGpu {
 
@@ -12,7 +13,6 @@ class gpuTroeFallOffFunction {
     gScalar Tsss_, Ts_, Tss_;
 
 public:
-
     gpuTroeFallOffFunction() = default;
 
     inline CUDA_HOSTDEV gpuTroeFallOffFunction(const gScalar alpha,
@@ -23,7 +23,6 @@ public:
         , Tsss_(Tsss)
         , Ts_(Ts)
         , Tss_(Tss) {}
-
 
     inline CUDA_HOSTDEV gScalar operator()(const gScalar T,
                                            const gScalar Pr) const {
@@ -55,9 +54,10 @@ public:
 
         const gScalar Fcent = (1.0 - alpha_) * exp(-T / Tsss_) +
                               alpha_ * exp(-T / Ts_) + exp(-Tss_ / T);
-        const gScalar dFcentdT = -(1.0 - alpha_) / Tsss_ * exp(-T / Tsss_) -
-                                 alpha_ / Ts_ * exp(-T / Ts_) +
-                                 Tss_ / (T * T) * exp(-Tss_ / T);
+        const gScalar dFcentdT =
+            -(1.0 - alpha_) / Tsss_ * exp(-T / Tsss_) -
+            alpha_ / Ts_ * exp(-T / Ts_) +
+            Tss_ / (T * T) * exp(-Tss_ / T);
 
         const gScalar logFcent = log10(fmax(Fcent, gpuSmall));
         const gScalar dlogFcentdT =
@@ -87,7 +87,8 @@ public:
 
         const gScalar logPr = log10(fmax(Pr, gpuSmall));
 
-        const gScalar dlogPrdPr = Pr >= gpuSmall ? 1 / (gpuLogTen * Pr) : 0.0;
+        const gScalar dlogPrdPr =
+            Pr >= gpuSmall ? 1 / (gpuLogTen * Pr) : 0.0;
 
         const gScalar Fcent = (1.0 - alpha_) * exp(-T / Tsss_) +
                               alpha_ * exp(-T / Ts_) + exp(-Tss_ / T);

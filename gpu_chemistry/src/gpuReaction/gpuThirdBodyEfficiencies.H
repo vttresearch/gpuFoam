@@ -1,7 +1,7 @@
 #pragma once
 
-#include "gpu_constants.H"
 #include "device_array.H"
+#include "gpu_constants.H"
 
 namespace FoamGpu {
 
@@ -25,9 +25,12 @@ public:
     ///@param c Concentration.
     ///@return gScalar The concentration of the third-bodies.
     ///
-    inline CUDA_HOSTDEV gScalar M(const mdspan<const gScalar, 1> c) const {
+    inline CUDA_HOSTDEV gScalar
+    M(const mdspan<const gScalar, 1> c) const {
         gScalar M = 0;
-        for (gLabel i = 0; i < nSpecie_; ++i) { M += efficiencies_[i] * c[i]; }
+        for (gLabel i = 0; i < nSpecie_; ++i) {
+            M += efficiencies_[i] * c[i];
+        }
         return M;
     }
 
@@ -35,7 +38,8 @@ public:
     ///@brief Calculates the derivative of M w.r.t concentrations.
     ///
     ///@param c Concentration.
-    ///@return device_array<gScalar, 300> The derivative of M w.r.t concentrations. 
+    ///@return device_array<gScalar, 300> The derivative of M w.r.t
+    ///concentrations.
     ///
     inline CUDA_HOSTDEV const effArray&
     dMdc(const mdspan<const gScalar, 1> c) const {
