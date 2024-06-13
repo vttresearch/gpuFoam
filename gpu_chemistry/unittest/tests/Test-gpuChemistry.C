@@ -8,7 +8,7 @@
 #include "mdspan.H"
 
 
-TEST_CASE("make_mdspan"){
+TEST_CASE("make_mdspan", "[CPU]"){
 
     std::vector<int> v = {1,2,3,4,5,6};
     auto s = make_mdspan(v, extents<2>(2,3));
@@ -20,7 +20,7 @@ TEST_CASE("make_mdspan"){
 
 
 
-TEST_CASE("Test gpuConstants (on CPU)")
+TEST_CASE("Test gpuConstants (on CPU)", "[CPU]")
 {
     auto reference = OFReferenceKernels::constants();
     auto test_result = CpuTestKernels::constants();
@@ -45,7 +45,7 @@ TEST_CASE("Test gpuConstants (on CPU)")
     }
 }
 
-TEST_CASE("Test gpuConstants (on GPU)")
+TEST_CASE("Test gpuConstants (on GPU)", "[GPU]")
 {
     auto reference = OFReferenceKernels::constants();
     auto test_result = GpuTestKernels::constants();
@@ -72,7 +72,7 @@ TEST_CASE("Test gpuConstants (on GPU)")
 
 
 
-TEST_CASE("Test perfectGas (on CPU)"){
+TEST_CASE("Test perfectGas (on CPU)", "[CPU]"){
 
     using namespace FoamGpu;
 
@@ -102,7 +102,7 @@ TEST_CASE("Test perfectGas (on CPU)"){
 
 }
 
-TEST_CASE("Test perfectGas (on GPU)"){
+TEST_CASE("Test perfectGas (on GPU)", "[GPU]"){
 
     using namespace FoamGpu;
 
@@ -233,7 +233,7 @@ static inline void thermoTests(TestData::thermoResults& test_result, TestData::t
 
 }
 
-TEST_CASE("Test gpuThermo (on CPU)")
+TEST_CASE("Test gpuThermo (on CPU)", "[CPU]")
 {
 
     constexpr double errorTol = 1E-9;
@@ -253,7 +253,7 @@ TEST_CASE("Test gpuThermo (on CPU)")
 
 }
 
-TEST_CASE("Test gpuThermo (on GPU)")
+TEST_CASE("Test gpuThermo (on GPU)", "[GPU]")
 {
 
     constexpr double errorTol = 1E-7;
@@ -341,7 +341,7 @@ static inline void reactionTests(const TestData::reactionResults& test_result, c
 
 }
 
-TEST_CASE("Test gpuReaction (on CPU)")
+TEST_CASE("Test gpuReaction (on CPU)", "[CPU]")
 {
     constexpr double errorTol = 1E-9;
 
@@ -365,7 +365,7 @@ TEST_CASE("Test gpuReaction (on CPU)")
 
 }
 
-TEST_CASE("Test gpuReaction (on GPU)")
+TEST_CASE("Test gpuReaction (on GPU)", "[GPU]")
 {
     constexpr double errorTol = 1E-9;
 
@@ -390,7 +390,7 @@ TEST_CASE("Test gpuReaction (on GPU)")
 
 
 
-TEST_CASE("Test ludecompose (on CPU)")
+TEST_CASE("Test ludecompose (on CPU)", "[CPU]")
 {
     using namespace FoamGpu;
 
@@ -429,7 +429,7 @@ TEST_CASE("Test ludecompose (on CPU)")
     }
 }
 
-TEST_CASE("Test ludecompose (on GPU)")
+TEST_CASE("Test ludecompose (on GPU)", "[GPU]")
 {
     using namespace FoamGpu;
 
@@ -469,7 +469,7 @@ TEST_CASE("Test ludecompose (on GPU)")
 
 
 
-TEST_CASE("Test gpuOdeSystem (on CPU)")
+TEST_CASE("Test gpuOdeSystem (on CPU)", "[CPU]")
 {
     using namespace FoamGpu;
 
@@ -518,7 +518,7 @@ TEST_CASE("Test gpuOdeSystem (on CPU)")
     }
 }
 
-TEST_CASE("Test gpuOdeSystem (on GPU)")
+TEST_CASE("Test gpuOdeSystem (on GPU)", "[GPU]")
 {
     using namespace FoamGpu;
 
@@ -568,7 +568,7 @@ TEST_CASE("Test gpuOdeSystem (on GPU)")
 }
 
 
-TEST_CASE("Test gpuOdeSolver (on CPU)")
+TEST_CASE("Test gpuOdeSolver (on CPU)", "[CPU]")
 {
     using namespace FoamGpu;
 
@@ -679,7 +679,7 @@ TEST_CASE("Test gpuOdeSolver (on CPU)")
 
 }
 
-TEST_CASE("Test gpuOdeSolver (on GPU)")
+TEST_CASE("Test gpuOdeSolver (on GPU)", "[GPU]")
 {
     using namespace FoamGpu;
 
@@ -792,7 +792,7 @@ TEST_CASE("Test gpuOdeSolver (on GPU)")
 
 
 
-TEST_CASE("for_each_index (on GPU)"){
+TEST_CASE("for_each_index (on GPU)", "[GPU]"){
 
     CHECK(GpuTestKernels::test_for_each_index() == true);
 

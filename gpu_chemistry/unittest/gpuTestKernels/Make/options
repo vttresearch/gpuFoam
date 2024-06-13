@@ -35,4 +35,8 @@ EXE_LIBS = \
     -lchemistryModel \
     -lblockMesh
 
-include ../../../nvcc
+ifeq ($(GPUFOAM_BACKEND_NVIDIA),1)
+    include ../../../nvcc
+else
+    include ../../../hipcc
+endif
