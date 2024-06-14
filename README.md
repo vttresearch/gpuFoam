@@ -29,7 +29,7 @@ Everything in this folder should compile with the Allwmake script. Before runnin
 
     Finally, run the commands
     ```
-    export GPUFOAM_NVIDIA_BACKEND=1
+    export GPUFOAM_BACKEND_NVIDIA=1
     ./Allwmake
     ```
 
@@ -45,7 +45,7 @@ Everything in this folder should compile with the Allwmake script. Before runnin
 
     Finally, run the commands
     ```
-    export GPUFOAM_AMD_BACKEND=1
+    export GPUFOAM_BACKEND_AMD=1
     ./Allwmake
     ```
 
