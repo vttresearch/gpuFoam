@@ -12,7 +12,7 @@
 #include "sutherlandTransport.H"
 #include "thermo.H"
 
-using FoamThermoType = FoamGpu::testThermoType1;
+//using FoamGpu::testThermoType1 = FoamGpu::testThermoType1;
 
 namespace TestData {
 
@@ -20,10 +20,11 @@ Foam::dictionary makeThermoDict(TestData::Mechanism m);
 
 Foam::speciesTable makeSpeciesTable(TestData::Mechanism m);
 
-Foam::PtrList<FoamThermoType> makeCpuThermos(TestData::Mechanism m);
+Foam::PtrList<FoamGpu::testThermoType1> makeCpuThermos_h(TestData::Mechanism m);
+Foam::PtrList<FoamGpu::testThermoType3> makeCpuThermos_e(TestData::Mechanism m);
 
 Foam::dictionary makeReactionDict(TestData::Mechanism m);
 
-Foam::ReactionList<FoamThermoType>
+Foam::ReactionList<FoamGpu::testThermoType1>
 makeCpuReactions(TestData::Mechanism m);
 } // namespace TestData

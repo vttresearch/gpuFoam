@@ -11,7 +11,8 @@
 
 namespace TestData {
 
-std::vector<FoamGpu::gpuThermo>   makeGpuThermos(Mechanism m);
+std::vector<FoamGpu::gpuThermo>   makeGpuThermos_h(Mechanism m);
+std::vector<FoamGpu::gpuThermo>   makeGpuThermos_e(Mechanism m);
 std::vector<FoamGpu::gpuReaction> makeGpuReactions(Mechanism m);
 FoamGpu::gpuODESolverInputs makeGpuODEInputs(std::string odeName, Mechanism m);
 

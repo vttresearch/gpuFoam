@@ -233,46 +233,85 @@ static inline void thermoTests(TestData::thermoResults& test_result, TestData::t
 
 }
 
-TEST_CASE("Test gpuThermo (on CPU)", "[CPU]")
+TEST_CASE("Test gpuThermo h (on CPU)", "[CPU]")
 {
 
     constexpr double errorTol = 1E-9;
     SECTION("GRI")
     {
-        auto test_result = CpuTestKernels::thermo(TestData::GRI);
-        auto reference = OFReferenceKernels::thermo(TestData::GRI);
+        auto test_result = CpuTestKernels::thermo_h(TestData::GRI);
+        auto reference = OFReferenceKernels::thermo_h(TestData::GRI);
         thermoTests(test_result, reference, errorTol);
     }
 
     SECTION("H2")
     {
-        auto test_result = CpuTestKernels::thermo(TestData::H2);
-        auto reference = OFReferenceKernels::thermo(TestData::H2);
+        auto test_result = CpuTestKernels::thermo_h(TestData::H2);
+        auto reference = OFReferenceKernels::thermo_h(TestData::H2);
         thermoTests(test_result, reference, errorTol);
     }
 
 }
 
-TEST_CASE("Test gpuThermo (on GPU)", "[GPU]")
+TEST_CASE("Test gpuThermo h (on GPU)", "[GPU]")
 {
 
     constexpr double errorTol = 1E-7;
     SECTION("GRI")
     {
-        auto test_result = GpuTestKernels::thermo(TestData::GRI);
-        auto reference = OFReferenceKernels::thermo(TestData::GRI);
+        auto test_result = GpuTestKernels::thermo_h(TestData::GRI);
+        auto reference = OFReferenceKernels::thermo_h(TestData::GRI);
         thermoTests(test_result, reference, errorTol);
     }
 
     SECTION("H2")
     {
-        auto test_result = GpuTestKernels::thermo(TestData::H2);
-        auto reference = OFReferenceKernels::thermo(TestData::H2);
+        auto test_result = GpuTestKernels::thermo_h(TestData::H2);
+        auto reference = OFReferenceKernels::thermo_h(TestData::H2);
         thermoTests(test_result, reference, errorTol);
     }
 
 }
 
+TEST_CASE("Test gpuThermo e (on CPU)", "[CPU]")
+{
+
+    constexpr double errorTol = 1E-9;
+    SECTION("GRI")
+    {
+        auto test_result = CpuTestKernels::thermo_e(TestData::GRI);
+        auto reference = OFReferenceKernels::thermo_e(TestData::GRI);
+        thermoTests(test_result, reference, errorTol);
+    }
+
+    SECTION("H2")
+    {
+        auto test_result = CpuTestKernels::thermo_e(TestData::H2);
+        auto reference = OFReferenceKernels::thermo_e(TestData::H2);
+        thermoTests(test_result, reference, errorTol);
+    }
+
+}
+
+TEST_CASE("Test gpuThermo e (on GPU)", "[GPU]")
+{
+
+    constexpr double errorTol = 1E-7;
+    SECTION("GRI")
+    {
+        auto test_result = GpuTestKernels::thermo_e(TestData::GRI);
+        auto reference = OFReferenceKernels::thermo_e(TestData::GRI);
+        thermoTests(test_result, reference, errorTol);
+    }
+
+    SECTION("H2")
+    {
+        auto test_result = GpuTestKernels::thermo_e(TestData::H2);
+        auto reference = OFReferenceKernels::thermo_e(TestData::H2);
+        thermoTests(test_result, reference, errorTol);
+    }
+
+}
 
 
 

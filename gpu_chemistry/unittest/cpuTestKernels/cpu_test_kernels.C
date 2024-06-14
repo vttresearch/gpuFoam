@@ -73,14 +73,58 @@ TestData::perfectGasResult perfect_gas(gScalar p, gScalar T, gScalar Y, gScalar 
 }
 
 
-TestData::thermoResults thermo(TestData::Mechanism mech)
+TestData::thermoResults thermo_h(TestData::Mechanism mech)
 {
     using namespace FoamGpu;
 
     const auto p = TestData::pInf(mech);
     const auto T = TestData::TInf(mech);
 
-    auto thermos_temp = TestData::makeGpuThermos(mech);
+    auto thermos_temp = TestData::makeGpuThermos_h(mech);
+    auto thermos = toDeviceVector(thermos_temp);
+
+
+    const gLabel nThermo = thermos.size();
+
+    TestData::thermoResults ret(nThermo);
+
+    for (size_t i = 0; i < thermos.size(); ++i)
+    {
+        gpuThermo* thermo = make_raw_pointer(thermos.data()) + i;
+
+        ret.W[i] = eval([=] DEVICE (){return thermo->W();});
+        ret.Y[i] = eval([=] DEVICE (){return thermo->Y();});
+        ret.R[i] = eval([=] DEVICE (){return thermo->R();});
+        ret.Cp[i] = eval([=] DEVICE (){return thermo->Cp(p, T);});
+        ret.ha[i] = eval([=] DEVICE (){return thermo->Ha(p, T);});
+        ret.hs[i] = eval([=] DEVICE (){return thermo->Hs(p, T);});
+        ret.hf[i] = eval([=] DEVICE (){return thermo->Hf(    );});
+        ret.s[i] = eval([=] DEVICE (){return thermo->S(p, T);});
+        ret.gStd[i] = eval([=] DEVICE (){return thermo->Gstd(T);});
+        ret.dCpdT[i] = eval([=] DEVICE (){return thermo->dCpdT(p, T);});
+        ret.Cv[i] = eval([=] DEVICE (){return thermo->Cv(p, T);});
+        ret.es[i] = eval([=] DEVICE (){return thermo->Es(p, T);});
+        ret.ea[i] = eval([=] DEVICE (){return thermo->Ea(p, T);});
+        ret.K[i] = eval([=] DEVICE (){return thermo->K(p, T);});
+        ret.Kp[i] = eval([=] DEVICE (){return thermo->Kp(p, T);});
+        ret.Kc[i] = eval([=] DEVICE (){return thermo->Kc(p, T);});
+        ret.dKcdTbyKc[i] = eval([=] DEVICE (){return thermo->dKcdTbyKc(p, T);});
+
+    }
+
+
+    return ret;
+
+}
+
+TestData::thermoResults thermo_e(TestData::Mechanism mech)
+{
+    using namespace FoamGpu;
+
+    const auto p = TestData::pInf(mech);
+    const auto T = TestData::TInf(mech);
+
+    auto thermos_temp = TestData::makeGpuThermos_e(mech);
     auto thermos = toDeviceVector(thermos_temp);
 
 
@@ -270,7 +314,7 @@ TestData::odeSystemResults odesystem(TestData::Mechanism mech)
 {
     using namespace FoamGpu;
 
-    auto gpu_thermos = toDeviceVector(makeGpuThermos(mech));
+    auto gpu_thermos = toDeviceVector(makeGpuThermos_h(mech));
     auto gpu_reactions = toDeviceVector(makeGpuReactions(mech));
     const auto nEqns = TestData::equationCount(mech);
     const auto nSpecie = TestData::speciesCount(mech);
@@ -357,7 +401,7 @@ std::vector<gScalar> ode_solve(TestData::Mechanism mech, std::string solver_name
 {
     using namespace FoamGpu;
 
-    auto thermos = toDeviceVector(makeGpuThermos(mech));
+    auto thermos = toDeviceVector(makeGpuThermos_h(mech));
     auto reactions = toDeviceVector(makeGpuReactions(mech));
 
     const gLabel nEqns = TestData::equationCount(mech);

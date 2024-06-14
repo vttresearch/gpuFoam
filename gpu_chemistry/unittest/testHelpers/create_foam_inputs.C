@@ -38,16 +38,29 @@ Foam::speciesTable makeSpeciesTable(TestData::Mechanism m) {
     return species;
 }
 
-Foam::PtrList<FoamThermoType> makeCpuThermos(TestData::Mechanism m) {
+Foam::PtrList<FoamGpu::testThermoType1> makeCpuThermos_h(TestData::Mechanism m) {
     using namespace Foam;
 
     dictionary              thermoDict = makeThermoDict(m);
     List<word>              species    = thermoDict.lookup("species");
-    PtrList<FoamThermoType> ret;
+    PtrList<FoamGpu::testThermoType1> ret;
 
     for (auto specie : species) {
         ret.append(
-            new FoamThermoType(specie, thermoDict.subDict(specie)));
+            new FoamGpu::testThermoType1(specie, thermoDict.subDict(specie)));
+    }
+    return ret;
+}
+Foam::PtrList<FoamGpu::testThermoType3> makeCpuThermos_e(TestData::Mechanism m) {
+    using namespace Foam;
+
+    dictionary              thermoDict = makeThermoDict(m);
+    List<word>              species    = thermoDict.lookup("species");
+    PtrList<FoamGpu::testThermoType3> ret;
+
+    for (auto specie : species) {
+        ret.append(
+            new FoamGpu::testThermoType1(specie, thermoDict.subDict(specie)));
     }
     return ret;
 }
@@ -62,14 +75,14 @@ Foam::dictionary makeReactionDict(TestData::Mechanism m) {
     return reactionDict;
 }
 
-Foam::ReactionList<FoamThermoType>
+Foam::ReactionList<FoamGpu::testThermoType1>
 makeCpuReactions(TestData::Mechanism m) {
 
-    auto thermos      = makeCpuThermos(m);
+    auto thermos      = makeCpuThermos_h(m);
     auto species      = makeSpeciesTable(m);
     auto reactionDict = makeReactionDict(m);
 
-    return Foam::ReactionList<FoamThermoType>(
+    return Foam::ReactionList<FoamGpu::testThermoType1>(
         species, thermos, reactionDict);
 }
 

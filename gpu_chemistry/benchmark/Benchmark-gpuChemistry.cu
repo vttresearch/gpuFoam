@@ -130,7 +130,7 @@ TEST_CASE("gpuODESystem"){
 
     using namespace FoamGpu;
 
-    auto gpu_thermos = toDeviceVector(makeGpuThermos(mech));
+    auto gpu_thermos = toDeviceVector(makeGpuThermos_h(mech));
     auto gpu_reactions = toDeviceVector(makeGpuReactions(mech));
 
     const gLabel nCells = 1;
@@ -763,7 +763,7 @@ TEST_CASE("gpuODESolver"){
 
     using namespace FoamGpu;
 
-    auto thermos = toDeviceVector(makeGpuThermos(mech));
+    auto thermos = toDeviceVector(makeGpuThermos_h(mech));
     auto reactions = toDeviceVector(makeGpuReactions(mech));
 
     const gLabel nCells = 1;

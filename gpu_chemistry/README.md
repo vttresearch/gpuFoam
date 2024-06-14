@@ -31,12 +31,12 @@ thermoType
     mixture         <SomeMultiComponentMixture>;
     transport       <SomeTransportType>;
     thermo          janaf;
-    energy          sensibleEnthalpy;
+    energy          sensibleEnthalpy / sensibleInternalEnergy;
     equationOfState perfectGas;
     specie          specie;
 }
 ```
-This solves the energy equation for sensible enthalpy and the transport properties are computed based on any of the available transport models in stock OpenFOAM. Heat capacity is taken from Janaf polynomials and the ideal gas law is assumed for the density.
+This solves the energy equation for sensible enthalpy or internal energy and the transport properties are computed based on any of the available transport models in stock OpenFOAM. Heat capacity is taken from Janaf polynomials and the ideal gas law is assumed for the density.
 
 
 #### Supported ODE solvers

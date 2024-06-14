@@ -2,8 +2,8 @@
 
 #include "mechanisms.H"
 #include "results.H"
-
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -14,7 +14,9 @@ TestData::constantResults constants();
 TestData::perfectGasResult
 perfect_gas(gScalar p, gScalar T, gScalar Y, gScalar molWeight);
 
-TestData::thermoResults   thermo(TestData::Mechanism mech);
+TestData::thermoResults thermo_h(TestData::Mechanism mech);
+TestData::thermoResults thermo_e(TestData::Mechanism mech);
+
 TestData::reactionResults reaction(TestData::Mechanism mech);
 
 std::tuple<std::vector<gScalar>,

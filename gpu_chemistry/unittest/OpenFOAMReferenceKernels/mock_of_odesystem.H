@@ -11,8 +11,8 @@ enum jacobianType { fast = 0, exact = 1 };
 
 class MockOFSystem : public ODESystem {
 
-    const PtrList<FoamThermoType>            specieThermos_;
-    const ReactionList<FoamThermoType>       reactions_;
+    const PtrList<FoamGpu::testThermoType1>            specieThermos_;
+    const ReactionList<FoamGpu::testThermoType1>       reactions_;
     label                                    nSpecie_;
     mutable scalarField                      Y_;
     mutable scalarField                      c_;
@@ -27,14 +27,14 @@ class MockOFSystem : public ODESystem {
 
 public:
 
-    const ReactionList<FoamThermoType>& getReactions() const
+    const ReactionList<FoamGpu::testThermoType1>& getReactions() const
     {
         return reactions_;
     }
 
 
     MockOFSystem(TestData::Mechanism m)
-        : specieThermos_(TestData::makeCpuThermos(m))
+        : specieThermos_(TestData::makeCpuThermos_h(m))
         , reactions_(TestData::makeSpeciesTable(m),
                      specieThermos_,
                      TestData::makeReactionDict(m))

@@ -6,10 +6,27 @@
 
 namespace TestData {
 
-std::vector<FoamGpu::gpuThermo> makeGpuThermos(Mechanism m) {
+std::vector<FoamGpu::gpuThermo> makeGpuThermos_h(Mechanism m) {
 
     auto thermoDict = makeThermoDict(m);
-    auto cpuThermos = makeCpuThermos(m);
+    auto cpuThermos = makeCpuThermos_h(m);
+
+    std::vector<FoamGpu::gpuThermo> ret;
+    for (int i = 0; i < cpuThermos.size(); ++i) {
+        auto subDict = thermoDict.subDict(cpuThermos[i].name());
+
+        auto gpuThermo =
+            FoamGpu::makeGpuThermo(cpuThermos[i], subDict);
+        ret.push_back(gpuThermo);
+    }
+
+    return ret;
+}
+
+std::vector<FoamGpu::gpuThermo> makeGpuThermos_e(Mechanism m) {
+
+    auto thermoDict = makeThermoDict(m);
+    auto cpuThermos = makeCpuThermos_e(m);
 
     std::vector<FoamGpu::gpuThermo> ret;
     for (int i = 0; i < cpuThermos.size(); ++i) {
@@ -25,13 +42,13 @@ std::vector<FoamGpu::gpuThermo> makeGpuThermos(Mechanism m) {
 
 std::vector<FoamGpu::gpuReaction> makeGpuReactions(Mechanism m) {
 
-    auto                   thermos      = makeCpuThermos(m);
+    auto                   thermos      = makeCpuThermos_h(m);
     auto                   thermoDict   = makeThermoDict(m);
     auto                   reactionDict = makeReactionDict(m);
     Foam::List<Foam::word> s_list = thermoDict.lookup("species");
     Foam::speciesTable     species(s_list);
 
-    auto gpu_thermos   = makeGpuThermos(m);
+    auto gpu_thermos   = makeGpuThermos_h(m);
     auto cpu_reactions = makeCpuReactions(m);
     auto ret           = FoamGpu::makeGpuReactions(
         species, reactionDict, gpu_thermos, cpu_reactions);

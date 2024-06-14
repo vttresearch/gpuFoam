@@ -9,7 +9,7 @@
 #include "logPolynomialTransport.H"
 namespace FoamGpu
 {
-    
+
     //This is the corresponding cpu thermo type for the gpuThermo.
     using testThermoType1 =
         Foam::sutherlandTransport
@@ -42,5 +42,22 @@ namespace FoamGpu
                 Foam::sensibleEnthalpy
             >
         >;
-    
+
+
+    using testThermoType3 =
+        Foam::sutherlandTransport
+        <
+            Foam::species::thermo
+            <
+                Foam::janafThermo
+                <
+                    Foam::perfectGas
+                    <
+                        Foam::specie
+                    >
+                >,
+                Foam::sensibleEnthalpy
+            >
+        >;
+
 }
