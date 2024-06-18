@@ -723,6 +723,7 @@ TEST_CASE("Test memoryResource (on GPU)", "[GPU]")
 
     CHECK(GpuTestKernels::test_memory_resource(TestData::Mechanism::GRI, 101));
     CHECK(GpuTestKernels::test_memory_resource(TestData::Mechanism::GRI, 1032));
+    CHECK(GpuTestKernels::test_memory_resource(TestData::Mechanism::GRI, 10031));
 
 
 }
