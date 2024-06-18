@@ -846,6 +846,15 @@ TEST_CASE("for_each_index (on GPU)", "[GPU]"){
 
 }
 
+TEST_CASE("single_cell_solver (on GPU)", "[GPU]"){
+
+    CHECK(GpuTestKernels::test_single_cell_solver(TestData::GRI, 1) == true);
+    CHECK(GpuTestKernels::test_single_cell_solver(TestData::GRI, 2) == true);
+    CHECK(GpuTestKernels::test_single_cell_solver(TestData::GRI, 100) == true);
+
+
+}
+
 /*
 TEST_CASE("Test gpuKernelEvaluator (on GPU)", "[GPU]"){
 

@@ -32,6 +32,8 @@ std::vector<gScalar> ode_solve(TestData::Mechanism mech,
 bool test_memory_resource(TestData::Mechanism mech, gLabel nCells);
 
 bool test_for_each_index();
+bool test_single_cell_solver(TestData::Mechanism mech, gLabel nCells);
+
 bool test_evaluator(gLabel nCells);
 
 } // namespace GpuTestKernels

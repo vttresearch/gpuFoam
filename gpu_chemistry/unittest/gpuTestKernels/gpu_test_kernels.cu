@@ -5,6 +5,7 @@
 #include "gpuKernelEvaluator.H"
 #include "for_each_index.H"
 #include "gpuMemoryResource.H"
+#include "singleCellSolver.H"
 
 #include "ludecompose.H"
 #include "create_gpu_inputs.H"
@@ -655,7 +656,95 @@ bool test_for_each_index(){
 
 }
 
+bool test_single_cell_solver(TestData::Mechanism mech, gLabel nCells){
 
+    using namespace FoamGpu;
+
+    auto thermos = toDeviceVector(makeGpuThermos_h(mech));
+    auto reactions = toDeviceVector(makeGpuReactions(mech));
+
+    const gLabel nEqns = TestData::equationCount(mech);
+    const gLabel nSpecie = TestData::speciesCount(mech);
+
+    gpuODESystem system
+    (
+        nEqns,
+        gLabel(reactions.size()),
+        make_raw_pointer(thermos.data()),
+        make_raw_pointer(reactions.data())
+    );
+
+    
+
+    gpuODESolverInputs i = TestData::makeGpuODEInputs("Rosenbrock23", mech);
+
+
+    auto ode = make_gpuODESolver(system, i);
+
+    
+
+    std::vector<gScalar> Y_h(nCells*nEqns);
+
+    {
+        auto s = make_mdspan(Y_h, extents<2>{nCells, nEqns});
+
+        const auto Yi = TestData::get_solution_vector(mech);
+
+        for (gLabel celli = 0; celli < nCells; ++celli) {
+            for (gLabel i = 0; i < nEqns; ++i){
+                s(celli, i) = Yi[i];
+            }
+
+        }
+    }
+
+    auto Y_d = toDeviceVector(Y_h);
+    auto Y_span = make_mdspan(Y_d, extents<2>{nCells, nEqns});
+
+    memoryResource_t memory(nCells, nSpecie);
+    auto buffers = toDeviceVector(splitToBuffers(memory));
+    auto buffers_span = make_mdspan(buffers, extents<1>{nCells});
+
+    gScalar deltaT = 1e-5;
+    gScalar deltaTChemMax = deltaT/4;
+    std::vector<gScalar> deltaTChem_h(nCells, deltaT/10);
+    auto deltaTChem_d = toDeviceVector(deltaTChem_h);
+    auto deltaTChem_span = make_mdspan(deltaTChem_d, extents<1>{nCells});
+
+    singleCellSolver op(
+        deltaT,
+        nSpecie,
+        deltaTChem_span,
+        Y_span,
+        buffers_span,
+        ode
+    );
+
+
+    for_each_index(op, nCells);
+
+
+
+    auto Y_result = toStdVector(Y_d);
+    auto s = make_mdspan(Y_result, extents<2>{nCells, nEqns});
+
+    if (s(0, 0) == gScalar(0)){
+        return false;
+    }
+
+    for (gLabel celli = 1; celli < nCells; ++celli){
+        for (gLabel j = 0; j < nEqns; ++j){
+
+            if (s(celli -1, j) != s(celli, j)){
+                return false;
+            }
+        }
+    }
+
+
+    return true;
+
+}
 
 
 
@@ -677,10 +766,6 @@ bool test_evaluator(gLabel nCells){
     gScalar deltaT = 1e-5;
     gScalar deltaTChemMax = deltaT/4;
     std::vector<gScalar> deltaTChem(nCells, deltaT/10);
-
-
-    std::vector<gScalar> rho(nCells, 1.0);
-
 
     std::vector<gScalar> Yvf(nCells*nEqns);
 
