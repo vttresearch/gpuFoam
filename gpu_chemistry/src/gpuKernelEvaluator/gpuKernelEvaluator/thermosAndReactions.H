@@ -11,7 +11,7 @@ struct thermosAndReactions {
 
     thermosAndReactions() = default;
 
-    thermosAndReactions(const std::vector<gpuThermo>    thermos,
+    thermosAndReactions(const std::vector<gpuThermo>&    thermos,
                         const std::vector<gpuReaction>& reactions);
 
     ~thermosAndReactions();

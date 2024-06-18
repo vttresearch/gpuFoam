@@ -845,11 +845,12 @@ TEST_CASE("for_each_index (on GPU)", "[GPU]"){
     CHECK(GpuTestKernels::test_for_each_index() == true);
 
 }
-/*
-TEST_CASE("Test gpuKernelEvaluator"){
 
-    CHECK(TestData::test_evaluator(1) == true);
-    CHECK(TestData::test_evaluator(2) == true);
+/*
+TEST_CASE("Test gpuKernelEvaluator (on GPU)", "[GPU]"){
+
+    CHECK(GpuTestKernels::test_evaluator(1) == true);
+    CHECK(GpuTestKernels::test_evaluator(2) == true);
 
 }
 */

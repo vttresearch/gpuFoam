@@ -63,9 +63,9 @@ GpuKernelEvaluator::computeYNew(
 std::tuple<std::vector<gScalar>, std::vector<gScalar>, gScalar>
 GpuKernelEvaluator::computeRR(gScalar deltaT,
                               gScalar deltaTChemMax,
-                              const std::vector<gScalar> rho,
-                              const std::vector<gScalar> deltaTChem,
-                              const std::vector<gScalar> Y) {
+                              const std::vector<gScalar>& rho,
+                              const std::vector<gScalar>& deltaTChem,
+                              const std::vector<gScalar>& Y) {
 
     const gLabel nCells = rho.size();
 

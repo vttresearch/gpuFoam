@@ -16,7 +16,7 @@ static inline T* allocateAndTransfer(const std::vector<T>& t) {
 }
 
 thermosAndReactions::thermosAndReactions(
-    const std::vector<gpuThermo>    thermos,
+    const std::vector<gpuThermo>&    thermos,
     const std::vector<gpuReaction>& reactions)
     : nThermos_(gLabel(thermos.size()))
     , nReactions_(gLabel(reactions.size()))

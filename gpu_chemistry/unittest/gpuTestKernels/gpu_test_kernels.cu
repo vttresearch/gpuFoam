@@ -658,7 +658,7 @@ bool test_for_each_index(){
 
 
 
-/*
+
 bool test_evaluator(gLabel nCells){
 
     using namespace FoamGpu;
@@ -704,26 +704,26 @@ bool test_evaluator(gLabel nCells){
     );
 
     auto newY = std::get<0>(tuple);
-    auto newDeltaTs = std::get<0>(tuple);
+    auto newDeltaTs = std::get<1>(tuple);
 
 
+    for (gLabel i = 0; i < nEqns; ++i){
+        std::cout << newY[i] << std::endl;
+    }
 
+    /*
     auto s2 = make_mdspan(newY, extents<2>{nCells, nEqns});
 
     for (gLabel i = 0; i < nEqns; ++i){
             std::cout << s2(0, i) << std::endl;
     }
-
+    */
 
     return newY[0] != 0;
 
 
-
-    //return true;
-
-
 }
-*/
+
 
 
 }
