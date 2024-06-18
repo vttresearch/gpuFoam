@@ -60,9 +60,9 @@ public:
     std::tuple<std::vector<gScalar>, std::vector<gScalar>, gScalar>
     computeRR(gScalar                    deltaT,
               gScalar                    deltaTChemMax,
-              const std::vector<gScalar> rho,
-              const std::vector<gScalar> deltaTChem,
-              const std::vector<gScalar> Yvf);
+              const std::vector<gScalar>& rho,
+              const std::vector<gScalar>& deltaTChem,
+              const std::vector<gScalar>& Yvf);
 
 private:
     gLabel              nEqns_, nSpecie_, nReactions_;
