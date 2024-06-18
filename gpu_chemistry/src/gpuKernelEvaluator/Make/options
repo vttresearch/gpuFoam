@@ -1,11 +1,10 @@
 EXE_INC = \
     -I../lnInclude \
-    -I../../../gpu_utils/common/lnInclude \
-    -I$(CUDA_HEADERS)
+    -I../../../gpu_utils/common/lnInclude
 
 
 #LIB_LIBS = -lcudart_static -lcudart
-LIB_LIBS += -L$(CUDA_LIBS) -lcudart
+#LIB_LIBS += -L$(CUDA_LIBS) -lcudart -lcuda
 
 ifeq ($(GPUFOAM_BACKEND_NVIDIA),1)
     include ../../../nvcc
