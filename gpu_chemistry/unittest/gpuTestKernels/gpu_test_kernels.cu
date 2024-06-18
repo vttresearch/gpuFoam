@@ -511,6 +511,126 @@ std::vector<gScalar> ode_solve(TestData::Mechanism mech, std::string solver_name
 
 }
 
+bool test_memory_resource(TestData::Mechanism mech, gLabel nCells){
+
+    using namespace FoamGpu;
+
+    gLabel nSpecie = TestData::speciesCount(mech);
+
+
+    memoryResource_t memory(nCells, nSpecie);
+
+    auto buffers = toDeviceVector(splitToBuffers(memory));
+
+    auto buffers_span = make_mdspan(buffers, extents<1>(nCells));
+
+
+    auto op = [nSpecie = nSpecie, buffs = buffers_span] DEVICE (gLabel celli) {
+
+        gpuBuffer& buffer = buffs[celli];
+        //gLabel nEqns = nSpecie + 2;
+
+        auto assign_label = [=] DEVICE (mdspan<gLabel, 1> s){
+            for (gLabel i = 0; i < s.size(); ++i){
+                s[i] = celli;
+            }
+        };
+
+        auto assign_oned_scalar = [=] DEVICE (mdspan<gScalar, 1> s){
+            for (gLabel i = 0; i < s.size(); ++i){
+                s[i] = gScalar(celli);
+            }
+        };
+
+        auto assign_twod_scalar = [=] DEVICE (mdspan<gScalar, 2> s){
+            auto ext = s.extents();
+            gLabel nj = ext.extent(1);
+            gLabel ni = ext.extent(2);
+            for (gLabel j = 0; j < nj; ++j){
+                for (gLabel i = 0; i < ni; ++i){
+                    s(j, i) = gScalar(celli);
+                }
+            }
+            
+        };
+        
+
+
+        assign_label(buffer.pivotIndices());
+
+        assign_oned_scalar(buffer.dydx0());
+        assign_oned_scalar(buffer.yTemp());
+        assign_oned_scalar(buffer.dydx());
+        assign_oned_scalar(buffer.dfdx());
+        assign_oned_scalar(buffer.k1());
+        assign_oned_scalar(buffer.k2());
+        assign_oned_scalar(buffer.k3());
+        assign_oned_scalar(buffer.k4());
+        assign_oned_scalar(buffer.err());
+        assign_oned_scalar(buffer.lubuffer());
+        assign_oned_scalar(buffer.c());
+        auto c = buffer.c();
+        c[nSpecie] = gScalar(celli);
+        c[nSpecie + 1] = gScalar(celli);
+
+        assign_oned_scalar(buffer.tempField1());
+        assign_oned_scalar(buffer.tempField2());
+
+
+        assign_twod_scalar(buffer.J());
+
+
+    };
+
+
+    for_each_index(op, nCells);
+
+
+    auto h_buffers = toStdVector(buffers);
+
+    gLabel nEqns = nSpecie + 2;
+
+
+    for (size_t celli = 0; celli < h_buffers.size(); ++celli){
+
+        auto buffer = h_buffers[celli];
+
+        for (auto lPtr : buffer.lData_){
+            std::vector<gLabel> hvec(nEqns);
+
+            device_to_host(lPtr, lPtr + nEqns, hvec.begin());
+
+            if (hvec != std::vector<gLabel>(nEqns, celli)){
+                return false;
+            }
+        }
+
+        for (auto sPtr : buffer.sData_){
+            std::vector<gScalar> hvec(nEqns);
+
+            device_to_host(sPtr, sPtr + nEqns, hvec.begin());
+
+            if (hvec != std::vector<gScalar>(nEqns, gScalar(celli))){
+                return false;
+            }
+        }
+
+        for (auto sPtr : buffer.twodSData_){
+            std::vector<gScalar> hvec(nEqns*nEqns);
+
+            device_to_host(sPtr, sPtr + nEqns*nEqns, hvec.begin());
+
+            if (hvec != std::vector<gScalar>(nEqns*nEqns, gScalar(celli))){
+                return false;
+            }
+        }
+
+    }
+
+
+    return true;
+
+}
 
 bool test_for_each_index(){
 
@@ -534,6 +654,9 @@ bool test_for_each_index(){
     return toStdVector(v1) == correct;
 
 }
+
+
+
 
 /*
 bool test_evaluator(gLabel nCells){

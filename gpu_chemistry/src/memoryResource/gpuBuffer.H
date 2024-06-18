@@ -114,7 +114,6 @@ struct gpuBuffer {
         return getTwodScalarData(twoDScalarArrays::J, nEqns_, nEqns_);
     }
 
-private:
     device_array<gLabel*, N_LABEL_ARRAYS>        lData_;
     device_array<gScalar*, N_SCALAR_ARRAYS>      sData_;
     device_array<gScalar*, N_TWOD_SCALAR_ARRAYS> twodSData_;

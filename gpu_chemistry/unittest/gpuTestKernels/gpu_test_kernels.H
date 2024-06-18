@@ -29,6 +29,8 @@ std::vector<gScalar> ode_solve(TestData::Mechanism mech,
                                gScalar             xEnd,
                                gScalar             dxTry);
 
+bool test_memory_resource(TestData::Mechanism mech, gLabel nCells);
+
 bool test_for_each_index();
 bool test_evaluator(gLabel nCells);
 

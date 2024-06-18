@@ -718,6 +718,14 @@ TEST_CASE("Test gpuOdeSolver (on CPU)", "[CPU]")
 
 }
 
+TEST_CASE("Test memoryResource (on GPU)", "[GPU]")
+{
+
+    CHECK(GpuTestKernels::test_memory_resource(TestData::Mechanism::GRI, 101));
+    CHECK(GpuTestKernels::test_memory_resource(TestData::Mechanism::GRI, 1032));
+
+
+}
 TEST_CASE("Test gpuOdeSolver (on GPU)", "[GPU]")
 {
     using namespace FoamGpu;
