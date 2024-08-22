@@ -6,10 +6,11 @@
 
 namespace TestData {
 
-enum Mechanism { GRI, H2 };
+enum Mechanism { GRI, H2, YAO };
 
 static inline gLabel speciesCount(Mechanism m) {
     if (m == GRI) { return 53; }
+    if (m == YAO) { return 54;}
     return 10;
 }
 
@@ -20,9 +21,12 @@ static inline gLabel equationCount(Mechanism m) {
 static inline gScalar pInf(Mechanism m){
     if (m == Mechanism::GRI) {
         return 1.36789e+06;
-    } else {
-        return 202650.0;
     }
+    if (m == Mechanism::YAO) {
+        return 1E5;
+    }
+    return 202650.0;
+
 }
 
 static inline gScalar TInf(Mechanism m){
@@ -75,6 +79,30 @@ template <class T> static inline void assign_h2(T& f) {
     f[nSpecie + 1] = p_inf;
 }
 
+template <class T> static inline void assign_yao(T& f) {
+
+    constexpr int NC12H26_idx = 44;
+    constexpr int N2_idx = 53;
+    constexpr int O2_idx = 8;
+
+    constexpr double NC12H26_val = 0.2;
+    constexpr double O2_val = 0.2;
+    constexpr double N2_val = 0.6;
+    double T_inf   = TInf(Mechanism::YAO);
+    double p_inf   = pInf(Mechanism::YAO);
+
+    gLabel nSpecie = speciesCount(YAO);
+
+    for (auto& e : f) { e = 0.0; }
+    f[NC12H26_idx] = NC12H26_val;
+    f[N2_idx] = N2_val;
+    f[O2_idx] = O2_val;
+
+    f[nSpecie]     = T_inf;
+    f[nSpecie + 1] = p_inf;
+}
+
+
 template <class T>
 static inline void assign_test_condition(T& f, Mechanism m) {
     if (gLabel(f.size()) != equationCount(m)) {
@@ -83,7 +111,11 @@ static inline void assign_test_condition(T& f, Mechanism m) {
 
     if (m == Mechanism::GRI) {
         assign_gri(f);
-    } else {
+    }
+    if (m == Mechanism::YAO) {
+        assign_yao(f);
+    }
+    else {
         assign_h2(f);
     }
 }
