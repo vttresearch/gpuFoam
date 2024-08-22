@@ -8,66 +8,21 @@
 #include "ludecompose.H"
 #include "gpuODESystem.H"
 #include "makeGpuOdeSolver.H"
-#include "gpuMemoryResource.H"
+#include "cpuMemoryResource.H"
 
 
 static constexpr TestData::Mechanism mech = TestData::GRI;
-using memoryResource_t = FoamGpu::gpuMemoryResource;
 
 
-template<class T, class R>
-__global__ void on_device(T t, R* r)
+using memoryResource_t = FoamGpu::cpuMemoryResource;
+
+
+template<class T>
+static inline gScalar eval(T t)
 {
-    *r = t();
+    return t();
 }
 
-
-
-#ifdef __NVIDIA_BACKEND__
-
-    template<class T>
-    static inline gScalar eval(T t)
-    {
-
-        gScalar *d_result;
-        gpuErrorCheck(cudaMalloc(&d_result, sizeof(gScalar)));
-        on_device<<<1,1>>>(t, d_result);
-        gpuErrorCheck(cudaGetLastError());
-        gpuErrorCheck(cudaDeviceSynchronize());
-        gScalar h_result;
-        gpuErrorCheck(cudaMemcpy(&h_result, d_result, sizeof(gScalar), cudaMemcpyDeviceToHost));
-        gpuErrorCheck(cudaDeviceSynchronize());
-        gpuErrorCheck(cudaFree(d_result));
-        gpuErrorCheck(cudaDeviceSynchronize());
-        return h_result;
-
-    }
-
-    //AMD-backend
-    #else
-
-    template<class T>
-    static inline gScalar eval(T t)
-    {
-
-        gScalar *d_result;
-        gpuErrorCheck(hipMalloc(&d_result, sizeof(gScalar)));
-        hipLaunchKernelGGL
-        (
-            on_device, dim3(1), dim3(1), 0, 0, t, d_result
-        );
-        gpuErrorCheck(hipGetLastError());
-        gpuErrorCheck(hipDeviceSynchronize());
-        gScalar h_result;
-        gpuErrorCheck(hipMemcpy(&h_result, d_result, sizeof(gScalar), hipMemcpyDeviceToHost));
-        gpuErrorCheck(hipDeviceSynchronize());
-        gpuErrorCheck(hipFree(d_result));
-        gpuErrorCheck(hipDeviceSynchronize());
-        return h_result;
-
-    }
-
-#endif
 
 
 TEST_CASE("LU")
@@ -95,12 +50,12 @@ TEST_CASE("LU")
     auto v_span = make_mdspan(v, extents<1>{nEqns});
     auto s_span = make_mdspan(source, extents<1>{nEqns});
 
-    auto op1 = [=] __device__() {
+    auto op1 = [=] () {
         FoamGpu::LUDecompose(m_span, p_span, v_span);
         return p_span(4);
     };
 
-    auto op2 = [=] __device__ (){
+    auto op2 = [=]  (){
         FoamGpu::LUBacksubstitute(m_span, p_span, s_span);
         return s_span(5);
     };
@@ -160,7 +115,7 @@ TEST_CASE("gpuODESystem"){
                 buffers = make_mdspan(buffers, extents<1>{1}),
                 y       = make_mdspan(y, extents<1>{nEqns}),
                 dy      = make_mdspan(dy, extents<1>{nEqns})
-                ]__device__() {
+                ]() {
         system.derivatives(y, dy, buffers[0]);
         return dy(5);
     };
@@ -171,7 +126,7 @@ TEST_CASE("gpuODESystem"){
          y       = make_mdspan(y, extents<1>{nEqns}),
          dy      = make_mdspan(dy, extents<1>{nEqns}),
          J = make_mdspan(J, extents<2>{nEqns, nEqns})
-         ] __device__() {
+         ] () {
             system.jacobian(y, dy, J, buffers[0]);
             return J(3, 3);
         };
@@ -206,11 +161,11 @@ TEST_CASE("gpuReactionRate"){
         gpuArrheniusReactionRate r(0.32, 0.43, 0.54);
 
 
-        auto op1 = [=, c = make_mdspan(c, extents<1>{nSpecie})] __device__ () {
+        auto op1 = [=, c = make_mdspan(c, extents<1>{nSpecie})]  () {
             return r(p, T, c);
         };
 
-        auto op2 = [=, c = make_mdspan(c, extents<1>{nSpecie})] __device__ () {
+        auto op2 = [=, c = make_mdspan(c, extents<1>{nSpecie})]  () {
             return r.ddT(p, T, c);
         };
 
@@ -218,7 +173,7 @@ TEST_CASE("gpuReactionRate"){
                 =,
                 c = make_mdspan(c, extents<1>{nSpecie}),
                 ddc = make_mdspan(ddc, extents<1>{nSpecie})
-                ] __device__ () {
+                ]  () {
 
             r.ddc(p, T, c, ddc);
             return ddc[3] + ddc[5] + ddc[7];
@@ -247,11 +202,11 @@ TEST_CASE("gpuReactionRate"){
         gpuThirdBodyArrheniusReactionRate r(0.32, 0.43, 0.54, tbes);
 
 
-        auto op1 = [=, c = make_mdspan(c, extents<1>{nSpecie})] __device__ () {
+        auto op1 = [=, c = make_mdspan(c, extents<1>{nSpecie})]  () {
             return r(p, T, c);
         };
 
-        auto op2 = [=, c = make_mdspan(c, extents<1>{nSpecie})] __device__ () {
+        auto op2 = [=, c = make_mdspan(c, extents<1>{nSpecie})]  () {
             return r.ddT(p, T, c);
         };
 
@@ -259,7 +214,7 @@ TEST_CASE("gpuReactionRate"){
                 =,
                 c = make_mdspan(c, extents<1>{nSpecie}),
                 ddc = make_mdspan(ddc, extents<1>{nSpecie})
-                ] __device__ () {
+                ]  () {
 
             r.ddc(p, T, c, ddc);
             return ddc[3] + ddc[5] + ddc[7];
@@ -299,11 +254,11 @@ TEST_CASE("gpuReactionRate"){
         //gpuThirdBodyArrheniusReactionRate r(0.32, 0.43, 0.54, tbes);
 
 
-        auto op1 = [=, c = make_mdspan(c, extents<1>{nSpecie})] __device__ () {
+        auto op1 = [=, c = make_mdspan(c, extents<1>{nSpecie})]  () {
             return r(p, T, c);
         };
 
-        auto op2 = [=, c = make_mdspan(c, extents<1>{nSpecie})] __device__ () {
+        auto op2 = [=, c = make_mdspan(c, extents<1>{nSpecie})]  () {
             return r.ddT(p, T, c);
         };
 
@@ -311,7 +266,7 @@ TEST_CASE("gpuReactionRate"){
                 =,
                 c = make_mdspan(c, extents<1>{nSpecie}),
                 ddc = make_mdspan(ddc, extents<1>{nSpecie})
-                ] __device__ () {
+                ]  () {
 
             r.ddc(p, T, c, ddc);
             return ddc[3] + ddc[5] + ddc[7];
@@ -351,11 +306,11 @@ TEST_CASE("gpuReactionRate"){
         //gpuThirdBodyArrheniusReactionRate r(0.32, 0.43, 0.54, tbes);
 
 
-        auto op1 = [=, c = make_mdspan(c, extents<1>{nSpecie})] __device__ () {
+        auto op1 = [=, c = make_mdspan(c, extents<1>{nSpecie})]  () {
             return r(p, T, c);
         };
 
-        auto op2 = [=, c = make_mdspan(c, extents<1>{nSpecie})] __device__ () {
+        auto op2 = [=, c = make_mdspan(c, extents<1>{nSpecie})]  () {
             return r.ddT(p, T, c);
         };
 
@@ -363,7 +318,7 @@ TEST_CASE("gpuReactionRate"){
                 =,
                 c = make_mdspan(c, extents<1>{nSpecie}),
                 ddc = make_mdspan(ddc, extents<1>{nSpecie})
-                ] __device__ () {
+                ]  () {
 
             r.ddc(p, T, c, ddc);
             return ddc[3] + ddc[5] + ddc[7];
@@ -395,7 +350,7 @@ TEST_CASE("gpuReactionRate"){
                 c = make_mdspan(c, extents<1>{nSpecie}),
                 ddc = make_mdspan(ddc, extents<1>{nSpecie}),
                 reactions = make_mdspan(reactions, extents<1>{nReactions})
-                ] __device__ () {
+                ]  () {
 
             gScalar ret = 0.0;
             for (int i = 0; i < nReactions; ++i){
@@ -409,7 +364,7 @@ TEST_CASE("gpuReactionRate"){
                 c = make_mdspan(c, extents<1>{nSpecie}),
                 ddc = make_mdspan(ddc, extents<1>{nSpecie}),
                 reactions = make_mdspan(reactions, extents<1>{nReactions})
-                ] __device__ () {
+                ]  () {
 
             gScalar ret = 0.0;
             for (int i = 0; i < nReactions; ++i){
@@ -423,7 +378,7 @@ TEST_CASE("gpuReactionRate"){
                 c = make_mdspan(c, extents<1>{nSpecie}),
                 ddc = make_mdspan(ddc, extents<1>{nSpecie}),
                 reactions = make_mdspan(reactions, extents<1>{nReactions})
-                ] __device__ () {
+                ]  () {
 
             gScalar ret = 0.0;
             for (int i = 0; i < nReactions; ++i){
@@ -440,7 +395,7 @@ TEST_CASE("gpuReactionRate"){
                 c = make_mdspan(c, extents<1>{nSpecie}),
                 ddc = make_mdspan(ddc, extents<1>{nSpecie}),
                 reactions = make_mdspan(reactions, extents<1>{nReactions})
-                ] __device__ () {
+                ]  () {
 
             gScalar ret = 0.0;
             for (int i = 0; i < nReactions; ++i){
@@ -506,7 +461,7 @@ TEST_CASE("gpuReaction"){
             c = make_mdspan(c, extents<1>{nSpecie}),
             dndt = make_mdspan(dndt, extents<1>{nEqns}),
             reactions = make_mdspan(reactions, extents<1>{nReactions})
-        ]__device__(){
+        ](){
 
             gScalar ret = 0.0;
             for (int i = 0; i < nReactions; ++i){
@@ -534,7 +489,7 @@ TEST_CASE("gpuReaction"){
             work1 = make_mdspan(work1, extents<1>{nSpecie}),
             dJ = make_mdspan(J, extents<2>{nEqns, nEqns}),
             reactions = make_mdspan(reactions, extents<1>{nReactions})
-        ]__device__(){
+        ](){
 
             gScalar ret = 0.0;
             for (int i = 0; i < nReactions; ++i){
@@ -559,7 +514,7 @@ TEST_CASE("gpuReaction"){
             c = make_mdspan(c, extents<1>{nSpecie}),
             dJ = make_mdspan(J, extents<2>{nEqns, nEqns}),
             reactions = make_mdspan(reactions, extents<1>{nReactions})
-        ]__device__(){
+        ](){
 
             gScalar ret = 0.0;
             for (int i = 0; i < nReactions; ++i){
@@ -584,7 +539,7 @@ TEST_CASE("gpuReaction"){
             c = make_mdspan(c, extents<1>{nSpecie}),
             dJ = make_mdspan(J, extents<2>{nEqns, nEqns}),
             reactions = make_mdspan(reactions, extents<1>{nReactions})
-        ]__device__(){
+        ](){
 
             gScalar ret = 0.0;
             for (int i = 0; i < nReactions; ++i){
@@ -609,7 +564,7 @@ TEST_CASE("gpuReaction"){
             work1 = make_mdspan(work1, extents<1>{nSpecie}),
             dJ = make_mdspan(J, extents<2>{nEqns, nEqns}),
             reactions = make_mdspan(reactions, extents<1>{nReactions})
-        ]__device__(){
+        ](){
 
             gScalar ret = 0.0;
             for (int i = 0; i < nReactions; ++i){
@@ -632,7 +587,7 @@ TEST_CASE("gpuReaction"){
                    c         = make_mdspan(c, extents<1>{nSpecie}),
                     work1 = make_mdspan(work1, extents<1>{nSpecie}),
                    reactions = make_mdspan(reactions, extents<1>{nReactions})
-                  ] __device__() {
+                  ] () {
             gScalar ret = 0.0;
             for (int i = 0; i < nReactions; ++i) {
                 const auto& reaction = reactions[i];
@@ -653,7 +608,7 @@ TEST_CASE("gpuReaction"){
         auto op = [          =,
                    c         = make_mdspan(c, extents<1>{nSpecie}),
                    reactions = make_mdspan(reactions, extents<1>{nReactions})
-                  ] __device__() {
+                  ] () {
             gScalar ret = 0.0;
             for (int i = 0; i < nReactions; ++i) {
                 const auto& reaction = reactions[i];
@@ -671,7 +626,7 @@ TEST_CASE("gpuReaction"){
         auto op = [          =,
                    c         = make_mdspan(c, extents<1>{nSpecie}),
                    reactions = make_mdspan(reactions, extents<1>{nReactions})
-                  ] __device__() {
+                  ] () {
             gScalar ret = 0.0;
             for (int i = 0; i < nReactions; ++i) {
                 const auto& reaction = reactions[i];
@@ -693,7 +648,7 @@ TEST_CASE("gpuReaction"){
 
         auto op = [          =,
                    reactions = make_mdspan(reactions, extents<1>{nReactions})
-                  ] __device__() {
+                  ] () {
             gScalar ret = 0.0;
             for (int i = 0; i < nReactions; ++i) {
                 const auto& reaction = reactions[i];
@@ -712,7 +667,7 @@ TEST_CASE("gpuReaction"){
         auto op = [          =,
                    c         = make_mdspan(c, extents<1>{nSpecie}),
                    reactions = make_mdspan(reactions, extents<1>{nReactions})
-                  ] __device__() {
+                  ] () {
             gScalar ret = 0.0;
             for (int i = 0; i < nReactions; ++i) {
                 const auto& reaction = reactions[i];
@@ -732,7 +687,7 @@ TEST_CASE("gpuReaction"){
         auto op = [          =,
                    c         = make_mdspan(c, extents<1>{nSpecie}),
                    reactions = make_mdspan(reactions, extents<1>{nReactions})
-                  ] __device__() {
+                  ] () {
             gScalar ret = 0.0;
             for (int i = 0; i < nReactions; ++i) {
                 const auto& reaction = reactions[i];
@@ -813,7 +768,7 @@ TEST_CASE("gpuODESolver"){
              y0      = make_mdspan(y0, extents<1>{nEqns}),
              y       = make_mdspan(y, extents<1>{nEqns}),
              dy = make_mdspan(dy, extents<1>{nEqns})
-             ] __device__() {
+             ] () {
                 solver.solve(y0, dy, dx, y, buffers[0]);
                 return y[4];
             };
@@ -837,7 +792,7 @@ TEST_CASE("gpuODESolver"){
              y0      = make_mdspan(y0, extents<1>{nEqns}),
              y       = make_mdspan(y, extents<1>{nEqns}),
              dy = make_mdspan(dy, extents<1>{nEqns})
-             ] __device__() {
+             ] () {
                 solver.solve(y0, dy, dx, y, buffers[0]);
                 return y[4];
             };
@@ -859,7 +814,7 @@ TEST_CASE("gpuODESolver"){
              y0      = make_mdspan(y0, extents<1>{nEqns}),
              y       = make_mdspan(y, extents<1>{nEqns}),
              dy = make_mdspan(dy, extents<1>{nEqns})
-             ] __device__() {
+             ] () {
                 solver.solve(y0, dy, dx, y, buffers[0]);
                 return y[4];
             };
@@ -870,7 +825,5 @@ TEST_CASE("gpuODESolver"){
 
     }
 
-
-
-
 }
+

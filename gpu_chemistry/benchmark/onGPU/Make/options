@@ -1,0 +1,28 @@
+EXE_INC = \
+    -I../../catchMain/lnInclude \
+    -I../../src/lnInclude \
+    -I../../src/gpuChemistryModels/lnInclude \
+    -I../../src/gpuKernelEvaluator/lnInclude \
+    -I../../../gpu_utils/common/lnInclude \
+    -I../../unittest/testHelpers/
+
+EXE_LIBS = \
+    -L$(FOAM_USER_LIBBIN) \
+    -lGpuKernelEvaluator \
+    -lGpuChemistryTestHelpers \
+    -lCatchMain \
+    -lthermophysicalProperties \
+    -lODE \
+    -lOpenFOAM \
+    -lspecie \
+    -lfluidThermoThermophysicalTransportModels \
+    -lfluidThermophysicalModels \
+    -lmulticomponentThermophysicalModels \
+    -lfiniteVolume \
+    -lchemistryModel
+
+ifeq ($(GPUFOAM_BACKEND_NVIDIA),1)
+    include ../../../nvcc
+else
+    include ../../../hipcc
+endif

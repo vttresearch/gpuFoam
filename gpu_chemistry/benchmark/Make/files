@@ -1,5 +1,0 @@
-Benchmark-gpuChemistry.cu
-
-EXE = $(FOAM_USER_APPBIN)/Benchmark-gpuChemistry
-
-
