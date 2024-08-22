@@ -76,7 +76,7 @@ makeCpuThermos_e(TestData::Mechanism m) {
     return ret;
 }
 Foam::dictionary makeReactionDict(TestData::Mechanism m) {
-    std::string t_str = [m]() {
+    std::string t_str = [&]() {
         if (m == TestData::GRI) { return std::string(GRI_REACTIONS); }
         if (m == TestData::YAO) { return std::string(YAO_REACTIONS); }
         return std::string(H2_REACTIONS);

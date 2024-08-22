@@ -41,6 +41,7 @@ make_thirdBodyEfficiencies(gLabel                  nSpecie,
         }
 
         forAll(coeffs, i) { efficiencies[i] = coeffs[i].second(); }
+        //forAll(coeffs, i) { efficiencies[i] = coeffs[i].second(); }
     } else {
         scalar defaultEff = dict.lookup<scalar>("defaultEfficiency");
         for (label i = 0; i < nSpecie; ++i) {

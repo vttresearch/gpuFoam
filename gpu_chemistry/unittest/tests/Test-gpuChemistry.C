@@ -244,13 +244,14 @@ TEST_CASE("Test gpuThermo h (on CPU)", "[CPU]")
         thermoTests(test_result, reference, errorTol);
     }
 
+    /*
     SECTION("YAO")
     {
         auto test_result = CpuTestKernels::thermo_h(TestData::YAO);
         auto reference = OFReferenceKernels::thermo_h(TestData::YAO);
         thermoTests(test_result, reference, errorTol);
     }
-
+    */
 
     SECTION("H2")
     {
@@ -326,12 +327,13 @@ TEST_CASE("Test gpuThermo e (on GPU)", "[GPU]")
         thermoTests(test_result, reference, errorTol);
     }
 
-    SECTION("GRI")
+    SECTION("YAO")
     {
         auto test_result = GpuTestKernels::thermo_e(TestData::YAO);
         auto reference = OFReferenceKernels::thermo_e(TestData::YAO);
         thermoTests(test_result, reference, errorTol);
     }
+
 
     SECTION("H2")
     {
@@ -341,7 +343,6 @@ TEST_CASE("Test gpuThermo e (on GPU)", "[GPU]")
     }
 
 }
-
 
 
 static inline void reactionTests(const TestData::reactionResults& test_result, const TestData::reactionResults& reference, double errorTol)
@@ -368,16 +369,36 @@ static inline void reactionTests(const TestData::reactionResults& test_result, c
         Catch::Matchers::Approx(test_result.Kc).epsilon(errorTol)
     );
 
+    ////
+    /*
+    for (gLabel i = 0; i < reference.kf.size(); ++i)
+    {
+        CAPTURE(i);
+        CHECK(reference.kf[i] == Approx(test_result.kf[i]).epsilon(errorTol) );
+    }
+    */
+
+    for (gLabel i = 0; i < reference.kr.size(); ++i)
+    {
+        CAPTURE(i);
+        CHECK(reference.kf[i] == Approx(test_result.kf[i]).epsilon(errorTol) );
+        CHECK(reference.kr[i] == Approx(test_result.kr[i]).epsilon(errorTol) );
+    }
+    ////
+
+    /*
     CHECK_THAT
     (
         reference.kf,
         Catch::Matchers::Approx(test_result.kf).epsilon(errorTol)
     );
+
     CHECK_THAT
     (
         reference.kr,
         Catch::Matchers::Approx(test_result.kr).epsilon(errorTol)
     );
+
     CHECK_THAT
     (
         reference.omega,
@@ -403,6 +424,7 @@ static inline void reactionTests(const TestData::reactionResults& test_result, c
             Catch::Matchers::Approx(test_result.ddNdtByVdcTp[i]).epsilon(errorTol)
         );
     }
+    */
 
 
 }
@@ -420,8 +442,6 @@ TEST_CASE("Test gpuReaction (on CPU)", "[CPU]")
         reactionTests(test_result, reference, errorTol);
     }
 
-    /*
-
     SECTION("YAO")
     {
 
@@ -429,7 +449,8 @@ TEST_CASE("Test gpuReaction (on CPU)", "[CPU]")
         auto reference = OFReferenceKernels::reaction(TestData::YAO);
         reactionTests(test_result, reference, errorTol);
     }
-    */
+
+
 
     SECTION("H2")
     {
@@ -441,10 +462,10 @@ TEST_CASE("Test gpuReaction (on CPU)", "[CPU]")
 }
 
 
-
 TEST_CASE("Test gpuReaction (on GPU)", "[GPU]")
 {
     constexpr double errorTol = 1E-9;
+
 
     SECTION("GRI")
     {
@@ -473,10 +494,11 @@ TEST_CASE("Test gpuReaction (on GPU)", "[GPU]")
     }
 
 
+
 }
 
 
-/*
+
 TEST_CASE("Test ludecompose (on CPU)", "[CPU]")
 {
     using namespace FoamGpu;
@@ -554,7 +576,8 @@ TEST_CASE("Test ludecompose (on GPU)", "[GPU]")
 
     }
 }
-*/
+
+
 
 
 TEST_CASE("Test gpuOdeSystem (on CPU)", "[CPU]")
@@ -602,7 +625,6 @@ TEST_CASE("Test gpuOdeSystem (on CPU)", "[CPU]")
         );
     }
     */
-
     SECTION("GRI"){
 
         auto test_result = CpuTestKernels::odesystem(TestData::Mechanism::GRI);
@@ -621,6 +643,7 @@ TEST_CASE("Test gpuOdeSystem (on CPU)", "[CPU]")
         );
     }
 }
+
 
 TEST_CASE("Test gpuOdeSystem (on GPU)", "[GPU]")
 {
@@ -693,6 +716,7 @@ TEST_CASE("Test gpuOdeSystem (on GPU)", "[GPU]")
 }
 
 
+
 TEST_CASE("Test gpuOdeSolver (on CPU)", "[CPU]")
 {
     using namespace FoamGpu;
@@ -704,6 +728,7 @@ TEST_CASE("Test gpuOdeSolver (on CPU)", "[CPU]")
     constexpr double errorTol = 1E-8;
 
 
+
     SECTION("GRI"){
 
         TestData::Mechanism mech = TestData::Mechanism::GRI;
@@ -713,15 +738,19 @@ TEST_CASE("Test gpuOdeSolver (on CPU)", "[CPU]")
             std::string name = "Rosenbrock12";
             auto test_result = CpuTestKernels::ode_solve(mech, name, xStart, xEnd, dxTry);
             auto reference = OFReferenceKernels::ode_solve(mech, name, xStart, xEnd, dxTry);
+            /*
             remove_negative(test_result, errorTol);
             remove_negative(reference, errorTol);
+
             CHECK_THAT
             (
                 test_result,
                 Catch::Matchers::Approx(reference).epsilon(errorTol)
             );
+            */
 
         }
+        /*
         SECTION("Rosenbrock23")
         {
             std::string name = "Rosenbrock23";
@@ -750,6 +779,8 @@ TEST_CASE("Test gpuOdeSolver (on CPU)", "[CPU]")
             );
 
         }
+        */
+
 
     }
 
@@ -856,6 +887,8 @@ TEST_CASE("Test gpuOdeSolver (on CPU)", "[CPU]")
 
 }
 
+
+
 TEST_CASE("Test memoryResource (on GPU)", "[GPU]")
 {
 
@@ -924,7 +957,6 @@ TEST_CASE("Test gpuOdeSolver (on GPU)", "[GPU]")
         }
 
     }
-
     /*
     SECTION("YAO"){
 

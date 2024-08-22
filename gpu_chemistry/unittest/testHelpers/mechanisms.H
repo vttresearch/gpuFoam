@@ -9,8 +9,8 @@ namespace TestData {
 enum Mechanism { GRI, H2, YAO };
 
 static inline gLabel speciesCount(Mechanism m) {
-    if (m == GRI) { return 53; }
-    if (m == YAO) { return 54;}
+    if (m == Mechanism::GRI) { return 53;}
+    if (m == Mechanism::YAO) { return 54;}
     return 10;
 }
 
@@ -79,6 +79,7 @@ template <class T> static inline void assign_h2(T& f) {
     f[nSpecie + 1] = p_inf;
 }
 
+
 template <class T> static inline void assign_yao(T& f) {
 
     constexpr int NC12H26_idx = 44;
@@ -109,15 +110,35 @@ static inline void assign_test_condition(T& f, Mechanism m) {
         throw std::logic_error("Field size not matching mechanism");
     }
 
+    switch (m)
+    {
+        case Mechanism::GRI:
+            assign_gri(f);
+            return;
+        case Mechanism::YAO:
+            assign_yao(f);
+            return;
+        case Mechanism::H2:
+            assign_h2(f);
+            return;
+        default:
+            throw std::logic_error("Invalid mechanism");
+    }
+
+    /*
     if (m == Mechanism::GRI) {
         assign_gri(f);
     }
+
     if (m == Mechanism::YAO) {
         assign_yao(f);
     }
+
+
     else {
         assign_h2(f);
     }
+    */
 }
 
 template<class T>
