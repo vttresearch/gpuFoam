@@ -100,7 +100,7 @@ gpuChemistryModel<cpuThermoType>::gpuChemistryModel(const fluidMulticomponentThe
         RR_.set(fieldi,
                 new volScalarField::Internal(
                     IOobject("RR." + Yvf[fieldi].name(),
-                             this->mesh().time().timeName(),
+                             this->mesh().time().name(),
                              this->mesh(),
                              IOobject::NO_READ,
                              IOobject::NO_WRITE),
