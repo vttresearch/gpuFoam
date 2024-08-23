@@ -14,9 +14,11 @@ static gpu::Arrhenius make_Arrhenius(const Foam::dictionary& dict) {
 }
 
 static gpuThirdBodyEfficiencies
-make_thirdBodyEfficiencies(gLabel                  nSpecie,
-                           const Foam::dictionary& dict) {
+make_thirdBodyEfficiencies(const Foam::speciesTable& species,
+                           const Foam::dictionary&   dict) {
     using namespace Foam;
+
+    const gLabel nSpecie = species.size();
 
     using eff_type = typename gpuThirdBodyEfficiencies::effArray;
 
@@ -40,8 +42,10 @@ make_thirdBodyEfficiencies(gLabel                  nSpecie,
                 "number of species.");
         }
 
-        forAll(coeffs, i) { efficiencies[i] = coeffs[i].second(); }
-        //forAll(coeffs, i) { efficiencies[i] = coeffs[i].second(); }
+        forAll(coeffs, i) {
+            efficiencies[species[coeffs[i].first()]] =
+                coeffs[i].second();
+        }
     } else {
         scalar defaultEff = dict.lookup<scalar>("defaultEfficiency");
         for (label i = 0; i < nSpecie; ++i) {
@@ -53,34 +57,34 @@ make_thirdBodyEfficiencies(gLabel                  nSpecie,
 }
 
 static gpu::ThirdBodyArrhenius
-make_thirdBodyArrhenius(gLabel                  nSpecie,
-                        const Foam::dictionary& dict) {
+make_thirdBodyArrhenius(const Foam::speciesTable& species,
+                        const Foam::dictionary&   dict) {
     auto arhenius = make_Arrhenius(dict);
-    auto tbes     = make_thirdBodyEfficiencies(nSpecie, dict);
+    auto tbes     = make_thirdBodyEfficiencies(species, dict);
     return gpu::ThirdBodyArrhenius(arhenius, tbes);
 }
 
 static gpu::ArrheniusLindemannFallOff
-make_ArrheniusLindemannFallOff(gLabel                  nSpecie,
-                               const Foam::dictionary& dict) {
+make_ArrheniusLindemannFallOff(const Foam::speciesTable& species,
+                               const Foam::dictionary&   dict) {
     auto k0   = make_Arrhenius(dict.subDict("k0"));
     auto kInf = make_Arrhenius(dict.subDict("kInf"));
     auto tbes = make_thirdBodyEfficiencies(
-        nSpecie, dict.subDict("thirdBodyEfficiencies"));
+        species, dict.subDict("thirdBodyEfficiencies"));
     gpuLindemannFallOffFunction F;
     return gpu::ArrheniusLindemannFallOff(k0, kInf, F, tbes);
 }
 
 static gpu::ArrheniusTroeFallOff
-make_ArrheniusTroeFallOff(gLabel                  nSpecie,
-                          const Foam::dictionary& dict) {
+make_ArrheniusTroeFallOff(const Foam::speciesTable& species,
+                          const Foam::dictionary&   dict) {
     using namespace Foam;
 
     auto k0   = make_Arrhenius(dict.subDict("k0"));
     auto kInf = make_Arrhenius(dict.subDict("kInf"));
 
     auto tbes = make_thirdBodyEfficiencies(
-        nSpecie, dict.subDict("thirdBodyEfficiencies"));
+        species, dict.subDict("thirdBodyEfficiencies"));
     auto                   subDict = dict.subDict("F");
     scalar                 alpha   = subDict.lookup<scalar>("alpha");
     scalar                 Tsss    = subDict.lookup<scalar>("Tsss");
@@ -114,22 +118,16 @@ make_reaction_rate(const Foam::speciesTable& species,
         return gpuReactionRate(make_Arrhenius(dict), true);
     }
     if (reactionTypeName == "reversibleThirdBodyArrhenius") {
-        // auto rate = make_thirdBodyArrhenius(species.size(), dict);
-        return gpuReactionRate(
-            make_thirdBodyArrhenius(species.size(), dict), false);
+        return gpuReactionRate(make_thirdBodyArrhenius(species, dict),
+                               false);
     }
     if (reactionTypeName == "reversibleArrheniusLindemannFallOff") {
-        // auto rate = make_ArrheniusLindemannFallOff(species.size(),
-        // dict);
         return gpuReactionRate(
-            make_ArrheniusLindemannFallOff(species.size(), dict),
-            false);
+            make_ArrheniusLindemannFallOff(species, dict), false);
     }
     if (reactionTypeName == "reversibleArrheniusTroeFallOff") {
-        // auto rate = make_ArrheniusTroeFallOff(species.size(),
-        // dict);
         return gpuReactionRate(
-            make_ArrheniusTroeFallOff(species.size(), dict), false);
+            make_ArrheniusTroeFallOff(species, dict), false);
     }
 
     std::string msg = "Invalid reaction type: " + temp;

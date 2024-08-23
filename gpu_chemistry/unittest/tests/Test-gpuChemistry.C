@@ -369,24 +369,6 @@ static inline void reactionTests(const TestData::reactionResults& test_result, c
         Catch::Matchers::Approx(test_result.Kc).epsilon(errorTol)
     );
 
-    ////
-    /*
-    for (gLabel i = 0; i < reference.kf.size(); ++i)
-    {
-        CAPTURE(i);
-        CHECK(reference.kf[i] == Approx(test_result.kf[i]).epsilon(errorTol) );
-    }
-    */
-
-    for (gLabel i = 0; i < reference.kr.size(); ++i)
-    {
-        CAPTURE(i);
-        CHECK(reference.kf[i] == Approx(test_result.kf[i]).epsilon(errorTol) );
-        CHECK(reference.kr[i] == Approx(test_result.kr[i]).epsilon(errorTol) );
-    }
-    ////
-
-    /*
     CHECK_THAT
     (
         reference.kf,
@@ -424,7 +406,6 @@ static inline void reactionTests(const TestData::reactionResults& test_result, c
             Catch::Matchers::Approx(test_result.ddNdtByVdcTp[i]).epsilon(errorTol)
         );
     }
-    */
 
 
 }
@@ -475,7 +456,6 @@ TEST_CASE("Test gpuReaction (on GPU)", "[GPU]")
         reactionTests(test_result, reference, errorTol);
     }
 
-    /*
     SECTION("YAO")
     {
 
@@ -483,7 +463,6 @@ TEST_CASE("Test gpuReaction (on GPU)", "[GPU]")
         auto reference = OFReferenceKernels::reaction(TestData::YAO);
         reactionTests(test_result, reference, errorTol);
     }
-    */
 
     SECTION("H2")
     {
@@ -605,7 +584,6 @@ TEST_CASE("Test gpuOdeSystem (on CPU)", "[CPU]")
             Catch::Matchers::Approx(reference.jacobian).epsilon(errorTol)
         );
     }
-    /*
     SECTION("YAO"){
 
         auto test_result = CpuTestKernels::odesystem(TestData::Mechanism::YAO);
@@ -624,7 +602,6 @@ TEST_CASE("Test gpuOdeSystem (on CPU)", "[CPU]")
             Catch::Matchers::Approx(reference.jacobian).epsilon(errorTol)
         );
     }
-    */
     SECTION("GRI"){
 
         auto test_result = CpuTestKernels::odesystem(TestData::Mechanism::GRI);
@@ -673,7 +650,6 @@ TEST_CASE("Test gpuOdeSystem (on GPU)", "[GPU]")
 
     }
 
-    /*
     SECTION("YAO"){
 
         auto test_result = GpuTestKernels::odesystem(TestData::Mechanism::YAO);
@@ -692,7 +668,6 @@ TEST_CASE("Test gpuOdeSystem (on GPU)", "[GPU]")
             Catch::Matchers::Approx(reference.jacobian).epsilon(errorTol)
         );
     }
-    */
 
     SECTION("GRI"){
 
@@ -725,11 +700,13 @@ TEST_CASE("Test gpuOdeSolver (on CPU)", "[CPU]")
     const gScalar xEnd = 1E-6;
     const gScalar dxTry = 1E-7;
 
-    constexpr double errorTol = 1E-8;
 
 
 
     SECTION("GRI"){
+
+        constexpr double errorTol = 1E-8;
+
 
         TestData::Mechanism mech = TestData::Mechanism::GRI;
 
@@ -738,7 +715,6 @@ TEST_CASE("Test gpuOdeSolver (on CPU)", "[CPU]")
             std::string name = "Rosenbrock12";
             auto test_result = CpuTestKernels::ode_solve(mech, name, xStart, xEnd, dxTry);
             auto reference = OFReferenceKernels::ode_solve(mech, name, xStart, xEnd, dxTry);
-            /*
             remove_negative(test_result, errorTol);
             remove_negative(reference, errorTol);
 
@@ -747,10 +723,8 @@ TEST_CASE("Test gpuOdeSolver (on CPU)", "[CPU]")
                 test_result,
                 Catch::Matchers::Approx(reference).epsilon(errorTol)
             );
-            */
 
         }
-        /*
         SECTION("Rosenbrock23")
         {
             std::string name = "Rosenbrock23";
@@ -779,13 +753,13 @@ TEST_CASE("Test gpuOdeSolver (on CPU)", "[CPU]")
             );
 
         }
-        */
 
 
     }
 
-    /*
     SECTION("YAO"){
+
+        constexpr double errorTol = 1E-7;
 
         TestData::Mechanism mech = TestData::Mechanism::YAO;
 
@@ -833,10 +807,12 @@ TEST_CASE("Test gpuOdeSolver (on CPU)", "[CPU]")
         }
 
     }
-    */
 
 
     SECTION("H2"){
+
+        constexpr double errorTol = 1E-8;
+
 
         TestData::Mechanism mech = TestData::Mechanism::H2;
 
@@ -906,10 +882,11 @@ TEST_CASE("Test gpuOdeSolver (on GPU)", "[GPU]")
     const gScalar xEnd = 1E-6;
     const gScalar dxTry = 1E-7;
 
-    constexpr double errorTol = 1E-8;
 
 
     SECTION("GRI"){
+
+        constexpr double errorTol = 1E-8;
 
         TestData::Mechanism mech = TestData::Mechanism::GRI;
 
@@ -957,8 +934,9 @@ TEST_CASE("Test gpuOdeSolver (on GPU)", "[GPU]")
         }
 
     }
-    /*
     SECTION("YAO"){
+
+        constexpr double errorTol = 1E-7;
 
         TestData::Mechanism mech = TestData::Mechanism::YAO;
 
@@ -1006,11 +984,12 @@ TEST_CASE("Test gpuOdeSolver (on GPU)", "[GPU]")
         }
 
     }
-    */
 
 
 
     SECTION("H2"){
+
+        constexpr double errorTol = 1E-8;
 
         TestData::Mechanism mech = TestData::Mechanism::H2;
 

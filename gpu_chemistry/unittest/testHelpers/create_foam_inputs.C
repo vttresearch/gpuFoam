@@ -28,9 +28,12 @@ static const char* H2_THERMOS =
 
 Foam::dictionary makeThermoDict(TestData::Mechanism m) {
     std::string t_str = [m]() {
-        if (m == TestData::GRI) { return std::string(GRI_THERMOS); }
-        if (m == TestData::YAO) { return std::string(YAO_THERMOS); }
-        return std::string(H2_THERMOS);
+        switch (m) {
+        case Mechanism::GRI: return std::string(GRI_THERMOS);
+        case Mechanism::YAO: return std::string(YAO_THERMOS);
+        case Mechanism::H2: return std::string(H2_THERMOS);
+        default: throw std::logic_error("Invalid mechanism");
+        }
     }();
 
     Foam::IStringStream t_temp(t_str);
@@ -76,10 +79,14 @@ makeCpuThermos_e(TestData::Mechanism m) {
     return ret;
 }
 Foam::dictionary makeReactionDict(TestData::Mechanism m) {
-    std::string t_str = [&]() {
-        if (m == TestData::GRI) { return std::string(GRI_REACTIONS); }
-        if (m == TestData::YAO) { return std::string(YAO_REACTIONS); }
-        return std::string(H2_REACTIONS);
+
+    std::string t_str = [m]() {
+        switch (m) {
+        case Mechanism::GRI: return std::string(GRI_REACTIONS);
+        case Mechanism::YAO: return std::string(YAO_REACTIONS);
+        case Mechanism::H2: return std::string(H2_REACTIONS);
+        default: throw std::logic_error("Invalid mechanism");
+        }
     }();
 
     Foam::IStringStream t_temp(t_str);
