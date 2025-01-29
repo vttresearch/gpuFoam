@@ -125,6 +125,15 @@ template<class cpuThermoType>
 label gpuChemistryModel<cpuThermoType>::nReaction() const { return reactions_.size(); }
 
 template<class cpuThermoType>
+const word& gpuChemistryModel<cpuThermoType>::reactionName
+(
+    const label reactioni
+) const { 
+        return reactions_[reactioni].name(); 
+}
+
+
+template<class cpuThermoType>
 const PtrList<volScalarField::Internal>& gpuChemistryModel<cpuThermoType>::RR() const {
     return RR_;
 }
@@ -170,8 +179,61 @@ void gpuChemistryModel<cpuThermoType>::calculate() {
 }
 
 template<class cpuThermoType>
-PtrList<DimensionedField<scalar, volMesh>>
+tmp<volScalarField::Internal>
 gpuChemistryModel<cpuThermoType>::reactionRR(const label reactioni) const {
+    
+    tmp<volScalarField::Internal> tRR =
+        volScalarField::Internal::New
+        (
+            "RR:" + reactions_[reactioni].name(),
+            this->mesh(),
+            dimensionedScalar(dimMoles/dimVolume/dimTime, 0)
+        );
+    volScalarField::Internal& RR = tRR.ref();
+
+    if (!this->chemistry_) { return tRR; }
+
+
+    tmp<volScalarField>   trhovf(this->thermo().rho());
+    const volScalarField& rhovf = trhovf();
+
+    const volScalarField& Tvf = this->thermo().T();
+    const volScalarField& pvf = this->thermo().p();
+    
+    const auto& R = reactions_[reactioni];
+
+    const PtrList<volScalarField>& Yvf = this->thermo().Y();
+
+    scalarField c(this->nSpecie());
+
+    forAll(rhovf, celli)
+    {
+        const scalar rho = rhovf[celli];
+        const scalar T = Tvf[celli];
+        const scalar p = pvf[celli];
+
+        for (label i=0; i<this->nSpecie(); i++)
+        {
+            const scalar Yi = Yvf[i][celli];
+            c[i] = rho*Yi/specieThermos_[i].W();
+        }
+
+        scalar omegaf, omegar;
+
+        RR[celli] =
+            R.omega
+            (
+                p,
+                T,
+                c,
+                celli,
+                omegaf,
+                omegar
+            );
+    }
+    return tRR;
+
+    /*
     const PtrList<volScalarField>& Yvf = this->thermo().Y();
 
     PtrList<volScalarField::Internal> RR(this->nSpecie());
@@ -216,6 +278,84 @@ gpuChemistryModel<cpuThermoType>::reactionRR(const label reactioni) const {
 
         for (label i = 0; i < this->nSpecie(); i++) {
             RR[i][celli] = dNdtByV[i] * specieThermos_[i].W();
+        }
+    }
+
+    return RR;
+    */
+}
+
+template<class cpuThermoType>
+PtrList<volScalarField::Internal>
+gpuChemistryModel<cpuThermoType>::specieReactionRR(const label reactioni) const {
+    
+
+    PtrList<volScalarField::Internal> RR(this->nSpecie());
+    const PtrList<volScalarField>& Yvf = this->thermo().Y();
+
+    for (label i=0; i<this->nSpecie(); i++)
+    {
+        RR.set
+        (
+            i,
+            volScalarField::Internal::New
+            (
+                "RR:" + reactions_[reactioni].name() + ":" + Yvf[i].name(),
+                this->mesh(),
+                dimensionedScalar(dimMass/dimVolume/dimTime, 0)
+            ).ptr()
+        );
+    }
+
+    if (!this->chemistry_)
+    {
+        return RR;
+    }
+
+    tmp<volScalarField> trhovf(this->thermo().rho());
+    const volScalarField& rhovf = trhovf();
+
+    const volScalarField& Tvf = this->thermo().T();
+    const volScalarField& pvf = this->thermo().p();
+
+    scalarField dNdtByV(this->nSpecie() + 2);
+
+
+    const auto& R = reactions_[reactioni];
+
+    List<label> cTos; // Note! not allocated!
+    scalarField c(this->nSpecie());
+
+
+    forAll(rhovf, celli)
+    {
+        const scalar rho = rhovf[celli];
+        const scalar T = Tvf[celli];
+        const scalar p = pvf[celli];
+
+        for (label i=0; i<this->nSpecie(); i++)
+        {
+            const scalar Yi = Yvf[i][celli];
+            c[i] = rho*Yi/specieThermos_[i].W();
+        }
+
+        dNdtByV = Zero;
+
+        R.dNdtByV
+        (
+            p,
+            T,
+            c,
+            celli,
+            dNdtByV,
+            false,
+            cTos,
+            0
+        );
+
+        for (label i=0; i<this->nSpecie(); i++)
+        {
+            RR[i][celli] = dNdtByV[i]*specieThermos_[i].W();
         }
     }
 

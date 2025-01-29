@@ -128,13 +128,30 @@ public:
     /// @return The current reaction rates.
     const PtrList<volScalarField::Internal>& RR() const override;
 
+    /// @brief Get the name of the reaction at index i.
+    /// @param reactioni The reaction index to query the name for.
+    /// @return The name of the reaction.
+    virtual inline const word& reactionName
+    (
+        const label reactioni
+    ) const override;
+
+    /// @brief Get the reaction rate of reactioni
+    /// @param reactioni The reaction index to query the specie reaction rates
+    /// for.
+    /// @return Reaction rate in reactioni [kg/m^3/s]
+    tmp<volScalarField::Internal>
+    reactionRR(const label reactioni) const override;
+
     /// @brief Get the reaction rates of the species involved in the reaction
     /// corresponding to the input reaction index reactioni.
     /// @param reactioni The reaction index to query the specie reaction rates
     /// for.
     /// @return Reaction rates of the species in reactioni [kg/m^3/s]
-    PtrList<volScalarField::Internal>
-    reactionRR(const label reactioni) const override;
+    PtrList<volScalarField::Internal> specieReactionRR
+    (
+        const label reactioni
+    ) const override;
 
     /// @brief Calculates and updates the reaction rates (RR_) based on the
     /// current values of Y. Note that his runs on the cpu since no ode solve
