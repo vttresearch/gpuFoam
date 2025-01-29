@@ -233,56 +233,6 @@ gpuChemistryModel<cpuThermoType>::reactionRR(const label reactioni) const {
     }
     return tRR;
 
-    /*
-    const PtrList<volScalarField>& Yvf = this->thermo().Y();
-
-    PtrList<volScalarField::Internal> RR(this->nSpecie());
-    for (label i = 0; i < this->nSpecie(); i++) {
-        RR.set(i,
-               volScalarField::Internal::New(
-                   "RR." + Yvf[i].name(),
-                   this->mesh(),
-                   dimensionedScalar(dimMass / dimVolume / dimTime, 0))
-                   .ptr());
-    }
-
-    if (!this->chemistry_) { return RR; }
-
-    tmp<volScalarField>   trhovf(this->thermo().rho());
-    const volScalarField& rhovf = trhovf();
-
-    const volScalarField& Tvf = this->thermo().T();
-    const volScalarField& pvf = this->thermo().p();
-
-    scalarField dNdtByV(this->nSpecie() + 2);
-
-    scalarField c(this->nSpecie());
-
-    List<label> cTos; // Note! not allocated!
-
-    const auto& R = reactions_[reactioni];
-
-    forAll(rhovf, celli) {
-        const scalar rho = rhovf[celli];
-        const scalar T   = Tvf[celli];
-        const scalar p   = pvf[celli];
-
-        for (label i = 0; i < this->nSpecie(); i++) {
-            const scalar Yi = Yvf[i][celli];
-            c[i]            = rho * Yi / specieThermos_[i].W();
-        }
-
-        dNdtByV = Zero;
-
-        R.dNdtByV(p, T, c, celli, dNdtByV, false, cTos, 0);
-
-        for (label i = 0; i < this->nSpecie(); i++) {
-            RR[i][celli] = dNdtByV[i] * specieThermos_[i].W();
-        }
-    }
-
-    return RR;
-    */
 }
 
 template<class cpuThermoType>
