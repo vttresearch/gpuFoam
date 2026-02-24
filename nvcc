@@ -7,7 +7,7 @@ NVCC_FLAGS = --std=c++17
 NVCC_FLAGS += --expt-extended-lambda
 NVCC_FLAGS += -O3
 NVCC_FLAGS += --use_fast_math
-NVCC_FLASG += --generate-line-info
+NVCC_FLAGS += --generate-line-info
 NVCC_FLAGS += -lineinfo
 NVCC_FLAGS += --gpu-architecture=compute_86 --gpu-code=sm_86
 

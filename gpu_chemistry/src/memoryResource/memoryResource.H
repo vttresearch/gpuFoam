@@ -47,7 +47,7 @@ protected:
 
         if ((nCells != this->nCells()) ||
             (nSpecie != this->nSpecie()) ||
-            (nCells + 2 != this->nEqns())) {
+            (nSpecie + 2 != this->nEqns())) {
             return true;
         }
         return false;
