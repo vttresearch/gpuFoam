@@ -17,7 +17,8 @@ GpuKernelEvaluator::GpuKernelEvaluator(
     gLabel                          nSpecie,
     const std::vector<gpuThermo>&   thermos,
     const std::vector<gpuReaction>& reactions,
-    gpuODESolverInputs              odeInputs)
+    gpuODESolverInputs              odeInputs,
+    gScalar                         Treact)
     : nEqns_(nEqns)
     , nSpecie_(nSpecie)
     , nReactions_(gLabel(reactions.size()))
@@ -28,7 +29,8 @@ GpuKernelEvaluator::GpuKernelEvaluator(
               thermosReactions_.reactions())
     , solver_(make_gpuODESolver(system_, odeInputs))
     , inputs_(odeInputs)
-    , memory_(nCells, nSpecie) {}
+    , memory_(nCells, nSpecie)
+    , Treact_(Treact) {}
 
 std::pair<std::vector<gScalar>, std::vector<gScalar>>
 GpuKernelEvaluator::computeYNew(
@@ -52,7 +54,7 @@ GpuKernelEvaluator::computeYNew(
     auto buffer_span = make_mdspan(buffers, extents<1>{nCells});
 
     singleCellSolver op(
-        deltaT, nSpecie_, ddeltaTChem, dYvf, buffer_span, solver_);
+        deltaT, nSpecie_, ddeltaTChem, dYvf, buffer_span, solver_, Treact_);
 
     for_each_index(op, nCells);
 
