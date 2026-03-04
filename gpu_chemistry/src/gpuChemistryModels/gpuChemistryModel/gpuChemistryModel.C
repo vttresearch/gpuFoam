@@ -65,7 +65,9 @@ FoamGpu::GpuKernelEvaluator gpuChemistryModel<cpuThermoType>::makeEvaluator(
         FoamGpu::makeGpuThermos(mixture.specieThermos(), physicalProperties);
     auto gpu_reactions = FoamGpu::makeGpuReactions(
         mixture.species(), chemistryProperties, gpu_thermos, reactions);
-
+    scalar Treact = chemistryProperties.lookupOrDefault<scalar>("Treact", 0.0);
+    
+    Info << "    Treact: " << Treact << " K, (below which chemistry is not solved)" << endl;
     return FoamGpu::GpuKernelEvaluator(
         nCells,
         nEqns,
@@ -73,7 +75,8 @@ FoamGpu::GpuKernelEvaluator gpuChemistryModel<cpuThermoType>::makeEvaluator(
         gpu_thermos,
         gpu_reactions,
         FoamGpu::read_gpuODESolverInputs(
-            chemistryProperties.subDict("odeCoeffs")));
+            chemistryProperties.subDict("odeCoeffs")),
+        Treact);
 }
 
 template<class cpuThermoType>

@@ -26,7 +26,17 @@ public:
                        gLabel                          nSpecie,
                        const std::vector<gpuThermo>&   thermos,
                        const std::vector<gpuReaction>& reactions,
-                       gpuODESolverInputs              odeInputs);
+                       gpuODESolverInputs              odeInputs)
+        : GpuKernelEvaluator(nCells, nEqns, nSpecie, thermos, reactions, odeInputs, 0) {}
+    
+    
+    GpuKernelEvaluator(gLabel                          nCells,
+                       gLabel                          nEqns,
+                       gLabel                          nSpecie,
+                       const std::vector<gpuThermo>&   thermos,
+                       const std::vector<gpuReaction>& reactions,
+                       gpuODESolverInputs              odeInputs,
+                       gScalar                         Treact);
 
     GpuKernelEvaluator(const GpuKernelEvaluator& other) = delete;
 
@@ -71,6 +81,7 @@ private:
     gpuODESolver        solver_;
     gpuODESolverInputs  inputs_;
     gpuMemoryResource   memory_;
+    gScalar             Treact_;
 };
 
 } // namespace FoamGpu

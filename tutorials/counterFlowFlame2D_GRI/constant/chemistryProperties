@@ -28,6 +28,8 @@ loadBalancing   on;
 
 initialChemicalTimeStep 1e-07;
 
+Treact          295; // temperature threshold below which chemistry is not solved and reaction rate is zero 
+
 odeCoeffs
 {
     solver          Rosenbrock34;
