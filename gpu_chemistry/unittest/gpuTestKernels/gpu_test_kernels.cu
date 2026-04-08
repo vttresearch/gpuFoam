@@ -88,7 +88,7 @@ TestData::constantResults constants(){
 
     TestData::constantResults ret;
     ret.RR = eval([] DEVICE (){return gpuRR;});
-    ret.Pstd = eval([] DEVICE (){return gpuPstd;});
+    ret.pStd = eval([] DEVICE (){return gpupStd;});
     ret.Tstd = eval([] DEVICE (){return gpuTstd;});
     ret.NNA = eval([] DEVICE (){return gpuNNA;});
     ret.k = eval([] DEVICE (){return gpuk;});
@@ -552,9 +552,9 @@ bool test_memory_resource(TestData::Mechanism mech, gLabel nCells){
                     s(j, i) = gScalar(celli);
                 }
             }
-            
+
         };
-        
+
 
 
         assign_label(buffer.pivotIndices());
@@ -674,14 +674,14 @@ bool test_single_cell_solver(TestData::Mechanism mech, gLabel nCells){
         make_raw_pointer(reactions.data())
     );
 
-    
+
 
     gpuODESolverInputs i = TestData::makeGpuODEInputs("Rosenbrock23", mech);
 
 
     auto ode = make_gpuODESolver(system, i);
 
-    
+
 
     std::vector<gScalar> Y_h(nCells*nEqns);
 
@@ -812,6 +812,3 @@ bool test_evaluator(gLabel nCells){
 
 
 }
-
-
-

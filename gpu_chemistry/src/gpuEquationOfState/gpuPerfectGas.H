@@ -128,7 +128,7 @@ public:
     inline CUDA_HOSTDEV gScalar Sp(const gScalar p,
                                    const gScalar T) const {
         (void)T;
-        return -this->R() * std::log(p / gpuPstd);
+        return -this->R() * std::log(p / gpupStd);
     }
 
     /// @brief Computes the entropy [J/kg/K] contribution to the

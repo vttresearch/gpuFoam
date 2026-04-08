@@ -18,13 +18,13 @@ using gScalar = double;
 #define gpuRR double(gpuNNA * gpuk)
 
 // Standard pressure
-#define gpuPstd double(1e5)
+#define gpupStd double(1e5)
 
 // Standard temperature
 #define gpuTstd double(298.15)
 
 #ifdef __USING_GPU__
-    
+
 
     #ifdef __NVIDIA_BACKEND__
 
@@ -80,4 +80,3 @@ using gScalar = double;
 #define gpuGreat double(1.0 / gpuSmall)
 
 #define gpuLogTen double(2.302585092994046)
-
