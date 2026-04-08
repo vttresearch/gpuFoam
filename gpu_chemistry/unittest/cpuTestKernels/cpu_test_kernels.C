@@ -30,7 +30,7 @@ TestData::constantResults constants(){
 
     TestData::constantResults ret;
     ret.RR = eval([] DEVICE (){return gpuRR;});
-    ret.Pstd = eval([] DEVICE (){return gpuPstd;});
+    ret.pStd = eval([] DEVICE (){return gpupStd;});
     ret.Tstd = eval([] DEVICE (){return gpuTstd;});
     ret.NNA = eval([] DEVICE (){return gpuNNA;});
     ret.k = eval([] DEVICE (){return gpuk;});
@@ -461,6 +461,3 @@ std::vector<gScalar> ode_solve(TestData::Mechanism mech, std::string solver_name
 
 
 }
-
-
-

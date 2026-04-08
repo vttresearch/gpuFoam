@@ -87,7 +87,7 @@ public:
     }
 
     /// @brief Computes the equilibrium constant i.t.o partial
-    /// pressures = PIi(pi/Pstd)^nui. For low pressures (where the gas
+    /// pressures = PIi(pi/pStd)^nui. For low pressures (where the gas
     /// mixture is near perfect) Kp = K.
     /// @param p Pressure.
     /// @param T Temperature.
@@ -99,7 +99,7 @@ public:
 
     /// @brief Computes the equilibrium constant i.t.o. molar
     /// concentration = PIi(ci/cstd)^nui. For low pressures (where the
-    /// gas mixture is near perfect) Kc = Kp(pstd/(RR*T))^nu.
+    /// gas mixture is near perfect) Kc = Kp(pStd/(RR*T))^nu.
     /// @param p Pressure.
     /// @param T Temperature.
     /// @return The equilibrium constant i.t.o. molar concentration.
@@ -109,7 +109,7 @@ public:
         const gScalar nm = this->Y() / this->W();
 
         if (fabs(nm - gpuSmall) < gpuVSmall) { return Kp(p, T); }
-        return Kp(p, T) * pow(gpuPstd / (gpuRR * T), nm);
+        return Kp(p, T) * pow(gpupStd / (gpuRR * T), nm);
     }
 
     /// @brief Computes the derivative of B (according to Niemeyer et
@@ -121,7 +121,7 @@ public:
                                           const gScalar T) const {
 
         const gScalar dKcdTbyKc =
-            (this->S(gpuPstd, T) + this->Gstd(T) / T) * this->Y() /
+            (this->S(gpupStd, T) + this->Gstd(T) / T) * this->Y() /
             (gpuRR * T);
 
         const gScalar nm = this->Y() / this->W();
@@ -154,11 +154,11 @@ public:
 
         const gScalar Kc = [&]() {
             if (nm_is_small) { return K; }
-            return K * pow(gpuPstd / gpuRR_times_T, nm);
+            return K * pow(gpupStd / gpuRR_times_T, nm);
         }();
 
         const gScalar dKcdTbyKc = [&]() {
-            const gScalar S = this->S(gpuPstd, T, logT);
+            const gScalar S = this->S(gpupStd, T, logT);
             const gScalar ret =
                 (S + Gstd / T) * this->Y() / gpuRR_times_T;
             if (nm_is_small) { return ret; }

@@ -8,7 +8,7 @@ namespace TestData{
 
 struct constantResults{
     gScalar RR;
-    gScalar Pstd;
+    gScalar pStd;
     gScalar Tstd;
     gScalar NNA;
     gScalar k;
