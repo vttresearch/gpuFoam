@@ -477,10 +477,9 @@ gpuReaction::omega(const gScalar                  p,
     const gScalar clippedT =
         fmin(fmax(T, this->Tlow()), this->Thigh());
 
-    const gScalar Kc = fmax(sqrt(gpuSmall), this->Kc(p, T));
     // Rate constants
     const gScalar kf = this->kf(p, clippedT, c);
-    const gScalar kr = this->kr(kf, p, clippedT, Kc, c);
+    const gScalar kr = this->kr(kf, p, clippedT, this->Kc(p, clippedT), c);
 
     const gScalar Cf = calcCf(lhsPowers(c));
     const gScalar Cr = calcCr(rhsPowers(c));
@@ -542,8 +541,7 @@ gpuReaction::kr(const gScalar                  p,
                 const gScalar                  T,
                 const mdspan<const gScalar, 1> c) const {
     if (isIrreversible()) { return 0.0; }
-    const gScalar Kc = fmax(this->Kc(p, T), sqrt(gpuSmall));
-    return kr(kf(p, T, c), p, T, Kc, c);
+    return kr(kf(p, T, c), p, T, this->Kc(p, T), c);
 }
 
 inline CUDA_HOSTDEV void gpuReaction::jac_dCfdcj_contribution(
@@ -674,16 +672,15 @@ computeReactionParameters(const gpuReaction&             r,
     if (!r.isIrreversible()) {
 
         const auto pair2    = r.KcAnddKcTbyKc(p, T);
-        const auto Kc_t     = pair2[0];
+        Kc                  = pair2[0];
         const auto dKcdTbyV = pair2[1];
-        Kc                  = fmax(Kc_t, sqrt(gpuSmall));
         const auto kr       = kf / Kc;
 
         const auto rhsPow = r.rhsPowers(c);
         Cr                = r.calcCr(rhsPow);
 
         const auto dkrdT =
-            ddT / Kc - (Kc > sqrt(gpuSmall) ? kr * dKcdTbyV : 0.0);
+            ddT / Kc - kr * dKcdTbyV;
 
         ret.dwdT -= Cr * dkrdT;
         ret.omega -= Cr * kr;
