@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "basicChemistryModel.H"
+#include "chemistryModel.H"
 
 
 #include "makeGpuReactions.H"
@@ -21,10 +21,10 @@
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam {
-
+namespace chemistryModels {
 
 template<class cpuThermoType>
-class gpuChemistryModel : public basicChemistryModel {
+class gpuChemistryModel : public chemistryModel {
 
 public:
 
@@ -184,6 +184,7 @@ public:
     void operator=(const gpuChemistryModel&) = delete;
 };
 
+} // End namespace chemistryModels
 } // End namespace Foam
 
 #ifdef NoRepository
