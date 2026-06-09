@@ -6,8 +6,8 @@
 // is added. With standard chemistryModel this combination can be used
 // through the dynamic code routines.
 
-#include "makeGpuChemistrySolver.H"
-#include "noChemistrySolver.H"
+#include "makeChemistryModel.H"
+#include "gpuChemistryModel.H"
 
 // Thermo types
 #include "makeFluidMulticomponentThermo.H"
@@ -94,7 +94,6 @@ forExtraCoeffGases(makeIRTemplate2Reactions,
                    SRIFallOffFunction);
 
 // Finally add the chemistry models
-forExtraCoeffGases(defineGpuChemistrySolvers, nullArg);
-forExtraCoeffGases(makeGpuChemistrySolvers, noChemistrySolver)
+forExtraCoeffGases(makeChemistryModels, gpuChemistryModel);
 
 } // namespace Foam

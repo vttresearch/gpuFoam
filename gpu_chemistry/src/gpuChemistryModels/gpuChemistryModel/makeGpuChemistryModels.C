@@ -1,5 +1,5 @@
-#include "makeGpuChemistrySolver.H"
-#include "noChemistrySolver.H"
+#include "makeChemistryModel.H"
+#include "gpuChemistryModel.H"
 
 #include "forGases.H" //The standard forCoeffGases macro
 // #include "forLiquids.H"
@@ -20,8 +20,7 @@
 
 namespace Foam {
 
-forCoeffGases(defineGpuChemistrySolvers, nullArg);
-forCoeffGases(makeGpuChemistrySolvers, noChemistrySolver);
+forCoeffGases(makeChemistryModels, gpuChemistryModel);
 
 // TODO: Consider adding forCoeffLiquids
 
