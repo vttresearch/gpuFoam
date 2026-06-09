@@ -13,13 +13,9 @@ FoamFile
     location        "constant";
     object          chemistryProperties;
 }
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-chemistryType
-{
-    solver          none;
-    method          gpuChemistryModel;
-    //method          ode;
-}
+type            gpuChemistryModel;
 
 
 chemistry       on;
