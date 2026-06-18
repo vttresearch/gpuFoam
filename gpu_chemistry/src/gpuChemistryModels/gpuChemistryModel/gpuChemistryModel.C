@@ -2,6 +2,7 @@
 
 
 namespace Foam {
+namespace chemistryModels {
 
 template<class cpuThermoType>
 std::vector<gScalar> gpuChemistryModel<cpuThermoType>::getRho0() const {
@@ -81,7 +82,7 @@ FoamGpu::GpuKernelEvaluator gpuChemistryModel<cpuThermoType>::makeEvaluator(
 
 template<class cpuThermoType>
 gpuChemistryModel<cpuThermoType>::gpuChemistryModel(const fluidMulticomponentThermo& thermo)
-    : basicChemistryModel(thermo)
+    : chemistryModel(thermo)
     , mixture_(dynamicCast<const multicomponentMixture<cpuThermoType>>(
           this->thermo()))
     , specieThermos_(mixture_.specieThermos())
@@ -464,4 +465,5 @@ tmp<volScalarField> gpuChemistryModel<cpuThermoType>::Qdot() const {
     return tQdot;
 }
 
+} // namespace chemistryModels
 } // namespace Foam
