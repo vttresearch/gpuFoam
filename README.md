@@ -58,3 +58,15 @@ This project contains source code taken from the following projects
 * [variant](https://github.com/bryancatanzaro/variant)
 
 The licenses of the external projects can be found from their respective folders.
+
+## Citing
+To cite gpuFoam use the below reference
+```
+@software{peltonen_gpufoam,
+ author = {Peltonen, Petteri and Niemi, Timo and Celik, Hasan and Peltola, Juho},
+ title = {gpuFoam: Tools and extensions for GPU-accelerated OpenFOAM simulations},
+ organization = {VTT Technical Research Centre of Finland},
+ url = {https://github.com/vttresearch/gpuFoam},
+ year = {2024}
+}
+```
